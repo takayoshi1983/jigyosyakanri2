@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (sortedClients.length === 0) {
             const noDataRow = document.createElement('tr');
-            noDataRow.innerHTML = '<td colspan="8" style="text-align: center; padding: 20px; color: #666;">該当するクライアントが見つかりません</td>';
+            noDataRow.innerHTML = '<td colspan="9" style="text-align: center; padding: 20px; color: #666;">該当するクライアントが見つかりません</td>';
             clientsTableBody.appendChild(noDataRow);
             return;
         }
@@ -495,10 +495,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${client.status === 'active' ? '稼働中' : '停止中'}
                 </span>
             </td>
+            <td>
+                <button class="edit-btn" onclick="editClient(${client.id})" title="編集">
+                    ✏️
+                </button>
+            </td>
         `;
 
         return row;
     }
+
+    // 編集画面に遷移
+    function editClient(clientId) {
+        localStorage.setItem('selectedClientId', clientId);
+        window.location.href = 'edit.html';
+    }
+
+    // グローバルスコープでアクセス可能にする
+    window.editClient = editClient;
 
     function getRowBackgroundColor(unattendedMonths) {
         if (unattendedMonths >= appSettings.red_threshold) {

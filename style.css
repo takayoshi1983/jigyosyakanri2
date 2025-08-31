@@ -5,6 +5,25 @@ body {
     color: #333;
 }
 
+/* 編集ボタンのスタイル */
+.edit-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.edit-btn:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.edit-btn:active {
+    transform: scale(0.95);
+}
+
 h1, h2 {
     color: #2c3e50;
 }
