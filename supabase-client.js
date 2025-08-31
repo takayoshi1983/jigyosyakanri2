@@ -93,8 +93,8 @@ export class SupabaseAPI {
     static async getMonthlyTasks(clientId, month) {
         try {
             const { data, error } = await supabase
-                .from('monthly_tasks')
-                .select('id, client_id, month')
+                .from('task_entries')
+                .select('*')
                 .eq('client_id', clientId)
                 .eq('month', month)
                 .maybeSingle();
@@ -112,7 +112,7 @@ export class SupabaseAPI {
     
     static async createMonthlyTask(taskData) {
         const { data, error } = await supabase
-            .from('monthly_tasks')
+            .from('task_entries')
             .insert(taskData)
             .select()
             .single();
@@ -123,7 +123,7 @@ export class SupabaseAPI {
     
     static async updateMonthlyTask(id, taskData) {
         const { data, error } = await supabase
-            .from('monthly_tasks')
+            .from('task_entries')
             .update(taskData)
             .eq('id', id)
             .select()
@@ -135,7 +135,7 @@ export class SupabaseAPI {
     
     static async upsertMonthlyTask(clientId, month, taskData) {
         const { data, error } = await supabase
-            .from('monthly_tasks')
+            .from('task_entries')
             .upsert({
                 client_id: clientId,
                 month: month,
@@ -406,7 +406,7 @@ export class SupabaseAPI {
                 { 
                     event: '*', 
                     schema: 'public', 
-                    table: 'monthly_tasks',
+                    table: 'task_entries',
                     filter: `client_id=eq.${clientId}`
                 }, 
                 callback
