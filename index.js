@@ -495,9 +495,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${client.status === 'active' ? '稼働中' : '停止中'}
                 </span>
             </td>
-            <td>
-                <button class="edit-btn" onclick="editClient(${client.id})" title="編集" style="display: block !important; visibility: visible !important;">
-                    ✏️
+            <td style="background: red !important; min-width: 100px !important;">
+                <button class="edit-btn" onclick="editClient(${client.id})" title="編集" style="display: block !important; visibility: visible !important; background: yellow !important; padding: 10px !important;">
+                    編集
                 </button>
             </td>
         `;

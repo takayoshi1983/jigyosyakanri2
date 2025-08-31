@@ -1,16 +1,6 @@
-PS C:\claudecode\jigyosya-final2> git push
-Enumerating objects: 5, done.
-Counting objects: 100% (5/5), done.
-Delta compression using up to 16 threads
-Compressing objects: 100% (4/4), done.
-Writing objects: 100% (4/4), 326.40 MiB | 8.35 MiB/s, done.
-Total 4 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (1/1), completed with 1 local object.
-remote: error: Trace: 5dd997aca3199d756fa372b266ea277e8c31eda6b8ac0bb59d0312e9f80d2895
-remote: error: See https://gh.io/lfs for more information.
-remote: error: File postgresql-binaries.zip is 331.39 MB; this exceeds GitHub's file size limit of 100.00 MB
-remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
-To https://github.com/takayoshi1983/jigyosyakanri2.git
- ! [remote rejected] main -> main (pre-receive hook declined)
-error: failed to push some refs to 'https://github.com/takayoshi1983/jigyosyakanri2.git'
-PS C:\claudecode\jigyosya-final2>
+事業所名↕️	決算月↑	未入力期間↕️	月次進捗	最終更新↕️	担当者↕️	経理方式↕️	進捗ステータス↕️
+株式会社サンプル商事	3月	0ヶ月	計算中...	2025/8/31	田中太郎	記帳代行	稼働中
+山田工業株式会社	3月	0ヶ月	計算中...	2025/8/31	鈴木一郎	記帳代行	稼働中
+鈴木製作所	9月	0ヶ月	計算中...	2025/8/31	山田美咲	記帳代行	稼働中
+田中商店	12月	0ヶ月	計算中...	2025/8/31	佐藤花子	自計	稼働中
+佐藤建設	12月	0ヶ月	計算中...	2025/8/31	田中太郎	記帳代行	稼働中
