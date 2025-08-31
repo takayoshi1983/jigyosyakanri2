@@ -1,10 +1,56 @@
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_color:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.hide_inactive_clients:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_threshold:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.font_family:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_threshold:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_color:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-/#:1 The resource https://jigyousya-final.vercel.app/supabase-client.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
-/#:1 The resource https://jigyousya-final.vercel.app/index.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
-/#:1 The resource https://jigyousya-final.vercel.app/supabase-client.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
-/#:1 The resource https://jigyousya-final.vercel.app/index.js was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
+index.html:1 A preload for 'https://jigyousya-final.vercel.app/index.js' is found, but is not used because the request credentials mode does not match. Consider taking a look at crossorigin attribute.Understand this warning
+index.html:1 A preload for 'https://jigyousya-final.vercel.app/supabase-client.js' is found, but is not used because the request credentials mode does not match. Consider taking a look at crossorigin attribute.
+
+
+
+index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_threshold 406 (Not Acceptable)
+(anonymous) @ index.js:1
+(anonymous) @ index.js:1
+i @ index.js:1
+Promise.then
+u @ index.js:1
+(anonymous) @ index.js:1
+I @ index.js:1
+(anonymous) @ index.js:1
+then @ wrapper.mjs:1Understand this error
+index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_threshold 406 (Not Acceptable)
+(anonymous) @ index.js:1
+(anonymous) @ index.js:1
+i @ index.js:1
+Promise.then
+u @ index.js:1
+(anonymous) @ index.js:1
+I @ index.js:1
+(anonymous) @ index.js:1
+then @ wrapper.mjs:1Understand this error
+index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.font_family 406 (Not Acceptable)
+(anonymous) @ index.js:1
+(anonymous) @ index.js:1
+i @ index.js:1
+Promise.then
+u @ index.js:1
+(anonymous) @ index.js:1
+I @ index.js:1
+(anonymous) @ index.js:1
+then @ wrapper.mjs:1Understand this error
+index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_color 406 (Not Acceptable)
+(anonymous) @ index.js:1
+(anonymous) @ index.js:1
+i @ index.js:1
+Promise.then
+u @ index.js:1
+(anonymous) @ index.js:1
+I @ index.js:1
+(anonymous) @ index.js:1
+then @ wrapper.mjs:1Understand this error
+index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.hide_inactive_clients 406 (Not Acceptable)
+(anonymous) @ index.js:1
+(anonymous) @ index.js:1
+i @ index.js:1
+Promise.then
+u @ index.js:1
+(anonymous) @ index.js:1
+I @ index.js:1
+(anonymous) @ index.js:1
+then @ wrapper.mjs:1Understand this error
+index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_color 406 (Not Acceptable)

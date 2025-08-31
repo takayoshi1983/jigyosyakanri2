@@ -144,17 +144,40 @@ export class SupabaseAPI {
     
     // 設定関連
     static async getSetting(key) {
-        const { data, error } = await supabase
-            .from('settings')
-            .select('value')
-            .eq('key', key)
-            .maybeSingle();
-            
-        if (error) {
-            console.warn(`Setting '${key}' not found:`, error);
-            return null;
+        try {
+            const { data, error } = await supabase
+                .from('settings')
+                .select('value')
+                .eq('key', key)
+                .maybeSingle();
+                
+            if (error) {
+                console.warn(`Setting '${key}' error:`, error.message, error.code);
+                // Return default values for common settings
+                const defaults = {
+                    'yellow_threshold': 7,
+                    'red_threshold': 3,
+                    'yellow_color': '#FFFF99',
+                    'red_color': '#FFB6C1',
+                    'font_family': 'Arial, sans-serif',
+                    'hide_inactive_clients': false
+                };
+                return defaults[key] || null;
+            }
+            return data?.value;
+        } catch (err) {
+            console.error(`Critical error accessing setting '${key}':`, err);
+            // Return safe defaults
+            const defaults = {
+                'yellow_threshold': 7,
+                'red_threshold': 3,
+                'yellow_color': '#FFFF99',
+                'red_color': '#FFB6C1',
+                'font_family': 'Arial, sans-serif',
+                'hide_inactive_clients': false
+            };
+            return defaults[key] || null;
         }
-        return data?.value;
     }
     
     static async setSetting(key, value) {
