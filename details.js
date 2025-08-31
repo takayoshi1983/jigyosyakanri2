@@ -224,18 +224,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Month Data Management ---
-    function generateMonthsToDisplay(year) {
-        if (!clientDetails.fiscal_month) return [];
-        const fiscalMonth = clientDetails.fiscal_month;
+    function generateMonthsToDisplay(fiscalYear) {
+        if (!clientDetails || !clientDetails.fiscal_month) return [];
+        
+        const fiscalClosingMonth = clientDetails.fiscal_month;
+        const startMonth = fiscalClosingMonth + 1;
+
         const months = [];
         for (let i = 0; i < 12; i++) {
-            let month = fiscalMonth + i;
-            let displayYear = parseInt(year);
-            if (month > 12) {
-                month -= 12;
-                displayYear += 1;
+            let currentMonth = startMonth + i;
+            let currentYear = parseInt(fiscalYear);
+
+            if (currentMonth > 12) {
+                currentMonth -= 12;
+                currentYear += 1;
             }
-            months.push({ key: `${displayYear}-${String(month).padStart(2, '0')}`, display: `${displayYear}/${month}` });
+
+            months.push({ 
+                key: `${currentYear}-${String(currentMonth).padStart(2, '0')}`,
+                display: `${currentYear}/${currentMonth}` 
+            });
         }
         return months;
     }
