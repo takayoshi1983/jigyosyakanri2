@@ -568,15 +568,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Initialization ---
     async function initialize() {
-        try {
-            console.log("--- Running simple_test ---");
-            const testData = await SupabaseAPI.getMonthlyTasks("dummy", "dummy"); // 引数はダミー
-            console.log("simple_test data:", testData);
-            console.log("--- End of simple_test ---");
-        } catch (e) {
-            console.error("simple_test error:", e);
-        }
-
         showLoading();
         addMainEventListeners();
         try {
