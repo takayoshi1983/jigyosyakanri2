@@ -259,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (allMonthlyTasks && allMonthlyTasks.length > 0) {
                     for (const taskMonth of allMonthlyTasks) {
-                        // Determine the fiscal year for the task month
                         const monthDate = new Date(taskMonth.month + '-01');
                         const month = monthDate.getMonth() + 1;
                         let fiscalYear = monthDate.getFullYear();
@@ -279,16 +278,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (completedMonths.length > 0) {
-                    completedMonths.sort().reverse(); // Sort descending to get the latest
+                    completedMonths.sort().reverse();
                     latestCompletedMonth = completedMonths[0];
+                }
+
+                let unattendedMonths = '-';
+                if (latestCompletedMonth !== '-') {
+                    const completedDate = new Date(latestCompletedMonth + '-01');
+                    const currentDate = new Date();
+                    completedDate.setDate(1);
+                    currentDate.setDate(1);
+
+                    const diffYear = currentDate.getFullYear() - completedDate.getFullYear();
+                    const diffMonth = currentDate.getMonth() - completedDate.getMonth();
+                    
+                    const totalMonths = diffYear * 12 + diffMonth;
+                    unattendedMonths = totalMonths > 0 ? totalMonths : 0;
                 }
 
                 processedClients.push({
                     ...client,
                     staff_name: client.staffs?.name || '',
                     monthlyProgress: latestCompletedMonth,
-                    unattendedMonths: 0, // This logic can be implemented separately
-                    status: 'active' // Assuming status is managed elsewhere
+                    unattendedMonths: unattendedMonths,
+                    status: 'active'
                 });
             }
             return processedClients;
@@ -533,8 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${client.status === 'active' ? '稼働中' : '停止中'}
                 </span>
             </td>
-            <td style="background: red !important; min-width: 100px !important;">
-                <button class="edit-btn" onclick="editClient(${client.id})" title="編集" style="display: block !important; visibility: visible !important; background: yellow !important; padding: 10px !important;">
+            <td>
+                <button class="edit-btn" onclick="window.editClient(${client.id}, event)" title="編集">
                     編集
                 </button>
             </td>
@@ -544,7 +557,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 編集画面に遷移
-    function editClient(clientId) {
+    function editClient(clientId, event) {
+        if (event) event.stopPropagation(); // Prevent row click
         localStorage.setItem('selectedClientId', clientId);
         window.location.href = 'edit.html';
     }
