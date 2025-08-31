@@ -1,36 +1,12 @@
 {
-  "version": 2,
-  "name": "jigyosya-supabase-final",
-  "builds": [
+  "rewrites": [
     {
-      "src": "*.html",
-      "use": "@vercel/static"
+      "source": "/details",
+      "destination": "/details.html"
     },
     {
-      "src": "*.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.css",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/details",
-      "dest": "/details.html"
-    },
-    {
-      "src": "/edit",
-      "dest": "/edit.html"
-    },
-    {
-      "src": "/(.*\\.(js|css|html|ico|png|jpg|svg))",
-      "dest": "/$1"
+      "source": "/edit",
+      "destination": "/edit.html"
     }
   ],
   "headers": [
