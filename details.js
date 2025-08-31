@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const yearFilter = document.getElementById('year-filter');
     const editTasksButton = document.getElementById('edit-tasks-button');
     const saveChangesButton = document.getElementById('save-changes-button');
-    const finalizeYearButton = document.getElementById('finalize-year-button');
+    // finalizeYearButton は動的に作成されるため、ここでは取得しない
     const loadingIndicator = document.getElementById('loading-indicator');
     const connectionStatus = document.getElementById('connection-status');
     const statusText = document.getElementById('status-text');
@@ -448,13 +448,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         editTasksButton.addEventListener('click', openTaskEditModal);
-        saveChangesButton.addEventListener('click', saveAllChanges);
-        finalizeYearButton.addEventListener('click', async () => {
-            const isFinalized = clientDetails.finalized_years?.includes(currentYearSelection);
-            if (confirm(`${currentYearSelection}年度を${isFinalized ? '確定解除' : '確定'}しますか？`)) {
-                await finalizeYear(currentYearSelection, !isFinalized);
-            }
-        });
+        if (saveChangesButton) {
+            saveChangesButton.addEventListener('click', saveAllChanges);
+        }
+        // finalizeYearButton のイベントリスナーは addManagementButtons() で動的に追加
 
         // Task edit modal
         addTaskButton.addEventListener('click', () => {
@@ -548,7 +545,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         finalizeYearButton.innerHTML = `<span>📋</span> <span>この年度の項目を確定</span>`;
         finalizeYearButton.className = 'accordion-button finalize-year-button';
         finalizeYearButton.id = 'finalize-year-button';
-        finalizeYearButton.addEventListener('click', () => alert('年度確定機能は準備中です。'));
+        finalizeYearButton.addEventListener('click', async () => {
+            const isFinalized = clientDetails.finalized_years?.includes(currentYearSelection);
+            if (confirm(`${currentYearSelection}年度を${isFinalized ? '確定解除' : '確定'}しますか？`)) {
+                await finalizeYear(currentYearSelection, !isFinalized);
+            }
+        });
         finalizeYearButton.style.cssText = 'padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
         
         const exportButton = document.createElement('button');
