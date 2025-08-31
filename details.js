@@ -291,6 +291,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             options += `<option value="${year}" ${year.toString() === currentYearSelection ? 'selected' : ''}>${year}年度</option>`;
         }
         yearFilter.innerHTML = options;
+        
+        // Initialize the custom dropdown
+        if (window.initializeAllDropdowns) {
+            window.initializeAllDropdowns();
+        }
+
         const customTrigger = yearFilter.parentElement.querySelector('.custom-select-trigger');
         if (customTrigger) customTrigger.textContent = `${currentYearSelection}年度`;
     }
@@ -538,6 +544,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         propagateButton.disabled = true;
         propagateButton.style.cssText = 'padding: 10px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; text-align: left; display: flex; align-items: center; gap: 8px;';
 
+        const finalizeYearButton = document.createElement('button');
+        finalizeYearButton.innerHTML = `<span>📋</span> <span>この年度の項目を確定</span>`;
+        finalizeYearButton.className = 'accordion-button finalize-year-button';
+        finalizeYearButton.id = 'finalize-year-button';
+        finalizeYearButton.addEventListener('click', () => alert('年度確定機能は準備中です。'));
+        finalizeYearButton.style.cssText = 'padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
+        
         const exportButton = document.createElement('button');
         exportButton.innerHTML = `<span>📄</span> <span>CSVエクスポート</span>`;
         exportButton.className = 'accordion-button export-button';
@@ -562,6 +575,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         accordionHeader.addEventListener('mouseover', () => { if (!isOpen) accordionHeader.style.backgroundColor = '#e9ecef'; });
         accordionHeader.addEventListener('mouseout', () => { if (!isOpen) accordionHeader.style.backgroundColor = '#f8f9fa'; });
 
+        buttonsContainer.appendChild(finalizeYearButton);
         buttonsContainer.appendChild(syncButton);
         buttonsContainer.appendChild(propagateButton);
         buttonsContainer.appendChild(exportButton);

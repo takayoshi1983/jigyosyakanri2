@@ -8,22 +8,7 @@
     <link rel="stylesheet" href="custom-dropdown.css">
 </head>
 <body>
-    <!-- アコーディオンメニュー -->
-    <div id="management-accordion" class="accordion-container" style="right: 20px; top: 70px;">
-        <button class="accordion-header">
-            <span>🎛️ 管理メニュー</span>
-            <span class="accordion-icon">▼</span>
-        </button>
-        <div class="accordion-content">
-            <div class="accordion-buttons-container">
-                <button id="finalize-year-button" class="accordion-button" data-year="">📋 年度確定</button>
-                <button id="propagate-tasks-button" class="accordion-button">🔄 項目を翌期以降に再反映</button>
-                <button id="cleanup-deleted-tasks-button" class="accordion-button">🗑️ 削除項目をクリーンアップ</button>
-                <hr>
-                <button id="sync-check-button" class="accordion-button">🔍 データ整合性チェック</button>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- ユーザー情報表示エリア -->
     <div id="user-info" style="display:none; position:fixed; top:15px; right:15px; background:white; padding:12px 16px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; border: 1px solid #e1e5e9;">
@@ -52,12 +37,12 @@
                 <div class="custom-select-wrapper">
                     <div class="custom-select-trigger"></div>
                     <div class="custom-options"></div>
-                    <select id="year-filter" class="custom-dropdown" style="display: none;">
+                    <select id="year-filter" class="custom-select-target" style="display: none;">
                         <!-- JavaScriptでオプションを生成 -->
                     </select>
                 </div>
                 <button id="edit-tasks-button">項目の変更</button>
-                <button id="finalize-year-button">この年度の項目を確定</button>
+                
                 <span id="finalized-status" style="display: none; color: green; font-weight: bold; margin-left: 10px;"></span>
             </div>
 

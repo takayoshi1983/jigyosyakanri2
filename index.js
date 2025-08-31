@@ -942,6 +942,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.initializeAllDropdowns) {
             window.initializeAllDropdowns();
         }
+        // フィルタ初期化後にカスタムドロップダウンの表示を更新
+        setTimeout(updateCustomDropdownTriggers, 100);
     }
 
     function populateStaffFilter() {
@@ -1034,6 +1036,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filterState.search) searchInput.value = filterState.search;
         if (filterState.staff) staffFilter.value = filterState.staff;
         if (filterState.month) monthFilter.value = filterState.month;
+        
+        // カスタムドロップダウンの表示も更新
+        updateCustomDropdownTriggers();
+    }
+
+    function updateCustomDropdownTriggers() {
+        // 担当者ドロップダウンの表示更新
+        const staffTrigger = document.querySelector('#staff-filter').parentElement.querySelector('.custom-select-trigger');
+        if (staffTrigger) {
+            const selectedStaffOption = staffFilter.options[staffFilter.selectedIndex];
+            staffTrigger.textContent = selectedStaffOption ? selectedStaffOption.textContent : 'すべての担当者';
+        }
+        
+        // 決算月ドロップダウンの表示更新
+        const monthTrigger = document.querySelector('#month-filter').parentElement.querySelector('.custom-select-trigger');
+        if (monthTrigger) {
+            const selectedMonthOption = monthFilter.options[monthFilter.selectedIndex];
+            monthTrigger.textContent = selectedMonthOption ? selectedMonthOption.textContent : 'すべての決算月';
+        }
     }
 
     // --- Accordion ---
