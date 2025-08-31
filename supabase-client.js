@@ -94,7 +94,7 @@ export class SupabaseAPI {
         try {
             const { data, error } = await supabase
                 .from('monthly_tasks')
-                .select('*')
+                .select('id, client_id, month')
                 .eq('client_id', clientId)
                 .eq('month', month)
                 .maybeSingle();
