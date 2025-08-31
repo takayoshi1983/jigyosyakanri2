@@ -1,41 +1,16 @@
-メイン画面のエラー
-
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_color:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_threshold:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.hide_inactive_clients:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_color:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.font_family:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_threshold:1  
-
-
-詳細画面のエラー
-supabase-env.js:4 [Supabase Env] Loading configuration...
-supabase-env.js:28 [Supabase Env] Configuration loaded: Object
-details.js:126 Client details loaded: Object
-details.js:166 Initial tasks setup not needed: 初期設定済み
-details.js:189 Latest finalized year: 2025, selecting: 2026
-details.js:393 Months to display: Array(12)
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-03:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-03:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-04:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-04:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-05:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-05:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-06:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-07:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-06:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-07:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-08:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-09:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-08:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-10:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-09:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-11:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-10:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-12:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-11:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2027-01:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-12:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2027-02:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2027-01:1  Failed to load resource: the server responded with a status of 406 ()
-lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2027-02:1  Failed to load resource: the server responded with a status of 406 ()
+PS C:\claudecode\jigyosya-final2> git push
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 326.40 MiB | 8.35 MiB/s, done.
+Total 4 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+remote: error: Trace: 5dd997aca3199d756fa372b266ea277e8c31eda6b8ac0bb59d0312e9f80d2895
+remote: error: See https://gh.io/lfs for more information.
+remote: error: File postgresql-binaries.zip is 331.39 MB; this exceeds GitHub's file size limit of 100.00 MB
+remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+To https://github.com/takayoshi1983/jigyosyakanri2.git
+ ! [remote rejected] main -> main (pre-receive hook declined)
+error: failed to push some refs to 'https://github.com/takayoshi1983/jigyosyakanri2.git'
+PS C:\claudecode\jigyosya-final2>
