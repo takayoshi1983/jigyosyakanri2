@@ -91,15 +91,23 @@ export class SupabaseAPI {
     
     // 月次タスク関連
     static async getMonthlyTasks(clientId, month) {
-        const { data, error } = await supabase
-            .from('monthly_tasks')
-            .select('*')
-            .eq('client_id', clientId)
-            .eq('month', month)
-            .single();
-            
-        if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
-        return data;
+        try {
+            const { data, error } = await supabase
+                .from('monthly_tasks')
+                .select('*')
+                .eq('client_id', clientId)
+                .eq('month', month)
+                .maybeSingle();
+                
+            if (error) {
+                console.warn(`Monthly task not found for client ${clientId}, month ${month}:`, error);
+                return null;
+            }
+            return data;
+        } catch (err) {
+            console.error(`Error fetching monthly task for client ${clientId}, month ${month}:`, err);
+            return null;
+        }
     }
     
     static async createMonthlyTask(taskData) {

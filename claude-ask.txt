@@ -1,56 +1,41 @@
-index.html:1 A preload for 'https://jigyousya-final.vercel.app/index.js' is found, but is not used because the request credentials mode does not match. Consider taking a look at crossorigin attribute.Understand this warning
-index.html:1 A preload for 'https://jigyousya-final.vercel.app/supabase-client.js' is found, but is not used because the request credentials mode does not match. Consider taking a look at crossorigin attribute.
+メイン画面のエラー
+
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_color:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_threshold:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.hide_inactive_clients:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_color:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.font_family:1  Failed to load resource: the server responded with a status of 406 ()Understand this error
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_threshold:1  
 
 
-
-index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_threshold 406 (Not Acceptable)
-(anonymous) @ index.js:1
-(anonymous) @ index.js:1
-i @ index.js:1
-Promise.then
-u @ index.js:1
-(anonymous) @ index.js:1
-I @ index.js:1
-(anonymous) @ index.js:1
-then @ wrapper.mjs:1Understand this error
-index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_threshold 406 (Not Acceptable)
-(anonymous) @ index.js:1
-(anonymous) @ index.js:1
-i @ index.js:1
-Promise.then
-u @ index.js:1
-(anonymous) @ index.js:1
-I @ index.js:1
-(anonymous) @ index.js:1
-then @ wrapper.mjs:1Understand this error
-index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.font_family 406 (Not Acceptable)
-(anonymous) @ index.js:1
-(anonymous) @ index.js:1
-i @ index.js:1
-Promise.then
-u @ index.js:1
-(anonymous) @ index.js:1
-I @ index.js:1
-(anonymous) @ index.js:1
-then @ wrapper.mjs:1Understand this error
-index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.yellow_color 406 (Not Acceptable)
-(anonymous) @ index.js:1
-(anonymous) @ index.js:1
-i @ index.js:1
-Promise.then
-u @ index.js:1
-(anonymous) @ index.js:1
-I @ index.js:1
-(anonymous) @ index.js:1
-then @ wrapper.mjs:1Understand this error
-index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.hide_inactive_clients 406 (Not Acceptable)
-(anonymous) @ index.js:1
-(anonymous) @ index.js:1
-i @ index.js:1
-Promise.then
-u @ index.js:1
-(anonymous) @ index.js:1
-I @ index.js:1
-(anonymous) @ index.js:1
-then @ wrapper.mjs:1Understand this error
-index.js:1  GET https://lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/settings?select=value&key=eq.red_color 406 (Not Acceptable)
+詳細画面のエラー
+supabase-env.js:4 [Supabase Env] Loading configuration...
+supabase-env.js:28 [Supabase Env] Configuration loaded: Object
+details.js:126 Client details loaded: Object
+details.js:166 Initial tasks setup not needed: 初期設定済み
+details.js:189 Latest finalized year: 2025, selecting: 2026
+details.js:393 Months to display: Array(12)
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-03:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-03:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-04:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-04:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-05:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-05:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-06:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-07:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-06:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-07:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-08:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-09:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-08:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-10:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-09:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-11:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-10:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-12:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-11:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2027-01:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2026-12:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2027-02:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2027-01:1  Failed to load resource: the server responded with a status of 406 ()
+lqwjmlkkdddjnnxnlyfz.supabase.co/rest/v1/monthly_tasks?select=*&client_id=eq.1001&month=eq.2027-02:1  Failed to load resource: the server responded with a status of 406 ()

@@ -24,6 +24,54 @@ body {
     transform: scale(0.95);
 }
 
+/* メインテーブルの列幅調整（9列対応） */
+#clients-table th:nth-child(1), /* 事業所名 */
+#clients-table td:nth-child(1) {
+    width: 200px;
+    max-width: 200px;
+}
+
+#clients-table th:nth-child(2), /* 決算月 */
+#clients-table td:nth-child(2) {
+    width: 80px;
+}
+
+#clients-table th:nth-child(3), /* 未入力期間 */
+#clients-table td:nth-child(3) {
+    width: 100px;
+}
+
+#clients-table th:nth-child(4), /* 月次進捗 */
+#clients-table td:nth-child(4) {
+    width: 120px;
+}
+
+#clients-table th:nth-child(5), /* 最終更新 */
+#clients-table td:nth-child(5) {
+    width: 110px;
+}
+
+#clients-table th:nth-child(6), /* 担当者 */
+#clients-table td:nth-child(6) {
+    width: 100px;
+}
+
+#clients-table th:nth-child(7), /* 経理方式 */
+#clients-table td:nth-child(7) {
+    width: 90px;
+}
+
+#clients-table th:nth-child(8), /* 進捗ステータス */
+#clients-table td:nth-child(8) {
+    width: 100px;
+}
+
+#clients-table th:nth-child(9), /* 編集 */
+#clients-table td:nth-child(9) {
+    width: 60px;
+    text-align: center;
+}
+
 h1, h2 {
     color: #2c3e50;
 }
