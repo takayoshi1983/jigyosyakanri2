@@ -72,3 +72,20 @@ function initializeCustomDropdown(selectElement) {
     });
 }
 
+function initializeAllDropdowns() {
+    document.querySelectorAll('.custom-select-target').forEach(selectElement => {
+        initializeCustomDropdown(selectElement);
+    });
+}
+
+// Make it globally available for manual re-initialization
+window.initializeAllDropdowns = initializeAllDropdowns;
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function() {
+    document.querySelectorAll('.custom-select-wrapper .custom-options.active').forEach(function(options) {
+        options.classList.remove('active');
+        options.closest('.custom-select-wrapper').querySelector('.custom-select-trigger').classList.remove('active');
+    });
+});
+

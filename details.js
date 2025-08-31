@@ -286,9 +286,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function renderYearFilter() {
         if (!yearFilter) return;
-        const currentYear = new Date().getFullYear();
         let options = '';
-        for (let year = currentYear - 5; year <= currentYear + 10; year++) {
+        for (let year = 2024; year <= 2050; year++) {
             options += `<option value="${year}" ${year.toString() === currentYearSelection ? 'selected' : ''}>${year}年度</option>`;
         }
         yearFilter.innerHTML = options;

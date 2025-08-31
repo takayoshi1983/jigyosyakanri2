@@ -292,8 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const diffYear = currentDate.getFullYear() - completedDate.getFullYear();
                     const diffMonth = currentDate.getMonth() - completedDate.getMonth();
                     
-                    const totalMonths = diffYear * 12 + diffMonth;
-                    unattendedMonths = totalMonths > 0 ? totalMonths : 0;
+                    let totalMonths = diffYear * 12 + diffMonth;
+                    totalMonths = totalMonths - 1; // Adjust for previous month
+                    unattendedMonths = totalMonths >= 0 ? totalMonths : 0; // Ensure non-negative
                 }
 
                 processedClients.push({
@@ -938,6 +939,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateFilters() {
         populateStaffFilter();
         populateMonthFilter();
+        if (window.initializeAllDropdowns) {
+            window.initializeAllDropdowns();
+        }
     }
 
     function populateStaffFilter() {
