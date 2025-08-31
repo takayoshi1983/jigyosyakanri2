@@ -93,11 +93,8 @@ export class SupabaseAPI {
     static async getMonthlyTasks(clientId, month) {
         try {
             const { data, error } = await supabase
-                .from('task_entries')
-                .select('*')
-                .eq('client_id', clientId)
-                .eq('month', month)
-                .maybeSingle();
+                .from('simple_test')
+                .select('*');
                 
             if (error) {
                 console.warn(`Monthly task not found for client ${clientId}, month ${month}:`, error);
