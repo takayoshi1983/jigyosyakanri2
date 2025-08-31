@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顧客情報編集（Supabase版）</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom-dropdown.css">
+</head>
+<body>
+    <!-- ユーザー情報表示エリア -->
+    <div id="user-info" style="display:none; position:fixed; top:15px; right:15px; background:white; padding:12px 16px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; border: 1px solid #e1e5e9;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img id="user-avatar" src="" alt="" style="width: 32px; height: 32px; border-radius: 50%; display: none;">
+            <div>
+                <div id="user-name" style="font-weight: bold; font-size: 14px; color: #333;"></div>
+                <div id="user-email" style="font-size: 12px; color: #666;"></div>
+            </div>
+            <button id="signout-button" style="background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">
+                ログアウト
+            </button>
+        </div>
+    </div>
+    <div class="container">
+        <h1>顧客情報編集（Supabase版）</h1>
+
+        <div class="nav-links">
+            <a href="index.html">メイン画面に戻る</a>
+        </div>
+
+        <!-- Connection Status -->
+        <div id="connection-status" style="margin-bottom: 10px; padding: 10px; border-radius: 4px; display: none;">
+            <span id="status-text"></span>
+        </div>
+
+        <div id="edit-form">
+            <p><strong>事業所名:</strong> <span id="client-name-display"></span> <span id="inactive-status-badge" class="inactive-badge" style="display: none;">関与終了</span></p>
+
+            <div class="form-group">
+                <label for="client-no">No.:</label>
+                <input type="text" id="client-no">
+            </div>
+
+            <div class="form-group">
+                <label for="client-name">事業所名:</label>
+                <input type="text" id="client-name">
+            </div>
+            
+            <div class="form-group">
+                <label for="staff-select">担当者:</label>
+                <div class="custom-select-wrapper">
+                    <div class="custom-select-trigger"></div>
+                    <div class="custom-options"></div>
+                    <select id="staff-select" class="custom-select-target" style="display: none;">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="fiscal-month">決算月:</label>
+                <div class="custom-select-wrapper">
+                    <div class="custom-select-trigger"></div>
+                    <div class="custom-options"></div>
+                    <select id="fiscal-month" class="custom-select-target" style="display: none;">
+                        <option value="1">1月</option>
+                        <option value="2">2月</option>
+                        <option value="3">3月</option>
+                        <option value="4">4月</option>
+                        <option value="5">5月</option>
+                        <option value="6">6月</option>
+                        <option value="7">7月</option>
+                        <option value="8">8月</option>
+                        <option value="9">9月</option>
+                        <option value="10">10月</option>
+                        <option value="11">11月</option>
+                        <option value="12">12月</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="accounting-method">経理方式:</label>
+                <div class="custom-select-wrapper">
+                    <div class="custom-select-trigger"></div>
+                    <div class="custom-options"></div>
+                    <select id="accounting-method" class="custom-select-target" style="display: none;">
+                        <option value="記帳代行">記帳代行</option>
+                        <option value="自計">自計</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <span></span> <!-- Empty cell for label column -->
+                <button id="save-button">保存</button>
+            </div>
+
+            <!-- 削除機能エリア（編集モードでのみ表示） -->
+            <div class="form-group danger-zone" style="margin-top: 40px; border-top: 2px solid #eee; padding-top: 20px; display: none;">
+                <span></span> <!-- Empty cell for label column -->
+                <div class="danger-buttons">
+                    <button id="reactivate-button" type="button" class="reactivate-btn" style="display: none;">復活</button>
+                    <button id="inactive-button" type="button" class="inactive-btn">関与終了</button>
+                    <button id="delete-button" type="button" class="delete-btn">削除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 削除確認モーダル -->
+    <div id="delete-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modal-title">確認</h3>
+            <p id="modal-message">この操作を実行しますか？</p>
+            <div class="modal-client-info">
+                <p><strong>No.:</strong> <span id="modal-client-no"></span></p>
+                <p><strong>事業者名:</strong> <span id="modal-client-name"></span></p>
+            </div>
+            <div class="modal-buttons">
+                <button id="modal-cancel" type="button" class="cancel-btn">キャンセル</button>
+                <button id="modal-confirm" type="button" class="confirm-btn">実行</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; display: none;">
+        <div style="text-align: center;">
+            <div class="loading-spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+            <div>処理中...</div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #connection-status {
+            font-weight: bold;
+        }
+        
+        #connection-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        #connection-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        #connection-status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .inactive-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .danger-zone {
+            border-top: 2px solid #dc3545 !important;
+        }
+
+        .danger-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .inactive-btn, .delete-btn, .reactivate-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .inactive-btn {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .reactivate-btn {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .inactive-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .reactivate-btn:hover {
+            background-color: #218838;
+        }
+
+        .modal-client-info {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .cancel-btn, .confirm-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .cancel-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .confirm-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .confirm-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+    
+    <script src="custom-dropdown.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script type="module" src="edit.js"></script>
+</body>
+</html>

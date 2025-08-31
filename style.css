@@ -1,0 +1,1151 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 20px;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+h1, h2 {
+    color: #2c3e50;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* シャドウを追加 */
+    margin-bottom: 20px;
+}
+
+/* Navigation */
+.nav-links {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.nav-links a {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+.nav-links a:hover {
+    background-color: #0056b3;
+}
+
+/* Search and Filter */
+.controls {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.controls input[type="text"],
+.controls select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 250px; /* 例: 幅を広げる */
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.client-info-table {
+    max-width: 600px; /* Adjust as needed */
+    margin-left: 0; /* Align to left */
+    margin-right: auto; /* Align to left */
+}
+
+.client-info-table th,
+.client-info-table td {
+    padding: 8px 10px; /* Reduce padding */
+    text-align: center; /* Center align content */
+}
+
+.client-info-table th:nth-child(1), /* No. */
+.client-info-table td:nth-child(1) {
+    width: 50px;
+}
+
+.client-info-table th:nth-child(2), /* 事業所名 */
+.client-info-table td:nth-child(2) {
+    width: 250px;
+}
+
+.client-info-table th:nth-child(3), /* 決算月 */
+.client-info-table td:nth-child(3) {
+    width: 100px;
+}
+
+.client-info-table th:nth-child(4), /* 担当者 */
+.client-info-table td:nth-child(4) {
+    width: 150px;
+}
+
+th, td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background-color: #eef2f5;
+    color: #333;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Status Dropdown */
+/* select.status-dropdown { */
+/*     padding: 5px; */
+/*     border-radius: 4px; */
+/*     border: 1px solid #ccc; */
+/*     background-color: #fff; */
+/*     cursor: pointer; */
+/* } */
+
+/* Status Colors */
+.status-未着手 { background-color: #e0e0e0; } /* グレー */
+.status-依頼中 { background-color: #ffff99; } /* 黄色 */
+.status-2チェック待ち { background-color: #ffcc99; } /* オレンジ */
+.status-作業中 { background-color: #ccf2ff; } /* 水色 */
+.status-完了 { background-color: #ccffcc; } /* 緑色 */
+
+/* Link style for clickable names */
+.client-name-link {
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+}
+.client-name-link:hover {
+    text-decoration: underline;
+}
+
+/* Details Page Specific Styles */
+.details-table-wrapper {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    width: 100%;
+}
+
+.details-table {
+    min-width: 1200px; /* Ensure table is wide enough to scroll */
+    table-layout: fixed; /* Add this for consistent column widths */
+}
+
+#notes-table td {
+    padding: 0 !important; /* Remove padding from the cell */
+}
+
+#notes-table input[type="text"],
+#notes-table textarea {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border: none; /* Remove the input's border */
+    outline: none; /* Remove focus outline */
+    padding: 12px 15px; /* Add padding inside the input */
+    background-color: transparent;
+    font-family: inherit; /* Use the same font as the rest of the table */
+    font-size: inherit;
+}
+
+#notes-table input[type="text"] {
+    min-height: 40px; /* Set a minimum height for the URL row */
+}
+
+#notes-table textarea {
+    resize: vertical; /* Allow vertical resize only */
+    min-height: 180px; /* Increased height */
+}
+
+.details-table th.month-header {
+    cursor: pointer;
+}
+
+.details-table th,
+.details-table td {
+    white-space: nowrap; /* Prevent text wrapping in cells */
+}
+
+/* Sticky column for client name in details table */
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background-color: #eef2f5; /* Match header background */
+    z-index: 11; /* Ensure it's above other cells when scrolling */
+    box-shadow: 2px 0 5px rgba(202, 51, 51, 0.1); /* Subtle shadow for separation */
+}
+.details-table tr:nth-child(even) .sticky-col {
+    background-color: #f1efef; /* Match even row background */
+}
+.details-table tr:hover .sticky-col {
+    background-color: #dadada; /* Match hover row background */
+}
+
+.details-table .task-input-cell {
+    padding: 5px;
+    vertical-align: top;
+}
+
+/* Checkbox styling */
+.task-checkbox {
+    display: block;
+    margin: 0 auto 5px auto; /* Center checkbox and add space below */
+    transform: scale(1.2);
+}
+
+/* Per-task memo textarea styling */
+.task-memo {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #e0e0e080;
+    border-radius: 3px;
+    padding: 5px;
+    font-family: inherit;
+    font-size: 12px; /* Smaller font size */
+    resize: vertical;
+}
+
+.task-note-input {
+    display: block;
+    overflow: hidden;
+    width: auto;
+    box-sizing: border-box;
+    height: 100%;
+    padding: 9px 8px 9px 0; /* Adjust padding */
+    border: none;
+    outline: none;
+    background-color: transparent;
+    font-size: 0.9rem;
+    border-radius: 0;
+}
+
+.task-note-input:disabled {
+    background-color: #f7f7f7;
+    cursor: not-allowed;
+}
+
+/* Monthly status cell */
+.monthly-status {
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Edit Page Specific Styles */
+#edit-form {
+    max-width: 600px; /* Set a max width for the form container */
+}
+
+.form-group {
+    display: grid;
+    grid-template-columns: 120px 1fr; /* 120px for label, rest for input */
+    gap: 15px; /* Space between label and input */
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    text-align: right;
+    font-weight: bold;
+    color: #495057;
+    padding-right: 10px;
+}
+
+/* Ensure inputs and wrappers take up the full cell width */
+#edit-form input[type="text"],
+#edit-form .custom-select-wrapper {
+    width: 100%;
+}
+
+#save-button {
+    padding: 12px 25px; /* Larger padding */
+    font-size: 1.1rem; /* Larger font size */
+    background-color: #28a745; /* Green color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    justify-self: start; /* Align button to the start of the grid cell */
+}
+
+#save-button:hover {
+    background-color: #218838;
+}
+
+/* Sorted Column Style */
+table#clients-table thead th.sorted-column {
+    color: #007bff !important; /* 例: 青色に変更 */
+    font-weight: bold;
+}
+
+/* Client Info Grid Styles */
+.client-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive columns */
+    gap: 10px 20px; /* Row and column gap */
+    margin-bottom: 25px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    justify-content: center; /* Center the grid items */
+}
+
+.info-item {
+    display: flex;
+    align-items: center; /* Align label and value vertically */
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.info-label {
+    font-weight: bold;
+    color: #495057;
+    width: 90px; /* Fixed width for all labels */
+    flex-shrink: 0; /* Prevent the label from shrinking */
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: #212529;
+    padding-left: 10px;
+}
+
+/* Sort Icon Styles */
+.sort-icon {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 5px;
+    vertical-align: middle;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    opacity: 0; /* 非表示 */
+    transition: opacity 0.2s ease; /* トランジションを追加 */
+}
+
+.sort-icon.asc {
+    border-bottom: 4px solid #333; /* Up arrow */
+    opacity: 1; /* 表示 */
+}
+
+.sort-icon.desc {
+    border-top: 4px solid #333; /* Down arrow */
+    opacity: 1; /* 表示 */
+}
+
+/* Only show icon when sorting or on hover */
+th[data-sort-key]:hover .sort-icon {
+    opacity: 1;
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 100; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    padding-top: 60px;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    position: relative;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.task-item input[type="text"] {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.staff-no {
+    margin-right: 10px;
+    font-weight: bold;
+    width: 60px; /* Fixed width for alignment */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.delete-task-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-task-button:hover {
+    background-color: #c82333;
+}
+
+.add-task-section {
+    display: flex;
+    margin-top: 20px;
+}
+
+.add-task-section input[type="text"] {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.add-task-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add-task-button:hover {
+    background-color: #0056b3;
+}
+
+.modal-buttons {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.modal-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-left: 10px;
+}
+
+
+.modal-buttons button.save-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal-buttons button.save-button:hover {
+    background-color: #218838;
+}
+
+#save-tasks-button {
+    background-color: #28a745;
+    color: white;
+}
+
+
+#save-tasks-button:hover {
+    background-color: #218838;
+}
+
+.modal-buttons button.cancel-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.modal-buttons button.cancel-button:hover {
+    background-color: #5a6268;
+}
+
+#cancel-tasks-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+#cancel-tasks-button:hover {
+    background-color: #5a6268;
+}
+
+/* Admin Controls */
+.admin-controls {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    z-index: 50;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.admin-controls button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #007bff; /* 例: 青色 */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.admin-controls button:hover {
+    background-color: #0056b3;
+}
+
+#edit-tasks-button, #finalize-year-button, #save-changes-button {
+    padding: 10px 20px; /* パディングを調整してボタンを大きくする */
+    font-size: 1rem; /* フォントサイズを調整 */
+    border: 1px solid #ccc; /* この行を追加 */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 10px; /* 必要に応じてマージンを調整 */
+}
+
+#save-changes-button {
+    background-color: #28a745; /* Green for active state */
+    color: white;
+}
+
+#save-changes-button:disabled {
+    background-color: #6c757d; /* Gray for disabled state */
+    color: #e0e0e0;
+    cursor: not-allowed;
+    transform: none; /* Remove hover effect */
+    box-shadow: none; /* Remove shadow */
+}
+
+#save-changes-button:disabled:hover {
+    background-color: #6c757d; /* Keep color on hover when disabled */
+}
+
+#edit-tasks-button:hover, #finalize-year-button:hover {
+    background-color: #0056b3;
+}
+
+/* Increase vertical height for specific inputs and selects */
+#edit-form .form-group input[type="text"],
+#edit-form .custom-select-wrapper .custom-select-trigger,
+.add-staff-section input[type="text"] {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 1.1rem; /* Slightly larger font */
+}
+
+/* Make the Add Staff button larger */
+#add-staff-button {
+    padding: 12px 20px;
+}
+
+/* Increase font size for details page year filter */
+.nav-links .custom-select-trigger {
+    font-size: 1.1rem;
+}
+
+/* Add space between dropdowns on the main page */
+.controls .custom-select-wrapper {
+    margin-right: 15px; /* Add right margin */
+}
+
+/* Add space between dropdowns on the edit page */
+#edit-form .form-group .custom-select-wrapper {
+    margin-bottom: 10px; /* Add bottom margin */
+}
+
+/* Staff Modal Specific Styles */
+.add-staff-section {
+    display: flex;
+    margin-top: 20px;
+    align-items: center; /* Align items vertically */
+}
+
+#new-staff-input {
+    flex-grow: 1;
+    padding: 12px; /* Increase padding */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+    font-size: 1.1rem; /* Increase font size */
+}
+
+#add-staff-button {
+    padding: 12px 20px; /* Increase padding */
+    font-size: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#add-staff-button:hover {
+    background-color: #0056b3;
+}
+
+#save-staff-button {
+    padding: 12px 25px; /* Larger padding */
+    font-size: 1.1rem; /* Larger font size */
+}
+
+#cancel-staff-button {
+    padding: 12px 25px; /* Larger padding */
+    font-size: 1.1rem; /* Larger font size */
+}
+
+/* Adjust the input field inside the staff list */
+.task-item .task-input {
+    padding: 12px; /* Increase padding */
+    font-size: 1.1rem; /* Increase font size */
+}
+
+/* Adjust the delete button inside the staff list */
+.task-item .delete-task-button {
+    padding: 12px 20px; /* Increase padding */
+}
+
+/* Adjust the No. span */
+.task-item .staff-no {
+    font-size: 1.1rem; /* Increase font size */
+    padding-right: 10px; /* Add some space */
+}
+
+/* Unlock Button Style */
+.unlock-button {
+    background-color: #6c757d; /* A neutral gray */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+}
+.unlock-button:hover {
+    background-color: #5a6268;
+}
+
+.url-header-button {
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    margin-top: 4px;
+    border: 1px solid #ccc;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    border-radius: 4px;
+}
+.url-header-button:hover {
+    background-color: #e0e0e0;
+}
+
+/* Center align month headers in the main details table */
+.details-table th.month-header {
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Center align the first column (titles) in the notes table */
+#notes-table th:first-child,
+#notes-table td:first-child {
+    text-align: center;
+    font-weight: bold;
+    background-color: #eef2f5; /* Match header color for consistency */
+}
+/*チェックボックスを押した際に色が変化する*/
+.task-completed {
+    background-color: #75b3e652; /* 薄いグレー */
+}
+
+.sticky-header-area {
+    position: sticky;
+    top: 0;
+    background-color: #d1cfcfd8; /* 背景色を固定エリアの背景色と合わせる */
+    z-index: 20; /* 他の要素より手前に表示 */
+    padding-left: 20px; /* 左側に余白を追加 */
+    padding-bottom: -20px; /* 下部に少しスペース */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.24); /* シャドウを追加 */
+}
+
+.client-header-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#client-info-area {
+    margin-bottom: 5px; /* 下のテーブルとの間隔 */
+    padding-bottom: 10px; /* 線と内容の間のスペース */
+    border-bottom: 1px solid #ddd; /* 線 */
+}
+
+button {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 立体感のためのシャドウ */
+    transition: all 0.2s ease; /* ホバー時のアニメーション */
+}
+
+button:hover {
+    transform: translateY(-2px); /* 少し浮き上がる */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* シャドウを強調 */
+}
+
+button:active {
+    transform: translateY(0); /* 押下時に元に戻る */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* シャドウを弱める */
+}
+
+/* Override background color for the memo row in the notes table */
+#notes-table .memo-row,
+#notes-table .memo-row:hover {
+    background-color: #ffffff !important;
+}
+
+/* Save Status Indicator */
+#save-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    background-color: #333; /* Default: Saving... */
+    color: white;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s, background-color 0.5s;
+    pointer-events: none; /* Don't block clicks */
+}
+
+#save-status.visible {
+    opacity: 1;
+}
+
+#save-status.success {
+    background-color: #28a745; /* Green */
+}
+
+#save-status.error {
+    background-color: #dc3545; /* Red */
+}
+
+/* Management Accordion on Index Page */
+.accordion-container {
+    position: absolute; /* Changed from fixed to absolute */
+    z-index: 1000;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 280px;
+}
+
+.accordion-header {
+    width: 100%;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.accordion-header:hover {
+    background-color: #e9ecef;
+}
+
+.accordion-content {
+    display: none;
+    padding: 16px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+}
+
+.accordion-buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.accordion-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    text-align: left;
+}
+
+.accordion-button:hover {
+    background-color: #0056b3;
+}
+
+/* Default Tasks Modal Styles */
+.default-tasks-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.task-column {
+    flex: 1;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
+
+.task-column h3 {
+    text-align: center;
+    margin-top: 0;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.task-column .task-list-container {
+    min-height: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 5px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Basic Settings Modal Styles */
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.settings-form .form-group {
+    display: grid;
+    grid-template-columns: 1fr auto auto; /* Label, Select, Color Picker */
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fefefe;
+}
+
+.settings-form label {
+    font-weight: bold;
+    color: #333;
+}
+
+.settings-form select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.settings-form input[type="color"] {
+    width: 40px;
+    height: 40px;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* Zoom Slider Styles */
+#zoom-container {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.247);
+    padding: 8px 8px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(88, 88, 88, 0.2);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+#zoom-container label {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#zoom-slider, #zoom-value {
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    transition: opacity 0.3s ease, width 0.3s ease, visibility 0.3s;
+}
+
+#zoom-container:hover #zoom-slider {
+    opacity: 1;
+    visibility: visible;
+    width: 200px; /* Or whatever width you prefer */
+}
+
+#zoom-container:hover #zoom-value {
+    opacity: 1;
+    visibility: visible;
+    width: auto; /* Adjust to content size */
+    min-width: 40px;
+    text-align: right;
+}
+
+#zoom-value {
+    font-weight: bold;
+}
+
+/* Editing Session Styles */
+.editing-by-other-banner {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.editing-by-other-banner button {
+    background-color: #ffc107;
+    border: none;
+    color: #212529;
+    padding: 5px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.editing-by-other-banner button:hover {
+    background-color: #e0a800;
+}
+
+/* Read-only mode styles */
+.read-only-mode input:disabled,
+.read-only-mode textarea:disabled,
+.read-only-mode select:disabled {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+}
+
+.read-only-mode input[type="checkbox"]:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* === 削除機能スタイル === */
+.danger-zone {
+    border-top: 2px solid #eee;
+    margin-top: 40px;
+    padding-top: 20px;
+}
+
+.danger-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.inactive-btn {
+    background-color: #f0ad4e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.inactive-btn:hover {
+    background-color: #ec971f;
+}
+
+.reactivate-btn {
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    margin-right: 10px;
+}
+
+.reactivate-btn:hover {
+    background-color: #449d44;
+}
+
+.delete-btn {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.delete-btn:hover {
+    background-color: #c9302c;
+}
+
+/* === 削除確認モーダル === */
+.modal-client-info {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #007bff;
+}
+
+.modal-client-info p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.modal-client-info strong {
+    font-weight: bold;
+    color: #495057;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.cancel-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cancel-btn:hover {
+    background-color: #5a6268;
+}
+
+.confirm-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.confirm-btn:hover {
+    background-color: #c82333;
+}
+
+/* === 関与終了事業者のスタイル === */
+.inactive-client {
+    opacity: 0.6;
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+}
+
+.inactive-client td {
+    color: #6c757d !important;
+}
+
+.inactive-client a {
+    color: #6c757d !important;
+}
+
+/* 関与終了マーク */
+.inactive-badge {
+    display: inline-block;
+    background-color: #6c757d;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+
