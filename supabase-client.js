@@ -148,9 +148,12 @@ export class SupabaseAPI {
             .from('settings')
             .select('value')
             .eq('key', key)
-            .single();
+            .maybeSingle();
             
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) {
+            console.warn(`Setting '${key}' not found:`, error);
+            return null;
+        }
         return data?.value;
     }
     
