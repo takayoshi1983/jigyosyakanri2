@@ -496,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </span>
             </td>
             <td>
-                <button class="edit-btn" onclick="editClient(${client.id})" title="編集">
+                <button class="edit-btn" onclick="editClient(${client.id})" title="編集" style="display: block !important; visibility: visible !important;">
                     ✏️
                 </button>
             </td>
