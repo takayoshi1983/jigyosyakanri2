@@ -109,10 +109,23 @@ export class SupabaseAPI {
             return null;
         }
     }
+
+    static async getAllMonthlyTasksForClient(clientId) {
+        const { data, error } = await supabase
+            .from('monthly_tasks')
+            .select('*')
+            .eq('client_id', clientId);
+
+        if (error) {
+            console.error(`Error fetching all monthly tasks for client ${clientId}:`, error);
+            throw error;
+        }
+        return data;
+    }
     
     static async createMonthlyTask(taskData) {
         const { data, error } = await supabase
-            .from('task_entries')
+            .from('monthly_tasks')
             .insert(taskData)
             .select()
             .single();
@@ -123,7 +136,7 @@ export class SupabaseAPI {
     
     static async updateMonthlyTask(id, taskData) {
         const { data, error } = await supabase
-            .from('task_entries')
+            .from('monthly_tasks')
             .update(taskData)
             .eq('id', id)
             .select()
@@ -135,7 +148,7 @@ export class SupabaseAPI {
     
     static async upsertMonthlyTask(clientId, month, taskData) {
         const { data, error } = await supabase
-            .from('task_entries')
+            .from('monthly_tasks')
             .upsert({
                 client_id: clientId,
                 month: month,
@@ -406,7 +419,7 @@ export class SupabaseAPI {
                 { 
                     event: '*', 
                     schema: 'public', 
-                    table: 'task_entries',
+                    table: 'monthly_tasks',
                     filter: `client_id=eq.${clientId}`
                 }, 
                 callback

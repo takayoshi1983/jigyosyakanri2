@@ -83,6 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
         authStatusText.textContent = message;
     }
 
+    function hideStatus() {
+        if (authStatus) authStatus.style.display = 'none';
+    }
+
     function hideAuthStatus() {
         authStatus.style.display = 'none';
     }
@@ -246,15 +250,49 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const clientsData = await SupabaseAPI.getClients();
             
-            // Transform Supabase data to match existing format
-            return clientsData.map(client => ({
-                ...client,
-                staff_name: client.staffs?.name || '',
-                // Calculate progress and status (will be implemented)
-                monthlyProgress: '計算中...',
-                unattendedMonths: 0,
-                status: 'active'
-            }));
+            const processedClients = [];
+            for (const client of clientsData) {
+                const allMonthlyTasks = await SupabaseAPI.getAllMonthlyTasksForClient(client.id);
+
+                let latestCompletedMonth = '-';
+                const completedMonths = [];
+
+                if (allMonthlyTasks && allMonthlyTasks.length > 0) {
+                    for (const taskMonth of allMonthlyTasks) {
+                        // Determine the fiscal year for the task month
+                        const monthDate = new Date(taskMonth.month + '-01');
+                        const month = monthDate.getMonth() + 1;
+                        let fiscalYear = monthDate.getFullYear();
+                        if (month <= client.fiscal_month) {
+                            fiscalYear -= 1;
+                        }
+
+                        const customTasksForYear = client.custom_tasks_by_year?.[fiscalYear.toString()] || [];
+
+                        if (customTasksForYear.length > 0) {
+                            const allTasksCompleted = customTasksForYear.every(taskName => taskMonth.tasks?.[taskName] === true);
+                            if (allTasksCompleted) {
+                                completedMonths.push(taskMonth.month);
+                            }
+                        }
+                    }
+                }
+
+                if (completedMonths.length > 0) {
+                    completedMonths.sort().reverse(); // Sort descending to get the latest
+                    latestCompletedMonth = completedMonths[0];
+                }
+
+                processedClients.push({
+                    ...client,
+                    staff_name: client.staffs?.name || '',
+                    monthlyProgress: latestCompletedMonth,
+                    unattendedMonths: 0, // This logic can be implemented separately
+                    status: 'active' // Assuming status is managed elsewhere
+                });
+            }
+            return processedClients;
+
         } catch (error) {
             console.error('Error fetching clients:', error);
             throw error;
