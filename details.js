@@ -178,10 +178,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateFinalizeButtonState() {
         const finalizeYearButton = document.getElementById('finalize-year-button');
-        if (!finalizeYearButton) return;
+        if (!finalizeYearButton) {
+            console.log('finalize-year-button not found, skipping update');
+            return;
+        }
+        
+        if (!clientDetails) {
+            console.log('clientDetails not available, skipping update');
+            return;
+        }
+        
         const isYearFinalized = clientDetails.finalized_years?.includes(currentYearSelection);
-        finalizeYearButton.textContent = isYearFinalized ? `${currentYearSelection}年度の確定を解除` : `${currentYearSelection}年度のタスクを確定`;
-        finalizeYearButton.style.backgroundColor = isYearFinalized ? '#FF5722' : '#4CAF50';
+        const buttonText = isYearFinalized ? `${currentYearSelection}年度の確定を解除` : `${currentYearSelection}年度のタスクを確定`;
+        const buttonColor = isYearFinalized ? '#FF5722' : '#4CAF50';
+        
+        // Update button content
+        const spanElement = finalizeYearButton.querySelector('span:nth-child(2)');
+        if (spanElement) {
+            spanElement.textContent = buttonText;
+        } else {
+            finalizeYearButton.innerHTML = `<span>📋</span> <span>${buttonText}</span>`;
+        }
+        
+        finalizeYearButton.style.backgroundColor = buttonColor;
     }
 
     function updateEditingInterface() {
@@ -397,7 +416,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 monthsToDisplay.forEach(month => {
                     const isChecked = allMonthData[month.key]?.tasks?.[taskName] === true;
                     if (isChecked) completedCount++;
-                    bodyHtml += `<td style="text-align: center;"><input type="checkbox" data-month="${month.key}" data-task="${taskName}" ${isChecked ? 'checked' : ''}></td>`;
+                    bodyHtml += `<td class="checkbox-cell" data-month="${month.key}" data-task="${taskName}"><input type="checkbox" data-month="${month.key}" data-task="${taskName}" ${isChecked ? 'checked' : ''}></td>`;
                 });
                 const progressClass = completedCount === 12 ? 'progress-complete' : '';
                 bodyHtml += `<td class="${progressClass}" style="text-align: center;">${completedCount}/12</td>`;
