@@ -514,8 +514,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         monthsToDisplay.forEach(month => {
             const monthData = allMonthData[month.key];
-            urlRowHtml += `<td><input type="text" data-month="${month.key}" data-field="url" value="${monthData?.url || ''}" placeholder="URL"></td>`;
-            memoRowHtml += `<td><textarea data-month="${month.key}" data-field="memo" placeholder="メモ">${monthData?.memo || ''}</textarea></td>`;
+            urlRowHtml += `<td><input type="text" data-month="${month.key}" data-field="url" value="${monthData?.url || ''}" placeholder=""></td>`;
+            memoRowHtml += `<td><textarea data-month="${month.key}" data-field="memo" placeholder="">${monthData?.memo || ''}</textarea></td>`;
         });
 
         notesTableBody.innerHTML = urlRowHtml + memoRowHtml;
@@ -720,6 +720,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (saveChangesButton) {
             saveChangesButton.addEventListener('click', saveAllChanges);
         }
+        
+        // ズームスライダー機能
+        if (zoomSlider && zoomValue && mainContainer) {
+            zoomSlider.addEventListener('input', (e) => {
+                const zoomLevel = e.target.value;
+                zoomValue.textContent = zoomLevel + '%';
+                mainContainer.style.transform = `scale(${zoomLevel / 100})`;
+                mainContainer.style.transformOrigin = 'top left';
+            });
+        }
+        
         // finalizeYearButton のイベントリスナーは addManagementButtons() で動的に追加
 
         // Task edit modal
