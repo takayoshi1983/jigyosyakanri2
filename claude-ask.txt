@@ -1,15 +1,27 @@
-details.js:601 Fatal initialization error: ReferenceError: finalizeYearButton is not defined
-    at updateFinalizeButtonState (details.js:180:9)
-    at renderAll (details.js:273:9)
-    at async initialize (details.js:599:13)
-initialize @ details.js:601Understand this error
-supabase-client.js:741 Supabase error: ReferenceError: finalizeYearButton is not defined
-    at updateFinalizeButtonState (details.js:180:9)
-    at renderAll (details.js:273:9)
-    at async initialize (details.js:599:13)
-handleSupabaseError @ supabase-client.js:741Understand this error
-custom-dropdown.js:2 Initializing dropdown for selectElement: year-filter with 27 options.
-details.js:180 Uncaught (in promise) ReferenceError: finalizeYearButton is not defined
-    at updateFinalizeButtonState (details.js:180:9)
-    at renderAll (details.js:273:9)
-    at async HTMLSelectElement.<anonymous> (details.js:447:13)
+このえらーがあります
+﻿
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+supabase-client.js:741 Supabase error: 
+Object
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+ Failed to load resource: the server responded with a status of 400 ()
+jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1

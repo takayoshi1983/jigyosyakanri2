@@ -754,11 +754,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error('Error parsing task data for', task.accounting_method, ':', error);
                     // エラーが発生した場合はデフォルト値を使用
                     if (task.accounting_method === '記帳代行') {
-                        defaultTasks.kityo = ['領収書整理', '仕訳入力', '試算表作成', '給与計算'];
+                        defaultTasks.kityo = ['資料受付', '仕訳入力', '担当チェック', '不明投げかけ', '月次完了'];
                     } else if (task.accounting_method === '自計') {
-                        defaultTasks.jikei = ['試算表確認', '仕訳チェック', '決算準備', '税務申告'];
+                        defaultTasks.jikei = ['データ受領', '仕訳チェック', '不明投げかけ', '月次完了'];
                     }
-                }
+            デーだ受領
             });
 
             renderDefaultTasks();

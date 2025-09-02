@@ -670,8 +670,8 @@ export class SupabaseAPI {
                     task_name: '記帳代行デフォルト',
                     accounting_method: '記帳代行',
                     tasks: JSON.stringify([
-                        '領収書整理', '仕訳入力', '試算表作成', '給与計算',
-                        '売上管理', '支払管理', '資金繰り表', '月次レポート'
+                        '資料受付', '仕訳入力', '担当チェック', '不明投げかけ',
+                        '月次完了'
                     ]),
                     display_order: 1,
                     is_active: true
@@ -680,8 +680,7 @@ export class SupabaseAPI {
                     task_name: '自計デフォルト',
                     accounting_method: '自計',
                     tasks: JSON.stringify([
-                        '試算表確認', '仕訳チェック', '決算準備', '税務申告',
-                        '資料整理', '相談対応', '改善提案', 'レビュー'
+                        'データ受領', '仕訳チェック', '不明投げかけ', '月次完了'
                     ]),
                     display_order: 2,
                     is_active: true
