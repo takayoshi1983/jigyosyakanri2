@@ -521,6 +521,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 年度変更イベントを委譲で処理
         document.addEventListener('change', async (e) => {
             if (e.target && e.target.id === 'year-filter') {
+                // 未保存の変更があるかチェック
+                if (hasUnsavedChanges) {
+                    const confirmChange = confirm(
+                        '⚠️ 未保存の変更があります\n\n' +
+                        '年度を変更すると、現在の変更内容が失われます。\n' +
+                        '「変更を保存」ボタンを押してから年度を変更することをお勧めします。\n\n' +
+                        'それでも年度を変更しますか？'
+                    );
+                    
+                    if (!confirmChange) {
+                        // ユーザーがキャンセルした場合、ドロップダウンを元に戻す
+                        e.target.value = currentYearSelection;
+                        
+                        // カスタムドロップダウンの表示も元に戻す
+                        const wrapper = e.target.parentElement;
+                        const customTrigger = wrapper.querySelector('.custom-select-trigger');
+                        if (customTrigger) {
+                            customTrigger.textContent = `${currentYearSelection}年度`;
+                        }
+                        
+                        // 保存ボタンにフォーカスして注意を促す
+                        if (saveChangesButton && !saveChangesButton.disabled) {
+                            saveChangesButton.style.animation = 'pulse 2s infinite';
+                            saveChangesButton.focus();
+                            
+                            setTimeout(() => {
+                                saveChangesButton.style.animation = '';
+                            }, 4000);
+                        }
+                        
+                        return;
+                    }
+                    
+                    // ユーザーが続行を選択した場合、未保存状態をリセット
+                    setUnsavedChanges(false);
+                }
+                
                 currentYearSelection = e.target.value;
                 await renderAll();
             }
