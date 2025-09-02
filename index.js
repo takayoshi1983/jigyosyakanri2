@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Mappings ---
     const headerMap = {
-        'No.': 'id',
+        'ID': 'id',
         '事業所名': 'name',
         '決算月': 'fiscal_month',
         '未入力期間': 'unattendedMonths',
@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (sortedClients.length === 0) {
             const noDataRow = document.createElement('tr');
-            noDataRow.innerHTML = '<td colspan="9" style="text-align: center; padding: 20px; color: #666;">該当するクライアントが見つかりません</td>';
+            noDataRow.innerHTML = '<td colspan="10" style="text-align: center; padding: 20px; color: #666;">該当するクライアントが見つかりません</td>';
             clientsTableBody.appendChild(noDataRow);
             return;
         }
@@ -541,6 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
             new Date(client.updated_at).toLocaleDateString('ja-JP') : '-';
 
         row.innerHTML = `
+            <td>${client.id}</td>
             <td title="${client.name}">${client.name}</td>
             <td>${fiscalMonth}</td>
             <td>${client.unattendedMonths}ヶ月</td>

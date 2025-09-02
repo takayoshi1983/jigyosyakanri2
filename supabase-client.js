@@ -505,18 +505,24 @@ export class SupabaseAPI {
                 };
                 
                 // ID処理
-                if (id && !isNaN(parseInt(id))) {
+                if (id && id.trim() !== '' && !isNaN(parseInt(id))) {
                     const numId = parseInt(id);
                     
                     if (existingIds.has(numId)) {
                         // 既存データの更新
                         toUpdate.push({ id: numId, ...clientData });
                     } else {
-                        errors.push(`行 ${i + 1}: ID ${numId} は存在しません（IDの変更は不可）`);
-                        continue;
+                        // 新規追加（重複しないIDを指定）
+                        // 同じ名前の事業所が既に存在するかチェック
+                        if (existingNames.has(clientData.name)) {
+                            errors.push(`行 ${i + 1}: 事業所名「${clientData.name}」は既に存在します`);
+                            continue;
+                        }
+                        // IDを指定して新規追加
+                        toInsert.push({ id: numId, ...clientData });
                     }
                 } else {
-                    // 新規追加（IDなしまたは無効なID）
+                    // 新規追加（IDなしまたは無効なID - 自動採番）
                     // 同じ名前の事業所が既に存在するかチェック
                     if (existingNames.has(clientData.name)) {
                         errors.push(`行 ${i + 1}: 事業所名「${clientData.name}」は既に存在します`);

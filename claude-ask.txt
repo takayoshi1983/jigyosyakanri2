@@ -1,24 +1,24 @@
-index.js:729 Error opening default tasks modal: SyntaxError: Unexpected token 'デ', "データ受領,担当チェ"... is not valid JSON
-    at JSON.parse (<anonymous>)
-    at index.js:722:47
-    at Array.forEach (<anonymous>)
-    at HTMLButtonElement.openDefaultTasksModal (index.js:718:19)
-openDefaultTasksModal @ index.js:729Understand this error
-supabase-client.js:735 Supabase error: SyntaxError: Unexpected token 'デ', "データ受領,担当チェ"... is not valid JSON
-    at JSON.parse (<anonymous>)
-    at index.js:722:47
-    at Array.forEach (<anonymous>)
-    at HTMLButtonElement.openDefaultTasksModal (index.js:718:19)
-handleSupabaseError @ supabase-client.js:735
-openDefaultTasksModal @ index.js:730Understand this error
-index.js:1078 CSV export error: ReferenceError: showStatus is not defined
-    at HTMLButtonElement.exportCSV (index.js:1052:13)
-exportCSV @ index.js:1078Understand this error
-index.js:1079 Uncaught (in promise) ReferenceError: showStatus is not defined
-    at HTMLButtonElement.exportCSV (index.js:1079:13)
-exportCSV @ index.js:1079Understand this error
-index.js:1078 CSV export error: ReferenceError: showStatus is not defined
-    at HTMLButtonElement.exportCSV (index.js:1052:13)
-exportCSV @ index.js:1078Understand this error
-index.js:1079 Uncaught (in promise) ReferenceError: showStatus is not defined
-    at HTMLButtonElement.exportCSV (index.js:1079:13)
+事業者の追加をしたいのにエラーにってしまいます
+
+supabase-client.js:574 CSV import error: Error: CSVデータにエラーがあります:
+行 8: ID 7 は存在しません（IDの変更は不可）
+行 9: ID 8 は存在しません（IDの変更は不可）
+行 10: ID 9 は存在しません（IDの変更は不可）
+    at SupabaseAPI.importClientsCSV (supabase-client.js:530:23)
+    at async HTMLInputElement.importCSV (index.js:1148:28)
+importClientsCSV @ supabase-client.js:574Understand this error
+index.js:1161 CSV import error: Error: CSVデータにエラーがあります:
+行 8: ID 7 は存在しません（IDの変更は不可）
+行 9: ID 8 は存在しません（IDの変更は不可）
+行 10: ID 9 は存在しません（IDの変更は不可）
+    at SupabaseAPI.importClientsCSV (supabase-client.js:530:23)
+    at async HTMLInputElement.importCSV (index.js:1148:28)
+importCSV @ index.js:1161Understand this error
+supabase-client.js:735 Supabase error: Error: CSVデータにエラーがあります:
+行 8: ID 7 は存在しません（IDの変更は不可）
+行 9: ID 8 は存在しません（IDの変更は不可）
+行 10: ID 9 は存在しません（IDの変更は不可）
+    at SupabaseAPI.importClientsCSV (supabase-client.js:530:23)
+    at async HTMLInputElement.importCSV (index.js:1148:28)
+
+それとメイン画面のテーブルの一番左にIDナンバーを表示するようにしたいです（事業者名の左）
