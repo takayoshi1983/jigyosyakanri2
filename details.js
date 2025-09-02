@@ -293,13 +293,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         yearFilter.innerHTML = options;
         
-        // Initialize the custom dropdown
+        // カスタムドロップダウンを再初期化
+        const wrapper = yearFilter.parentElement;
+        if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
+            // 既存のイベントリスナーをクリア
+            const customTrigger = wrapper.querySelector('.custom-select-trigger');
+            const customOptions = wrapper.querySelector('.custom-options');
+            
+            if (customTrigger) {
+                // 新しいクローンを作成してイベントリスナーをクリア
+                const newCustomTrigger = customTrigger.cloneNode(true);
+                customTrigger.parentNode.replaceChild(newCustomTrigger, customTrigger);
+                newCustomTrigger.textContent = `${currentYearSelection}年度`;
+            }
+            
+            if (customOptions) {
+                customOptions.innerHTML = '';
+                customOptions.style.display = 'none';
+            }
+        }
+        
+        // カスタムドロップダウンを再初期化
         if (window.initializeAllDropdowns) {
             window.initializeAllDropdowns();
+        } else if (window.initializeDropdown) {
+            window.initializeDropdown(yearFilter);
         }
-
-        const customTrigger = yearFilter.parentElement.querySelector('.custom-select-trigger');
-        if (customTrigger) customTrigger.textContent = `${currentYearSelection}年度`;
     }
 
     function renderDetailsTable(allMonthData) {
@@ -443,9 +462,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Main Event Listeners ---
     function addMainEventListeners() {
-        yearFilter.addEventListener('change', async () => {
-            currentYearSelection = yearFilter.value;
-            await renderAll();
+        // 年度変更イベントを委譲で処理
+        document.addEventListener('change', async (e) => {
+            if (e.target && e.target.id === 'year-filter') {
+                currentYearSelection = e.target.value;
+                await renderAll();
+            }
         });
 
         editTasksButton.addEventListener('click', openTaskEditModal);
