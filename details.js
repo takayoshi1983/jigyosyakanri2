@@ -287,38 +287,94 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function renderYearFilter() {
         if (!yearFilter) return;
+        
+        // selectのoptionを更新
         let options = '';
         for (let year = 2024; year <= 2050; year++) {
             options += `<option value="${year}" ${year.toString() === currentYearSelection ? 'selected' : ''}>${year}年度</option>`;
         }
         yearFilter.innerHTML = options;
         
-        // カスタムドロップダウンを再初期化
+        // カスタムドロップダウンのUIを手動で更新
         const wrapper = yearFilter.parentElement;
         if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
-            // 既存のイベントリスナーをクリア
             const customTrigger = wrapper.querySelector('.custom-select-trigger');
             const customOptions = wrapper.querySelector('.custom-options');
             
+            // トリガーのテキスト更新
             if (customTrigger) {
-                // 新しいクローンを作成してイベントリスナーをクリア
-                const newCustomTrigger = customTrigger.cloneNode(true);
-                customTrigger.parentNode.replaceChild(newCustomTrigger, customTrigger);
-                newCustomTrigger.textContent = `${currentYearSelection}年度`;
+                customTrigger.textContent = `${currentYearSelection}年度`;
             }
             
+            // カスタムオプションを再生成
             if (customOptions) {
                 customOptions.innerHTML = '';
+                for (let year = 2024; year <= 2050; year++) {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'custom-option';
+                    optionDiv.textContent = `${year}年度`;
+                    optionDiv.setAttribute('data-value', year.toString());
+                    
+                    // 現在選択中の年度にはselectedクラスを追加
+                    if (year.toString() === currentYearSelection) {
+                        optionDiv.classList.add('selected');
+                    }
+                    
+                    // オプションクリック時の処理
+                    optionDiv.addEventListener('click', () => {
+                        // 既存の選択を解除
+                        customOptions.querySelectorAll('.custom-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        
+                        // 新しい選択を設定
+                        optionDiv.classList.add('selected');
+                        customTrigger.textContent = optionDiv.textContent;
+                        yearFilter.value = optionDiv.getAttribute('data-value');
+                        customOptions.style.display = 'none';
+                        
+                        // changeイベントを発火
+                        const changeEvent = new Event('change', { bubbles: true });
+                        yearFilter.dispatchEvent(changeEvent);
+                    });
+                    
+                    customOptions.appendChild(optionDiv);
+                }
                 customOptions.style.display = 'none';
+            }
+            
+            // トリガークリックイベントの設定
+            if (customTrigger) {
+                // 既存のイベントリスナーをクリア
+                const newTrigger = customTrigger.cloneNode(true);
+                customTrigger.parentNode.replaceChild(newTrigger, customTrigger);
+                
+                newTrigger.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const isVisible = customOptions.style.display === 'block';
+                    
+                    // 他のドロップダウンを閉じる
+                    document.querySelectorAll('.custom-options').forEach(opts => {
+                        opts.style.display = 'none';
+                    });
+                    
+                    // 現在のドロップダウンを開く/閉じる
+                    customOptions.style.display = isVisible ? 'none' : 'block';
+                });
             }
         }
         
-        // カスタムドロップダウンを再初期化
-        if (window.initializeAllDropdowns) {
-            window.initializeAllDropdowns();
-        } else if (window.initializeDropdown) {
-            window.initializeDropdown(yearFilter);
-        }
+        // ドキュメントクリックで閉じる処理
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) {
+                const customOptions = wrapper.querySelector('.custom-options');
+                if (customOptions) {
+                    customOptions.style.display = 'none';
+                }
+            }
+        });
     }
 
     function renderDetailsTable(allMonthData) {
