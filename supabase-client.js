@@ -113,12 +113,41 @@ export class SupabaseAPI {
     }
     
     static async deleteStaff(id) {
+        // First check if staff is assigned to any clients
+        const { data: assignedClients, error: checkError } = await supabase
+            .from('clients')
+            .select('id, name')
+            .eq('staff_id', id)
+            .eq('status', 'active');
+        
+        if (checkError) throw checkError;
+        
+        if (assignedClients && assignedClients.length > 0) {
+            // Create a detailed error message
+            const clientNames = assignedClients.map(c => c.name).join(', ');
+            const error = new Error(`この担当者は以下のクライアントに割り当てられているため削除できません: ${clientNames}`);
+            error.name = 'StaffAssignedError';
+            error.assignedClients = assignedClients;
+            throw error;
+        }
+        
         const { error } = await supabase
             .from('staffs')
             .delete()
             .eq('id', id);
             
         if (error) throw error;
+    }
+    
+    static async getClientsAssignedToStaff(staffId) {
+        const { data, error } = await supabase
+            .from('clients')
+            .select('id, name')
+            .eq('staff_id', staffId)
+            .eq('status', 'active');
+            
+        if (error) throw error;
+        return data || [];
     }
     
     // 月次タスク関連

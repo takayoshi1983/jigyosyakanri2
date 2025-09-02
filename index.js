@@ -597,18 +597,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderStaffList() {
+    async function renderStaffList() {
         staffListContainer.innerHTML = '';
         
-        currentEditingStaffs.forEach((staff, index) => {
+        for (let index = 0; index < currentEditingStaffs.length; index++) {
+            const staff = currentEditingStaffs[index];
+            let clientCount = 0;
+            let assignedClients = [];
+            
+            // Check if this staff has assigned clients (only for existing staff)
+            if (staff.id !== null) {
+                try {
+                    assignedClients = await SupabaseAPI.getClientsAssignedToStaff(staff.id);
+                    clientCount = assignedClients.length;
+                } catch (error) {
+                    console.warn('Error checking assigned clients for staff:', staff.id, error);
+                }
+            }
+            
             const staffItem = document.createElement('div');
             staffItem.className = 'staff-item';
+            
+            const clientInfo = clientCount > 0 ? 
+                ` <span class="client-count" title="担当クライアント: ${assignedClients.map(c => c.name).join(', ')}" style="color: #666; font-size: 0.9em; margin: 0 8px;">(${clientCount}件担当)</span>` : 
+                '';
+            
+            const deleteButtonDisabled = clientCount > 0 ? 'disabled title="担当しているクライアントがあるため削除できません" style="opacity: 0.5; cursor: not-allowed;"' : '';
+            
             staffItem.innerHTML = `
-                <input type="text" value="${staff.name}" data-index="${index}" data-staff-id="${staff.id}">
-                <button type="button" class="delete-staff-button" data-index="${index}">削除</button>
+                <input type="text" value="${staff.name}" data-index="${index}" data-staff-id="${staff.id}" style="flex: 1; margin-right: 10px;">
+                ${clientInfo}
+                <button type="button" class="delete-staff-button" data-index="${index}" ${deleteButtonDisabled}>削除</button>
             `;
+            staffItem.style.display = 'flex';
+            staffItem.style.alignItems = 'center';
+            staffItem.style.marginBottom = '10px';
             staffListContainer.appendChild(staffItem);
-        });
+        }
 
         // Add event listeners for delete buttons
         staffListContainer.addEventListener('click', (e) => {
@@ -693,7 +718,12 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('担当者の更新が完了しました');
         } catch (error) {
             console.error('Error saving staffs:', error);
-            alert('担当者の保存に失敗しました: ' + handleSupabaseError(error));
+            
+            if (error.name === 'StaffAssignedError') {
+                alert(error.message + '\n\n先にクライアントの担当者を変更してから削除してください。');
+            } else {
+                alert('担当者の保存に失敗しました: ' + handleSupabaseError(error));
+            }
         }
     }
 
