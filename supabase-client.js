@@ -245,22 +245,48 @@ export class SupabaseAPI {
     }
     
     static async upsertDefaultTasks(accountingMethod, tasks) {
-        const { data, error } = await supabase
-            .from('default_tasks')
-            .upsert({
+        try {
+            // 既存レコードを検索
+            const { data: existing, error: searchError } = await supabase
+                .from('default_tasks')
+                .select('*')
+                .eq('accounting_method', accountingMethod)
+                .maybeSingle();
+
+            if (searchError) throw searchError;
+
+            const taskData = {
                 accounting_method: accountingMethod,
                 tasks: JSON.stringify(tasks),
                 task_name: `${accountingMethod}セット`,
                 display_order: accountingMethod === '記帳代行' ? 999 : 998,
                 is_active: true
-            }, {
-                onConflict: 'accounting_method'
-            })
-            .select()
-            .single();
-            
-        if (error) throw error;
-        return data;
+            };
+
+            if (existing) {
+                // 更新
+                const { data, error } = await supabase
+                    .from('default_tasks')
+                    .update(taskData)
+                    .eq('id', existing.id)
+                    .select()
+                    .single();
+                if (error) throw error;
+                return data;
+            } else {
+                // 新規作成
+                const { data, error } = await supabase
+                    .from('default_tasks')
+                    .insert(taskData)
+                    .select()
+                    .single();
+                if (error) throw error;
+                return data;
+            }
+        } catch (error) {
+            console.error('Error in upsertDefaultTasks:', error);
+            throw error;
+        }
     }
     
     // 経理方式別初期項目設定機能
