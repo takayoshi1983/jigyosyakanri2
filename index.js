@@ -76,6 +76,23 @@ document.addEventListener('DOMContentLoaded', () => {
         '進捗ステータス': 'status'
     };
 
+    // --- Status Display Functions ---
+    function showStatus(message, type = 'info') {
+        const connectionStatus = document.getElementById('connection-status');
+        const statusText = document.getElementById('status-text');
+        
+        if (!connectionStatus || !statusText) return;
+        
+        connectionStatus.className = type;
+        connectionStatus.style.display = 'block';
+        statusText.textContent = message;
+    }
+
+    function hideStatus() {
+        const connectionStatus = document.getElementById('connection-status');
+        if (connectionStatus) connectionStatus.style.display = 'none';
+    }
+
     // --- Authentication Functions ---
     function showAuthStatus(message, type = 'info') {
         authStatus.className = type;
@@ -716,10 +733,30 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             
             tasks.forEach(task => {
-                if (task.accounting_method === '記帳代行') {
-                    defaultTasks.kityo = JSON.parse(task.tasks);
-                } else if (task.accounting_method === '自計') {
-                    defaultTasks.jikei = JSON.parse(task.tasks);
+                try {
+                    let taskData;
+                    if (typeof task.tasks === 'string') {
+                        taskData = JSON.parse(task.tasks);
+                    } else if (Array.isArray(task.tasks)) {
+                        taskData = task.tasks;
+                    } else {
+                        console.warn('Invalid task data format:', task.tasks);
+                        taskData = [];
+                    }
+
+                    if (task.accounting_method === '記帳代行') {
+                        defaultTasks.kityo = taskData;
+                    } else if (task.accounting_method === '自計') {
+                        defaultTasks.jikei = taskData;
+                    }
+                } catch (error) {
+                    console.error('Error parsing task data for', task.accounting_method, ':', error);
+                    // エラーが発生した場合はデフォルト値を使用
+                    if (task.accounting_method === '記帳代行') {
+                        defaultTasks.kityo = ['領収書整理', '仕訳入力', '試算表作成', '給与計算'];
+                    } else if (task.accounting_method === '自計') {
+                        defaultTasks.jikei = ['試算表確認', '仕訳チェック', '決算準備', '税務申告'];
+                    }
                 }
             });
 
