@@ -415,8 +415,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 let completedCount = 0;
                 monthsToDisplay.forEach(month => {
                     const isChecked = allMonthData[month.key]?.tasks?.[taskName] === true;
+                    const taskMemo = allMonthData[month.key]?.task_memos?.[taskName] || '';
                     if (isChecked) completedCount++;
-                    bodyHtml += `<td class="checkbox-cell" data-month="${month.key}" data-task="${taskName}"><input type="checkbox" data-month="${month.key}" data-task="${taskName}" ${isChecked ? 'checked' : ''}></td>`;
+                    bodyHtml += `<td class="checkbox-memo-cell" data-month="${month.key}" data-task="${taskName}">
+                        <div class="checkbox-memo-container">
+                            <input type="checkbox" data-month="${month.key}" data-task="${taskName}" ${isChecked ? 'checked' : ''}>
+                            <input type="text" class="checkbox-memo-input" data-month="${month.key}" data-task="${taskName}" placeholder="メモ" value="${taskMemo}">
+                        </div>
+                    </td>`;
                 });
                 const progressClass = completedCount === 12 ? 'progress-complete' : '';
                 bodyHtml += `<td class="${progressClass}" style="text-align: center;">${completedCount}/12</td>`;
@@ -439,7 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function toggleMonthColumn(monthKey) {
-        const checkboxes = detailsTableBody.querySelectorAll(`input[data-month="${monthKey}"]`);
+        const checkboxes = detailsTableBody.querySelectorAll(`input[type="checkbox"][data-month="${monthKey}"]`);
         if (checkboxes.length === 0) return;
 
         // 現在の状態を確認（全てチェック済みか）
@@ -464,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!isAllChecked) return; // 全解除の場合は紙吹雪なし
 
         // この月のすべてのタスクがチェックされているかを確認
-        const monthCheckboxes = detailsTableBody.querySelectorAll(`input[data-month="${monthKey}"]`);
+        const monthCheckboxes = detailsTableBody.querySelectorAll(`input[type="checkbox"][data-month="${monthKey}"]`);
         const allTasksCompleted = Array.from(monthCheckboxes).every(cb => cb.checked);
 
         if (allTasksCompleted && monthCheckboxes.length > 0) {
@@ -518,11 +524,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
+
+        // メモ入力欄のイベントリスナーを追加
+        detailsTableBody.querySelectorAll('.checkbox-memo-input').forEach(memoInput => {
+            memoInput.addEventListener('input', (e) => {
+                setUnsavedChanges(true);
+            });
+        });
     }
 
     function checkForIndividualConfetti(monthKey) {
         // この月のすべてのタスクがチェックされているかを確認
-        const monthCheckboxes = detailsTableBody.querySelectorAll(`input[data-month="${monthKey}"]`);
+        const monthCheckboxes = detailsTableBody.querySelectorAll(`input[type="checkbox"][data-month="${monthKey}"]`);
         const allTasksCompleted = Array.from(monthCheckboxes).every(cb => cb.checked);
 
         if (allTasksCompleted && monthCheckboxes.length > 0) {
@@ -585,8 +598,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             detailsTableBody.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                 const month = cb.dataset.month;
                 const task = cb.dataset.task;
-                if (!monthlyTasksToUpdate[month]) monthlyTasksToUpdate[month] = { tasks: {} };
+                if (!monthlyTasksToUpdate[month]) monthlyTasksToUpdate[month] = { tasks: {}, task_memos: {} };
                 monthlyTasksToUpdate[month].tasks[task] = cb.checked;
+            });
+
+            // メモデータの保存
+            detailsTableBody.querySelectorAll('.checkbox-memo-input').forEach(memoInput => {
+                const month = memoInput.dataset.month;
+                const task = memoInput.dataset.task;
+                if (!monthlyTasksToUpdate[month]) monthlyTasksToUpdate[month] = { tasks: {}, task_memos: {} };
+                if (!monthlyTasksToUpdate[month].task_memos) monthlyTasksToUpdate[month].task_memos = {};
+                monthlyTasksToUpdate[month].task_memos[task] = memoInput.value;
             });
 
             notesTableBody.querySelectorAll('input, textarea').forEach(input => {
