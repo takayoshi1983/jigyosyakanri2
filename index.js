@@ -414,24 +414,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === basicSettingsModal) closeBasicSettingsModal();
         });
 
-        // CSV and DB Reset Buttons (with placeholder functionality)
-        document.getElementById('export-csv-button').addEventListener('click', () => {
-            alert('CSVエクスポート機能は準備中です。');
-        });
-
+        // CSV and DB Reset Buttons
+        document.getElementById('export-csv-button').addEventListener('click', exportCSV);
         document.getElementById('import-csv-button').addEventListener('click', () => {
             document.getElementById('csv-file-input').click();
         });
-
-        document.getElementById('csv-file-input').addEventListener('change', () => {
-            alert('CSVインポート機能は準備中です。');
-        });
-
-        document.getElementById('reset-database-button').addEventListener('click', () => {
-            if (confirm('【危険】この操作は元に戻せません。本当にデータベースを初期化しますか？')) {
-                alert('データベース初期化機能は準備中です。');
-            }
-        });
+        document.getElementById('csv-file-input').addEventListener('change', importCSV);
+        document.getElementById('reset-database-button').addEventListener('click', resetDatabase);
     }
 
     // --- Client Management ---
@@ -1054,6 +1043,184 @@ document.addEventListener('DOMContentLoaded', () => {
         if (monthTrigger) {
             const selectedMonthOption = monthFilter.options[monthFilter.selectedIndex];
             monthTrigger.textContent = selectedMonthOption ? selectedMonthOption.textContent : 'すべての決算月';
+        }
+    }
+
+    // --- CSV Export/Import Functions ---
+    async function exportCSV() {
+        try {
+            showStatus('CSVエクスポート中...', 'warning');
+            
+            const csvData = await SupabaseAPI.exportClientsCSV();
+            
+            // CSV文字列を生成
+            const csvString = csvData.map(row => 
+                row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+            
+            // UTF-8 BOMを追加（Excelでの文字化け防止）
+            const bom = '\uFEFF';
+            const blob = new Blob([bom + csvString], { type: 'text/csv;charset=utf-8;' });
+            
+            // ダウンロードを実行
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `clients_${new Date().toISOString().slice(0,10)}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStatus('✅ CSVエクスポート完了', 'success');
+            setTimeout(hideStatus, 2000);
+        } catch (error) {
+            console.error('CSV export error:', error);
+            showStatus(`❌ エクスポートエラー: ${handleSupabaseError(error)}`, 'error');
+        }
+    }
+    
+    async function importCSV(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+            alert('CSVファイルを選択してください。');
+            return;
+        }
+        
+        try {
+            showStatus('CSVインポート中...', 'warning');
+            
+            // ファイルを読み込み
+            const text = await readFileAsText(file);
+            const csvData = parseCSV(text);
+            
+            if (csvData.length < 2) {
+                throw new Error('CSVファイルにデータが含まれていません');
+            }
+            
+            // インポート実行の確認
+            const confirmMessage = `${csvData.length - 1}行のデータをインポートします。\n既存データの変更と新規追加が行われる可能性があります。\n実行しますか？`;
+            if (!confirm(confirmMessage)) {
+                hideStatus();
+                return;
+            }
+            
+            // インポート実行
+            const result = await SupabaseAPI.importClientsCSV(csvData);
+            
+            if (result.success) {
+                showStatus(`✅ ${result.message}`, 'success');
+                
+                // データを再読み込み
+                clients = await fetchClients();
+                renderClients();
+                populateFilters();
+                
+                alert(`インポートが完了しました。\n${result.message}`);
+            }
+        } catch (error) {
+            console.error('CSV import error:', error);
+            showStatus(`❌ インポートエラー: ${handleSupabaseError(error)}`, 'error');
+            alert(`インポートに失敗しました:\n${error.message}`);
+        } finally {
+            // ファイル入力をクリア
+            event.target.value = '';
+            hideStatus();
+        }
+    }
+    
+    function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            
+            // 複数エンコーディング対応
+            try {
+                reader.readAsText(file, 'UTF-8');
+            } catch (error) {
+                try {
+                    reader.readAsText(file, 'Shift_JIS');
+                } catch (error2) {
+                    reader.readAsText(file);
+                }
+            }
+        });
+    }
+    
+    function parseCSV(text) {
+        const lines = text.split(/\r?\n/);
+        const result = [];
+        
+        for (const line of lines) {
+            if (line.trim() === '') continue;
+            
+            const row = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        current += '"';
+                        i++; // Skip next quote
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    row.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            row.push(current);
+            result.push(row);
+        }
+        
+        return result;
+    }
+    
+    // --- Database Reset Function ---
+    async function resetDatabase() {
+        const firstConfirm = confirm('⚠️ 危険な操作です ⚠️\n\nこの操作により以下が実行されます：\n• 全てのクライアントデータが削除されます\n• 全ての月次タスクデータが削除されます\n• サンプルデータで初期化されます\n\nこの操作は元に戻せません。続行しますか？');
+        
+        if (!firstConfirm) return;
+        
+        const secondConfirm = confirm('本当に実行しますか？\n\n全てのデータが失われます。\n「はい」をクリックすると実行されます。');
+        
+        if (!secondConfirm) return;
+        
+        try {
+            showStatus('データベースを初期化中... この処理には時間がかかります', 'warning');
+            
+            const result = await SupabaseAPI.resetDatabase();
+            
+            if (result.success) {
+                showStatus('✅ データベース初期化完了', 'success');
+                
+                // データを再読み込み
+                [clients, staffs, appSettings] = await Promise.all([
+                    fetchClients(),
+                    fetchStaffs(),
+                    fetchSettings()
+                ]);
+                
+                populateFilters();
+                renderClients();
+                
+                alert('データベースの初期化が完了しました。\nサンプルデータが設定されました。');
+            }
+        } catch (error) {
+            console.error('Database reset error:', error);
+            showStatus(`❌ 初期化エラー: ${handleSupabaseError(error)}`, 'error');
+            alert(`データベース初期化に失敗しました:\n${error.message}`);
         }
     }
 

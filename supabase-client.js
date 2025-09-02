@@ -401,6 +401,308 @@ export class SupabaseAPI {
         return user;
     }
     
+    // CSV エクスポート・インポート機能
+    static async exportClientsCSV() {
+        try {
+            // 全クライアントデータを取得
+            const { data: clients, error } = await supabase
+                .from('clients')
+                .select(`
+                    *,
+                    staffs(name)
+                `)
+                .order('id');
+                
+            if (error) throw error;
+            
+            // CSVヘッダー
+            const csvHeaders = [
+                'ID', '事業所名', '決算月', '担当者名', '経理方式', 'ステータス'
+            ];
+            
+            // CSVデータ生成
+            const csvData = [csvHeaders];
+            clients.forEach(client => {
+                csvData.push([
+                    client.id,
+                    client.name || '',
+                    client.fiscal_month || '',
+                    client.staffs?.name || '',
+                    client.accounting_method || '',
+                    client.status || 'active'
+                ]);
+            });
+            
+            return csvData;
+        } catch (error) {
+            console.error('CSV export error:', error);
+            throw error;
+        }
+    }
+    
+    static async importClientsCSV(csvData) {
+        try {
+            // 現在のクライアントIDリストを取得（重複チェック用）
+            const { data: existingClients } = await supabase
+                .from('clients')
+                .select('id, name');
+            
+            const existingIds = new Set(existingClients.map(c => c.id));
+            const existingNames = new Set(existingClients.map(c => c.name));
+            
+            // スタッフ情報を取得（名前からIDを検索するため）
+            const { data: staffs } = await supabase
+                .from('staffs')
+                .select('id, name');
+            
+            const staffNameToId = {};
+            staffs.forEach(staff => {
+                staffNameToId[staff.name] = staff.id;
+            });
+            
+            const toUpdate = [];
+            const toInsert = [];
+            const errors = [];
+            
+            // CSVデータの検証と分類
+            for (let i = 1; i < csvData.length; i++) {
+                const row = csvData[i];
+                if (row.length < 6) {
+                    errors.push(`行 ${i + 1}: 列数が不足しています`);
+                    continue;
+                }
+                
+                const [id, name, fiscal_month, staff_name, accounting_method, status] = row;
+                
+                // 必須項目チェック
+                if (!name?.trim()) {
+                    errors.push(`行 ${i + 1}: 事業所名が空です`);
+                    continue;
+                }
+                
+                // 経理方式チェック
+                if (accounting_method && !['記帳代行', '自計'].includes(accounting_method.trim())) {
+                    errors.push(`行 ${i + 1}: 経理方式は「記帳代行」または「自計」である必要があります`);
+                    continue;
+                }
+                
+                // 担当者存在チェック
+                let staff_id = null;
+                if (staff_name?.trim()) {
+                    staff_id = staffNameToId[staff_name.trim()];
+                    if (!staff_id) {
+                        errors.push(`行 ${i + 1}: 担当者「${staff_name}」が見つかりません`);
+                        continue;
+                    }
+                }
+                
+                const clientData = {
+                    name: name.trim(),
+                    fiscal_month: fiscal_month ? parseInt(fiscal_month) : null,
+                    staff_id: staff_id,
+                    accounting_method: accounting_method?.trim() || null,
+                    status: status?.trim() || 'active'
+                };
+                
+                // ID処理
+                if (id && !isNaN(parseInt(id))) {
+                    const numId = parseInt(id);
+                    
+                    if (existingIds.has(numId)) {
+                        // 既存データの更新
+                        toUpdate.push({ id: numId, ...clientData });
+                    } else {
+                        errors.push(`行 ${i + 1}: ID ${numId} は存在しません（IDの変更は不可）`);
+                        continue;
+                    }
+                } else {
+                    // 新規追加（IDなしまたは無効なID）
+                    // 同じ名前の事業所が既に存在するかチェック
+                    if (existingNames.has(clientData.name)) {
+                        errors.push(`行 ${i + 1}: 事業所名「${clientData.name}」は既に存在します`);
+                        continue;
+                    }
+                    toInsert.push(clientData);
+                }
+            }
+            
+            if (errors.length > 0) {
+                throw new Error('CSVデータにエラーがあります:\n' + errors.join('\n'));
+            }
+            
+            const results = { updated: 0, inserted: 0 };
+            
+            // 更新処理
+            if (toUpdate.length > 0) {
+                for (const client of toUpdate) {
+                    const { id, ...updateData } = client;
+                    const { error } = await supabase
+                        .from('clients')
+                        .update(updateData)
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    results.updated++;
+                }
+            }
+            
+            // 新規追加処理
+            if (toInsert.length > 0) {
+                const { data: insertedClients, error } = await supabase
+                    .from('clients')
+                    .insert(toInsert)
+                    .select();
+                
+                if (error) throw error;
+                results.inserted = insertedClients.length;
+                
+                // 新規追加されたクライアントに初期タスクを設定
+                for (const client of insertedClients) {
+                    if (client.accounting_method) {
+                        await this.setupInitialTasksForNewClient(client.id, client.accounting_method);
+                    }
+                }
+            }
+            
+            return {
+                success: true,
+                results: results,
+                message: `インポート完了: ${results.updated}件更新, ${results.inserted}件追加`
+            };
+            
+        } catch (error) {
+            console.error('CSV import error:', error);
+            throw error;
+        }
+    }
+    
+    // 新規クライアントの初期タスク設定
+    static async setupInitialTasksForNewClient(clientId, accountingMethod) {
+        try {
+            const defaultTasksData = await this.getDefaultTasksByAccountingMethod(accountingMethod);
+            const currentYear = new Date().getFullYear();
+            
+            const customTasksByYear = {
+                [currentYear]: defaultTasksData
+            };
+            
+            const { error } = await supabase
+                .from('clients')
+                .update({ 
+                    custom_tasks_by_year: customTasksByYear 
+                })
+                .eq('id', clientId);
+                
+            if (error) throw error;
+            
+            console.log(`初期タスク設定完了: クライアントID ${clientId}, 経理方式: ${accountingMethod}`);
+        } catch (error) {
+            console.error('初期タスク設定エラー:', error);
+            // エラーが発生してもクライアント作成は成功とする
+        }
+    }
+    
+    // データベース初期化機能
+    static async resetDatabase() {
+        try {
+            // 各テーブルのデータを削除（外部キー制約の順番を考慮）
+            await supabase.from('monthly_tasks').delete().neq('id', 0);
+            await supabase.from('editing_sessions').delete().neq('id', 0);
+            await supabase.from('clients').delete().neq('id', 0);
+            await supabase.from('default_tasks').delete().neq('id', 0);
+            await supabase.from('settings').delete().neq('key', '');
+            
+            // サンプルスタッフデータを挿入
+            const sampleStaffs = [
+                { name: '田中太郎' },
+                { name: '佐藤花子' },
+                { name: '鈴木一郎' },
+                { name: '山田美咲' }
+            ];
+            
+            const { data: staffData } = await supabase
+                .from('staffs')
+                .insert(sampleStaffs)
+                .select();
+            
+            // サンプルクライアントデータを挿入
+            const sampleClients = [
+                {
+                    name: 'サンプル会社A',
+                    fiscal_month: 3,
+                    staff_id: staffData[0].id,
+                    accounting_method: '記帳代行',
+                    status: 'active',
+                    custom_tasks_by_year: {},
+                    finalized_years: []
+                },
+                {
+                    name: 'サンプル会社B', 
+                    fiscal_month: 12,
+                    staff_id: staffData[1].id,
+                    accounting_method: '自計',
+                    status: 'active',
+                    custom_tasks_by_year: {},
+                    finalized_years: []
+                },
+                {
+                    name: 'サンプル会社C',
+                    fiscal_month: 9,
+                    staff_id: staffData[2].id,
+                    accounting_method: '記帳代行',
+                    status: 'active',
+                    custom_tasks_by_year: {},
+                    finalized_years: []
+                }
+            ];
+            
+            await supabase.from('clients').insert(sampleClients);
+            
+            // デフォルトタスクを挿入
+            const defaultTasks = [
+                {
+                    task_name: '記帳代行デフォルト',
+                    accounting_method: '記帳代行',
+                    tasks: JSON.stringify([
+                        '領収書整理', '仕訳入力', '試算表作成', '給与計算',
+                        '売上管理', '支払管理', '資金繰り表', '月次レポート'
+                    ]),
+                    display_order: 1,
+                    is_active: true
+                },
+                {
+                    task_name: '自計デフォルト',
+                    accounting_method: '自計',
+                    tasks: JSON.stringify([
+                        '試算表確認', '仕訳チェック', '決算準備', '税務申告',
+                        '資料整理', '相談対応', '改善提案', 'レビュー'
+                    ]),
+                    display_order: 2,
+                    is_active: true
+                }
+            ];
+            
+            await supabase.from('default_tasks').insert(defaultTasks);
+            
+            // 基本設定を挿入
+            const basicSettings = [
+                { key: 'yellow_threshold', value: 2 },
+                { key: 'red_threshold', value: 3 },
+                { key: 'yellow_color', value: '#FFFF99' },
+                { key: 'red_color', value: '#FFCDD2' },
+                { key: 'font_family', value: 'Noto Sans JP' },
+                { key: 'hide_inactive_clients', value: false }
+            ];
+            
+            await supabase.from('settings').insert(basicSettings);
+            
+            return { success: true, message: 'データベースが正常に初期化されました' };
+        } catch (error) {
+            console.error('Database reset error:', error);
+            throw error;
+        }
+    }
+    
     // リアルタイム機能（将来拡張用）
     static subscribeToClientChanges(callback) {
         return supabase
