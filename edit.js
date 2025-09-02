@@ -245,6 +245,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 accounting_method: accountingMethodSelect.value || null
             };
 
+            // Add ID if specified in new mode
+            if (isNewMode && clientNoInput.value.trim()) {
+                const clientNo = parseInt(clientNoInput.value.trim());
+                if (!isNaN(clientNo)) {
+                    formData.id = clientNo;
+                }
+            }
+
             if (!formData.name) {
                 throw new Error('事業所名は必須です');
             }
@@ -268,9 +276,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showNotification('新規顧客が作成されました', 'success');
                 showStatus('✅ 新規顧客作成完了', 'success');
                 
-                // Redirect to edit mode for the new client
+                // Redirect to main page
                 setTimeout(() => {
-                    window.location.href = `edit.html?id=${result.id}`;
+                    window.location.href = 'index.html';
                 }, 1500);
                 
             } else {
