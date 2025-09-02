@@ -758,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (task.accounting_method === '自計') {
                         defaultTasks.jikei = ['データ受領', '仕訳チェック', '不明投げかけ', '月次完了'];
                     }
-            デーだ受領
+                }
             });
 
             renderDefaultTasks();
