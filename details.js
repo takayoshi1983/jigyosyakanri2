@@ -248,21 +248,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!clientDetails || !clientDetails.fiscal_month) return [];
         
         const fiscalClosingMonth = clientDetails.fiscal_month;
-        const startMonth = fiscalClosingMonth + 1;
+        const selectedYear = parseInt(fiscalYear);
 
         const months = [];
-        for (let i = 0; i < 12; i++) {
-            let currentMonth = startMonth + i;
-            let currentYear = parseInt(fiscalYear);
-
-            if (currentMonth > 12) {
-                currentMonth -= 12;
-                currentYear += 1;
+        
+        // 1月から決算月まで順番に表示（決算月が右端に来る）
+        for (let month = 1; month <= 12; month++) {
+            let currentYear = selectedYear;
+            
+            // 決算月より後の月は表示しない（決算月で終了）
+            if (month > fiscalClosingMonth) {
+                break;
             }
 
             months.push({ 
-                key: `${currentYear}-${String(currentMonth).padStart(2, '0')}`,
-                display: `${currentYear}/${currentMonth}` 
+                key: `${currentYear}-${String(month).padStart(2, '0')}`,
+                display: `${currentYear}/${month}` 
             });
         }
         return months;
