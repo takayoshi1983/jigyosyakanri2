@@ -204,6 +204,8 @@
         .details-table td {
             padding: 12px;
             text-align: center;
+            min-height: 50px;
+            vertical-align: middle;
         }
 
         .details-table input[type="checkbox"] {
@@ -226,24 +228,29 @@
 
         /* メモ欄付きセルのスタイル */
         .checkbox-memo-cell {
-            padding: 8px 4px;
+            padding: 2px;
             text-align: center;
+            vertical-align: middle;
         }
 
         .checkbox-memo-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 6px;
-            justify-content: center;
+            gap: 2px;
+            height: 100%;
+            width: 100%;
         }
 
         .checkbox-memo-input {
-            width: 60px;
-            padding: 2px 4px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-size: 11px;
+            width: calc(100% - 4px);
+            height: 20px;
+            padding: 1px 2px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 10px;
             text-align: center;
+            box-sizing: border-box;
         }
 
         .checkbox-memo-input:focus {
