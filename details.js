@@ -381,7 +381,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!detailsTableHead || !detailsTableBody) return;
 
         let headerHtml = '<tr><th>タスク</th>';
-        monthsToDisplay.forEach(month => headerHtml += `<th>${month.display}</th>`);
+        monthsToDisplay.forEach(month => {
+            headerHtml += `<th class="month-header clickable" data-month="${month.key}" style="cursor: pointer; user-select: none;">${month.display}</th>`;
+        });
         headerHtml += '<th>完了</th></tr>';
         detailsTableHead.innerHTML = headerHtml;
 
@@ -404,6 +406,63 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         detailsTableBody.innerHTML = bodyHtml;
         addCheckboxEventListeners();
+        addMonthHeaderEventListeners();
+    }
+
+    // --- Month Header Click Event Listeners ---
+    function addMonthHeaderEventListeners() {
+        detailsTableHead.querySelectorAll('.month-header').forEach(header => {
+            header.addEventListener('click', (e) => {
+                const monthKey = e.target.getAttribute('data-month');
+                toggleMonthColumn(monthKey);
+            });
+        });
+    }
+
+    function toggleMonthColumn(monthKey) {
+        const checkboxes = detailsTableBody.querySelectorAll(`input[data-month="${monthKey}"]`);
+        if (checkboxes.length === 0) return;
+
+        // 現在の状態を確認（全てチェック済みか）
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        
+        // 全選択または全解除
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = !allChecked;
+        });
+
+        // 未保存状態に設定
+        setUnsavedChanges(true);
+        
+        // 進捗表示を更新
+        updateProgressDisplay();
+
+        // 全列の完了状況をチェックして紙吹雪を判定
+        checkForConfetti(monthKey, !allChecked);
+    }
+
+    function checkForConfetti(monthKey, isAllChecked) {
+        if (!isAllChecked) return; // 全解除の場合は紙吹雪なし
+
+        // この月のすべてのタスクがチェックされているかを確認
+        const monthCheckboxes = detailsTableBody.querySelectorAll(`input[data-month="${monthKey}"]`);
+        const allTasksCompleted = Array.from(monthCheckboxes).every(cb => cb.checked);
+
+        if (allTasksCompleted && monthCheckboxes.length > 0) {
+            // 紙吹雪エフェクトを発動
+            triggerConfetti();
+        }
+    }
+
+    function triggerConfetti() {
+        // Basic Cannon エフェクト
+        if (typeof confetti !== 'undefined') {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
     }
 
     function renderNotesTable(allMonthData) {
@@ -429,11 +488,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Event Listeners ---
     function addCheckboxEventListeners() {
         detailsTableBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
+            checkbox.addEventListener('change', (e) => {
                 setUnsavedChanges(true);
                 updateProgressDisplay();
+                
+                // チェックが入った場合、その月の完了状況をチェック
+                if (e.target.checked) {
+                    const monthKey = e.target.getAttribute('data-month');
+                    checkForIndividualConfetti(monthKey);
+                }
             });
         });
+    }
+
+    function checkForIndividualConfetti(monthKey) {
+        // この月のすべてのタスクがチェックされているかを確認
+        const monthCheckboxes = detailsTableBody.querySelectorAll(`input[data-month="${monthKey}"]`);
+        const allTasksCompleted = Array.from(monthCheckboxes).every(cb => cb.checked);
+
+        if (allTasksCompleted && monthCheckboxes.length > 0) {
+            // 紙吹雪エフェクトを発動
+            triggerConfetti();
+        }
     }
 
     function addNotesEventListeners() {

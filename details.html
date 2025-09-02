@@ -155,6 +155,32 @@
             border: 1px solid #ffeaa7;
         }
 
+        /* 事業者情報テーブルの行幅を狭く */
+        .client-info-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .client-info-table th,
+        .client-info-table td {
+            border: 1px solid #ddd;
+            padding: 4px 8px; /* 元の padding を半分に */
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
+        .client-info-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            width: 80px; /* 項目名の幅を固定 */
+        }
+
+        .client-info-table td {
+            background-color: #fff;
+        }
+
         .task-item {
             display: flex;
             align-items: center;
