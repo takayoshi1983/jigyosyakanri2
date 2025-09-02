@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     bodyHtml += `<td class="checkbox-memo-cell" data-month="${month.key}" data-task="${taskName}">
                         <div class="checkbox-memo-container">
                             <input type="checkbox" data-month="${month.key}" data-task="${taskName}" ${isChecked ? 'checked' : ''}>
-                            <input type="text" class="checkbox-memo-input" data-month="${month.key}" data-task="${taskName}" placeholder="メモ" value="${taskMemo}">
+                            <textarea class="checkbox-memo-input" data-month="${month.key}" data-task="${taskName}" placeholder="">${taskMemo}</textarea>
                         </div>
                     </td>`;
                 });
