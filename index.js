@@ -567,8 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 編集画面に遷移
     function editClient(clientId, event) {
         if (event) event.stopPropagation(); // Prevent row click
-        localStorage.setItem('selectedClientId', clientId);
-        window.location.href = 'edit.html';
+        window.location.href = `edit.html?id=${clientId}`;
     }
 
     // グローバルスコープでアクセス可能にする

@@ -200,6 +200,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         clientNoInput.value = '';
         clientNameInput.value = '';
         
+        // Make ID field editable in new mode
+        if (clientNoInput) {
+            clientNoInput.disabled = false;
+            clientNoInput.style.backgroundColor = '';
+            clientNoInput.style.cursor = '';
+        }
+        
         // Set default accounting method
         accountingMethodSelect.value = '記帳代行';
         const customTrigger = accountingMethodSelect.parentElement.querySelector('.custom-select-trigger');
@@ -218,6 +225,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             populateFormFields(currentClient);
+            
+            // Make ID field read-only in edit mode
+            if (clientNoInput) {
+                clientNoInput.disabled = true;
+                clientNoInput.style.backgroundColor = '#f8f9fa';
+                clientNoInput.style.cursor = 'not-allowed';
+            }
             
             // Show danger zone for edit mode
             if (dangerZone) {
