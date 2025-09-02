@@ -89,6 +89,38 @@ export class SupabaseAPI {
         return data;
     }
     
+    static async createStaff(staffData) {
+        const { data, error } = await supabase
+            .from('staffs')
+            .insert(staffData)
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    }
+    
+    static async updateStaff(id, staffData) {
+        const { data, error } = await supabase
+            .from('staffs')
+            .update(staffData)
+            .eq('id', id)
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    }
+    
+    static async deleteStaff(id) {
+        const { error } = await supabase
+            .from('staffs')
+            .delete()
+            .eq('id', id);
+            
+        if (error) throw error;
+    }
+    
     // 月次タスク関連
     static async getMonthlyTasks(clientId, month) {
         try {

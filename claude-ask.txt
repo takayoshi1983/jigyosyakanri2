@@ -1,27 +1,14 @@
-このえらーがあります
-﻿
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+jhjexgkzzbzxhhlezaoa…g_method&select=*:1 
  Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-supabase-client.js:741 Supabase error: 
+
+index.js:863 Error updating default tasks: 
 Object
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
+index.js:853 Error saving default tasks: 
+Object
+supabase-client.js:740 Supabase error: 
+Object
+jhjexgkzzbzxhhlezaoa…g_method&select=*:1 
  Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-jhjexgkzzbzxhhlezaoa…%2Cmonth&select=*:1
+index.js:863 Error updating default tasks: 
+Object
+updateDefaultTask	@	index.js:863

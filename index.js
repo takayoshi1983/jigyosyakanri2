@@ -642,12 +642,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function saveStaffs() {
         try {
-            // Implementation would involve creating, updating, and deleting staff records
-            // This requires more complex logic to handle CRUD operations
-            console.log('Saving staffs:', currentEditingStaffs);
+            // Compare original and current staffs to determine what operations are needed
+            const originalIds = originalStaffsState.map(s => s.id);
+            const currentIds = currentEditingStaffs.map(s => s.id).filter(id => id !== null);
             
-            // For now, just update local state and refresh
-            staffs = [...currentEditingStaffs];
+            // Find staffs to delete (removed from current list)
+            const toDelete = originalStaffsState.filter(original => 
+                !currentEditingStaffs.some(current => current.id === original.id)
+            );
+            
+            // Find staffs to update (existing IDs with changed names)
+            const toUpdate = currentEditingStaffs.filter(current => 
+                current.id !== null && 
+                originalStaffsState.some(original => 
+                    original.id === current.id && original.name !== current.name
+                )
+            );
+            
+            // Find staffs to create (null IDs)
+            const toCreate = currentEditingStaffs.filter(current => current.id === null);
+            
+            console.log('Staff operations:', { toDelete, toUpdate, toCreate });
+            
+            // Execute operations
+            const operations = [];
+            
+            // Delete operations
+            for (const staff of toDelete) {
+                operations.push(SupabaseAPI.deleteStaff(staff.id));
+            }
+            
+            // Update operations
+            for (const staff of toUpdate) {
+                operations.push(SupabaseAPI.updateStaff(staff.id, { name: staff.name }));
+            }
+            
+            // Create operations
+            for (const staff of toCreate) {
+                operations.push(SupabaseAPI.createStaff({ name: staff.name }));
+            }
+            
+            // Execute all operations
+            await Promise.all(operations);
+            
+            // Refresh staff data from database
+            staffs = await fetchStaffs();
             populateFilters();
             closeStaffModal();
             
