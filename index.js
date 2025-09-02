@@ -762,6 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             renderDefaultTasks();
+            setupAddButtonListeners();
             defaultTasksModal.style.display = 'block';
         } catch (error) {
             console.error('Error opening default tasks modal:', error);
@@ -772,6 +773,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderDefaultTasks() {
         renderTaskList('kityo', tasksKityoContainer);
         renderTaskList('jikei', tasksJikeiContainer);
+    }
+
+    function setupAddButtonListeners() {
+        // 追加ボタンのイベントリスナーを設定
+        document.querySelectorAll('button[data-target]').forEach(button => {
+            const newListener = (e) => {
+                const target = e.target.getAttribute('data-target');
+                const input = document.getElementById(`new-task-${target}`);
+                const taskName = input.value.trim();
+                
+                if (taskName) {
+                    if (!defaultTasks[target]) defaultTasks[target] = [];
+                    defaultTasks[target].push(taskName);
+                    input.value = '';
+                    renderTaskList(target, target === 'kityo' ? tasksKityoContainer : tasksJikeiContainer);
+                }
+            };
+            
+            // 既存のリスナーを削除してから新しいリスナーを追加
+            button.removeEventListener('click', button._addTaskListener);
+            button.addEventListener('click', newListener);
+            button._addTaskListener = newListener;
+        });
     }
 
     function renderTaskList(type, container) {
@@ -832,9 +856,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function updateDefaultTask(accountingMethod, tasks) {
-        // This would require implementing an upsert operation for default_tasks
-        // For now, log the operation
-        console.log('Updating default tasks for', accountingMethod, ':', tasks);
+        try {
+            await SupabaseAPI.upsertDefaultTasks(accountingMethod, tasks);
+            console.log('Updated default tasks for', accountingMethod, ':', tasks);
+        } catch (error) {
+            console.error('Error updating default tasks:', error);
+            throw error;
+        }
     }
 
     function closeDefaultTasksModal() {
