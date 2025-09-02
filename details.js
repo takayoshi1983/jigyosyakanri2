@@ -725,9 +725,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (zoomSlider && zoomValue && mainContainer) {
             zoomSlider.addEventListener('input', (e) => {
                 const zoomLevel = e.target.value;
+                const scale = zoomLevel / 100;
                 zoomValue.textContent = zoomLevel + '%';
-                mainContainer.style.transform = `scale(${zoomLevel / 100})`;
+                
+                // スケール変換を適用（幅は固定）
+                mainContainer.style.transform = `scale(${scale})`;
                 mainContainer.style.transformOrigin = 'top left';
+                mainContainer.style.width = `${100 / scale}vw`;
             });
         }
         
