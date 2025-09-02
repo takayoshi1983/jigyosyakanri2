@@ -418,7 +418,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // task_memosフィールドが存在しない場合の安全な取得
                     const taskMemo = (allMonthData[month.key]?.task_memos && allMonthData[month.key].task_memos[taskName]) || '';
                     if (isChecked) completedCount++;
-                    bodyHtml += `<td class="checkbox-memo-cell" data-month="${month.key}" data-task="${taskName}">
+                    const checkedClass = isChecked ? ' checked' : '';
+                    bodyHtml += `<td class="checkbox-memo-cell${checkedClass}" data-month="${month.key}" data-task="${taskName}">
                         <div class="checkbox-memo-container">
                             <input type="checkbox" data-month="${month.key}" data-task="${taskName}" ${isChecked ? 'checked' : ''}>
                             <textarea class="checkbox-memo-input" data-month="${month.key}" data-task="${taskName}" placeholder="">${taskMemo}</textarea>
@@ -455,6 +456,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 全選択または全解除
         checkboxes.forEach(checkbox => {
             checkbox.checked = !allChecked;
+            
+            // セルの背景色も更新
+            const cell = checkbox.closest('.checkbox-memo-cell');
+            if (cell) {
+                if (!allChecked) {
+                    cell.classList.add('checked');
+                } else {
+                    cell.classList.remove('checked');
+                }
+            }
         });
 
         // 未保存状態に設定
@@ -517,6 +528,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkbox.addEventListener('change', (e) => {
                 setUnsavedChanges(true);
                 updateProgressDisplay();
+                
+                // セルの背景色を更新
+                const cell = e.target.closest('.checkbox-memo-cell');
+                if (cell) {
+                    if (e.target.checked) {
+                        cell.classList.add('checked');
+                    } else {
+                        cell.classList.remove('checked');
+                    }
+                }
                 
                 // チェックが入った場合、その月の完了状況をチェック
                 if (e.target.checked) {
