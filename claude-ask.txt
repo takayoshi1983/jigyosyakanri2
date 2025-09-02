@@ -1,24 +1,15 @@
-事業者の追加をしたいのにエラーにってしまいます
-
-supabase-client.js:574 CSV import error: Error: CSVデータにエラーがあります:
-行 8: ID 7 は存在しません（IDの変更は不可）
-行 9: ID 8 は存在しません（IDの変更は不可）
-行 10: ID 9 は存在しません（IDの変更は不可）
-    at SupabaseAPI.importClientsCSV (supabase-client.js:530:23)
-    at async HTMLInputElement.importCSV (index.js:1148:28)
-importClientsCSV @ supabase-client.js:574Understand this error
-index.js:1161 CSV import error: Error: CSVデータにエラーがあります:
-行 8: ID 7 は存在しません（IDの変更は不可）
-行 9: ID 8 は存在しません（IDの変更は不可）
-行 10: ID 9 は存在しません（IDの変更は不可）
-    at SupabaseAPI.importClientsCSV (supabase-client.js:530:23)
-    at async HTMLInputElement.importCSV (index.js:1148:28)
-importCSV @ index.js:1161Understand this error
-supabase-client.js:735 Supabase error: Error: CSVデータにエラーがあります:
-行 8: ID 7 は存在しません（IDの変更は不可）
-行 9: ID 8 は存在しません（IDの変更は不可）
-行 10: ID 9 は存在しません（IDの変更は不可）
-    at SupabaseAPI.importClientsCSV (supabase-client.js:530:23)
-    at async HTMLInputElement.importCSV (index.js:1148:28)
-
-それとメイン画面のテーブルの一番左にIDナンバーを表示するようにしたいです（事業者名の左）
+details.js:601 Fatal initialization error: ReferenceError: finalizeYearButton is not defined
+    at updateFinalizeButtonState (details.js:180:9)
+    at renderAll (details.js:273:9)
+    at async initialize (details.js:599:13)
+initialize @ details.js:601Understand this error
+supabase-client.js:741 Supabase error: ReferenceError: finalizeYearButton is not defined
+    at updateFinalizeButtonState (details.js:180:9)
+    at renderAll (details.js:273:9)
+    at async initialize (details.js:599:13)
+handleSupabaseError @ supabase-client.js:741Understand this error
+custom-dropdown.js:2 Initializing dropdown for selectElement: year-filter with 27 options.
+details.js:180 Uncaught (in promise) ReferenceError: finalizeYearButton is not defined
+    at updateFinalizeButtonState (details.js:180:9)
+    at renderAll (details.js:273:9)
+    at async HTMLSelectElement.<anonymous> (details.js:447:13)

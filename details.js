@@ -177,6 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateFinalizeButtonState() {
+        const finalizeYearButton = document.getElementById('finalize-year-button');
         if (!finalizeYearButton) return;
         const isYearFinalized = clientDetails.finalized_years?.includes(currentYearSelection);
         finalizeYearButton.textContent = isYearFinalized ? `${currentYearSelection}年度の確定を解除` : `${currentYearSelection}年度のタスクを確定`;
@@ -592,6 +593,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Initialization ---
     async function initialize() {
         showLoading();
+        
+        // アコーディオンメニューを最初に作成
+        addManagementButtons();
+        
         addMainEventListeners();
         try {
             await loadClientDetails();
@@ -605,7 +610,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    initialize().then(() => {
-        addManagementButtons();
-    });
+    initialize();
 });
