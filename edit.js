@@ -254,6 +254,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Create new client
                 formData.status = 'active';
                 result = await SupabaseAPI.createClient(formData);
+                
+                // Set up initial tasks based on accounting method
+                if (result.accounting_method) {
+                    try {
+                        await SupabaseAPI.setupInitialTasksForNewClient(result.id, result.accounting_method);
+                        console.log('初期タスク設定完了:', result.accounting_method);
+                    } catch (taskError) {
+                        console.warn('初期タスク設定に失敗しました:', taskError);
+                    }
+                }
+                
                 showNotification('新規顧客が作成されました', 'success');
                 showStatus('✅ 新規顧客作成完了', 'success');
                 
