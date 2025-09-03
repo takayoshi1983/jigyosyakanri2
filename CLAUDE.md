@@ -211,7 +211,7 @@ README_SUPABASE.md          # 完全移行ガイド
 - `f65b7b1`: fix: 詳細画面のfinalizeYearButton参照エラー修正
 
 #### 環境・デプロイ状況
-- **本番URL**: https://jigyousya-final.vercel.app/
+- **本番URL**: https://jigyosyakanri2.vercel.app/index.html
 - **Supabase**: lqwjmlkkdddjnnxnlyfz.supabase.co
 - **最新コミット**: f65b7b1（エラー修正版）
 - **動作状況**: 全機能正常動作確認済み

@@ -730,6 +730,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </td>
         `;
 
+        // Apply inactive styling if client is inactive
+        if (client.status === 'inactive') {
+            row.classList.add('inactive-client');
+        }
+
         return row;
     }
 
@@ -1191,7 +1196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Hide inactive filter
             const showInactive = !appSettings.hide_inactive_clients;
-            const matchesStatus = client.status === 'active' || (showInactive && client.status === 'deleted');
+            const matchesStatus = client.status === 'active' || (showInactive && client.status === 'inactive');
 
             return matchesSearch && matchesStaff && matchesMonth && matchesStatus;
         });
