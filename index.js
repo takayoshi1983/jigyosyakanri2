@@ -1205,21 +1205,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function sortClients(clientList) {
-        return clientList.sort((a, b) => {
-            let aValue = a[currentSortKey];
-            let bValue = b[currentSortKey];
+        // 決算月ソートの場合のみカスタムロジックを適用
+        if (currentSortKey === 'fiscal_month') {
+            const currentMonth = new Date().getMonth() + 1; // 0-11 -> 1-12
+            const sortStartMonth = (currentMonth - 2 + 12) % 12 || 12; // 現在の月-2か月を起点 (1-12)
 
-            // Handle different data types
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-                aValue = aValue.toLowerCase();
-                bValue = bValue.toLowerCase();
-            }
+            return clientList.sort((a, b) => {
+                let aMonth = a.fiscal_month;
+                let bMonth = b.fiscal_month;
 
-            if (aValue === bValue) return 0;
+                // null や undefined の場合はソートの最後に持ってくる
+                if (aMonth === null || aMonth === undefined) return 1;
+                if (bMonth === null || bMonth === undefined) return -1;
 
-            const result = aValue < bValue ? -1 : 1;
-            return currentSortDirection === 'asc' ? result : -result;
-        });
+                // 起点からの距離を計算
+                let aDistance = (aMonth - sortStartMonth + 12) % 12;
+                let bDistance = (bMonth - sortStartMonth + 12) % 12;
+
+                if (aDistance === bDistance) return 0;
+
+                const result = aDistance < bDistance ? -1 : 1;
+                return currentSortDirection === 'asc' ? result : -result;
+            });
+        } else {
+            // その他のキーでのソートは既存ロジックを維持
+            return clientList.sort((a, b) => {
+                let aValue = a[currentSortKey];
+                let bValue = b[currentSortKey];
+
+                // Handle different data types
+                if (typeof aValue === 'string' && typeof bValue === 'string') {
+                    aValue = aValue.toLowerCase();
+                    bValue = bValue.toLowerCase();
+                }
+
+                if (aValue === bValue) return 0;
+
+                const result = aValue < bValue ? -1 : 1;
+                return currentSortDirection === 'asc' ? result : -result;
+            });
+        }
     }
 
     // --- Setup Functions ---
