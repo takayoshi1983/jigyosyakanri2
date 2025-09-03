@@ -1222,7 +1222,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 let aDistance = (aMonth - sortStartMonth + 12) % 12;
                 let bDistance = (bMonth - sortStartMonth + 12) % 12;
 
-                if (aDistance === bDistance) return 0;
+                // 決算月が同じ場合は未入力期間でソート
+                if (aDistance === bDistance) {
+                    let aUnattended = a.unattendedMonths;
+                    let bUnattended = b.unattendedMonths;
+
+                    // 未入力期間が '-' の場合は数値として扱わない
+                    if (aUnattended === '-') aUnattended = -Infinity; // 長いとみなす
+                    if (bUnattended === '-') bUnattended = -Infinity; // 長いとみなす
+
+                    // 未入力期間が長い方が上に来るように降順ソート
+                    if (aUnattended === bUnattended) return 0;
+                    return bUnattended - aUnattended; // 降順
+                }
 
                 const result = aDistance < bDistance ? -1 : 1;
                 return currentSortDirection === 'asc' ? result : -result;
