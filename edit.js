@@ -219,7 +219,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             pageTitle.textContent = '顧客情報編集（Supabase版）';
             
-            currentClient = await fetchClientDetails(clientId);
+            // キャッシュされたクライアントデータを優先使用
+            const cachedClient = sessionStorage.getItem('cached_client_data');
+            if (cachedClient) {
+                currentClient = JSON.parse(cachedClient);
+                // キャッシュから復元したデータが対象のクライアントかチェック
+                if (currentClient.id == clientId) {
+                    // キャッシュデータを使用
+                } else {
+                    currentClient = await fetchClientDetails(clientId);
+                }
+            } else {
+                currentClient = await fetchClientDetails(clientId);
+            }
+            
             if (!currentClient) {
                 throw new Error('顧客データが見つかりません');
             }
@@ -501,8 +514,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             showStatus('アプリケーションを初期化中...', 'warning');
 
-            // Fetch staffs data
-            staffs = await fetchStaffs();
+            // キャッシュされたスタッフデータを優先使用
+            const cachedStaffs = sessionStorage.getItem('cached_staffs_data');
+            if (cachedStaffs) {
+                staffs = JSON.parse(cachedStaffs);
+            } else {
+                staffs = await fetchStaffs();
+            }
             populateStaffSelect();
 
             // Initialize based on mode
@@ -520,6 +538,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             showStatus('✅ 初期化完了', 'success');
             setTimeout(hideStatus, 2000);
+            
+            // キャッシュデータをクリア（メモリリーク防止）
+            sessionStorage.removeItem('cached_client_data');
+            sessionStorage.removeItem('cached_staffs_data');
 
         } catch (error) {
             console.error('Initialization failed:', error);

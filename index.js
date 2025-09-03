@@ -525,6 +525,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add client button
         document.getElementById('add-client-button').addEventListener('click', () => {
+            // 新規作成画面でもスタッフデータをキャッシュ
+            sessionStorage.setItem('cached_staffs_data', JSON.stringify(staffs));
             window.location.href = 'edit.html';
         });
 
@@ -555,6 +557,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const client = clients.find(c => c.id.toString() === clientId);
             if (client && needsInitialTaskSetup(client)) {
                 await setupInitialTasks(client);
+            }
+            
+            // 詳細画面でもクライアントデータをキャッシュ
+            if (client) {
+                sessionStorage.setItem('cached_client_data', JSON.stringify(client));
             }
             
             // Navigate to client detail page
@@ -668,9 +675,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return row;
     }
 
-    // 編集画面に遷移
+    // 編集画面に遷移（データキャッシュ付き）
     function editClient(clientId, event) {
         if (event) event.stopPropagation(); // Prevent row click
+        
+        // 編集画面で再利用できるようにデータをキャッシュ
+        const clientData = clients.find(c => c.id == clientId);
+        if (clientData) {
+            sessionStorage.setItem('cached_client_data', JSON.stringify(clientData));
+        }
+        sessionStorage.setItem('cached_staffs_data', JSON.stringify(staffs));
+        
         window.location.href = `edit.html?id=${clientId}`;
     }
 

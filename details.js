@@ -85,7 +85,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         showLoading();
         showStatus('クライアントデータを読み込み中...', 'warning');
         try {
-            clientDetails = await SupabaseAPI.getClient(clientId);
+            // キャッシュされたクライアントデータを優先使用
+            const cachedClient = sessionStorage.getItem('cached_client_data');
+            if (cachedClient) {
+                const parsedClient = JSON.parse(cachedClient);
+                if (parsedClient.id == clientId) {
+                    clientDetails = parsedClient;
+                } else {
+                    clientDetails = await SupabaseAPI.getClient(clientId);
+                }
+                // キャッシュデータをクリア
+                sessionStorage.removeItem('cached_client_data');
+            } else {
+                clientDetails = await SupabaseAPI.getClient(clientId);
+            }
+            
             if (!clientDetails) throw new Error('クライアントが見つかりません');
 
             clientDetails.custom_tasks_by_year = clientDetails.custom_tasks_by_year || {};
