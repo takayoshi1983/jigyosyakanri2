@@ -261,18 +261,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Check if user is registered in the staffs table
             if (userRole === null) {
-                console.warn('Unauthorized user. Applying blur, signing out and reloading page.');
+                console.warn('Unauthorized user. Applying blur, then showing alert.');
                 hideLoadingIndicator();
 
                 // Blur the background container
                 const mainContainer = document.querySelector('.container');
                 if (mainContainer) mainContainer.classList.add('blur-background');
 
-                alert('このアプリケーションへのアクセスが許可されていません。管理者に連絡してください。');
-                
-                await SupabaseAPI.signOut();
-                window.location.reload(); // Reload the page to reset state
-                return; // Stop further execution
+                // Use setTimeout to allow the blur effect to render before the alert blocks the main thread.
+                setTimeout(async () => {
+                    alert('このアプリケーションへのアクセスが許可されていません。管理者に連絡してください。');
+                    await SupabaseAPI.signOut();
+                    window.location.reload(); // Reload the page to reset state
+                }, 10); // A small delay is enough for the browser to render the change.
+
+                return; // Stop further execution of initializeAuthenticatedApp
             }
 
             // If user is registered, proceed with setup and UI customization
