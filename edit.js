@@ -187,6 +187,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 editForm.style.pointerEvents = 'none';
             }
             
+            // 復活ボタンだけはクリック可能にする
+            if (reactivateButton) {
+                reactivateButton.style.pointerEvents = 'auto';
+                reactivateButton.style.opacity = '1';
+            }
+            
             // Disable form inputs
             const inputs = document.querySelectorAll('#edit-form input, #edit-form select');
             inputs.forEach(input => {
