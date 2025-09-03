@@ -174,15 +174,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update display name and status
         clientNameDisplay.textContent = client.name || '';
         
-        // Show/hide inactive status
+        // Show/hide inactive status and apply gray-out effect
         if (client.status === 'deleted') {
             inactiveStatusBadge.style.display = 'inline';
             if (reactivateButton) reactivateButton.style.display = 'inline-block';
             if (inactiveButton) inactiveButton.style.display = 'none';
+            
+            // Apply gray-out effect to the form
+            const editForm = document.getElementById('edit-form');
+            if (editForm) {
+                editForm.style.opacity = '0.6';
+                editForm.style.pointerEvents = 'none';
+            }
+            
+            // Disable form inputs
+            const inputs = document.querySelectorAll('#edit-form input, #edit-form select');
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+            
+            // Disable save button
+            if (saveButton) {
+                saveButton.disabled = true;
+                saveButton.style.opacity = '0.5';
+            }
         } else {
             inactiveStatusBadge.style.display = 'none';
             if (reactivateButton) reactivateButton.style.display = 'none';
             if (inactiveButton) inactiveButton.style.display = 'inline-block';
+            
+            // Remove gray-out effect
+            const editForm = document.getElementById('edit-form');
+            if (editForm) {
+                editForm.style.opacity = '1';
+                editForm.style.pointerEvents = 'auto';
+            }
+            
+            // Enable form inputs
+            const inputs = document.querySelectorAll('#edit-form input, #edit-form select');
+            inputs.forEach(input => {
+                input.disabled = false;
+            });
+            
+            // Enable save button
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.style.opacity = '1';
+            }
+            
+            // Re-disable ID field in edit mode
+            if (!isNewMode && clientNoInput) {
+                clientNoInput.disabled = true;
+            }
         }
     }
 
@@ -498,6 +541,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 hideDeleteModal();
             }
         });
+
+        // Modal buttons
+        if (modalCancel) {
+            modalCancel.addEventListener('click', hideDeleteModal);
+        }
+        
+        if (modalConfirm) {
+            modalConfirm.addEventListener('click', handleModalConfirm);
+        }
 
         // Click outside modal to close
         if (deleteModal) {
