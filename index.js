@@ -39,6 +39,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasksKityoContainer = document.getElementById('tasks-kityo');
     const tasksJikeiContainer = document.getElementById('tasks-jikei');
 
+    // Other Apps Accordion elements
+    const otherAppsAccordion = document.getElementById('other-apps-accordion');
+    const otherAppsAccordionHeader = otherAppsAccordion.querySelector('.accordion-header');
+    const otherAppsAccordionContent = otherAppsAccordion.querySelector('.accordion-content');
+    const urlSettingsButton = document.getElementById('url-settings-button');
+
     // Basic Settings Modal elements
     const basicSettingsModal = document.getElementById('basic-settings-modal');
     const openBasicSettingsModalButton = document.getElementById('basic-settings-button');
@@ -565,8 +571,32 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBasicSettingsButton.addEventListener('click', saveBasicSettings);
         cancelBasicSettingsButton.addEventListener('click', closeBasicSettingsModal);
 
-        // Accordion
+        // Accordion (Management)
         accordionHeader.addEventListener('click', toggleAccordion);
+
+        // Accordion (Other Apps)
+        otherAppsAccordionHeader.addEventListener('click', () => {
+            const isExpanded = otherAppsAccordionContent.style.display === 'block';
+            otherAppsAccordionContent.style.display = isExpanded ? 'none' : 'block';
+            
+            const icon = otherAppsAccordionHeader.querySelector('.accordion-icon');
+            if (icon) {
+                icon.textContent = isExpanded ? '▼' : '▲';
+            }
+
+            // Add/remove global click listener for this accordion
+            if (!isExpanded) { // If accordion is now expanded
+                document.addEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, otherAppsAccordion, otherAppsAccordionContent, otherAppsAccordionHeader));
+            } else { // If accordion is now collapsed
+                document.removeEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, otherAppsAccordion, otherAppsAccordionContent, otherAppsAccordionHeader));
+            }
+        });
+
+        // URL設定ボタンのイベントリスナー
+        urlSettingsButton.addEventListener('click', () => {
+            alert('URL設定ボタンがクリックされました！'); // 仮の処理
+            // ここにURL設定モーダルを開くなどの処理を記述
+        });
 
         // Table header sorting
         clientsTableHeadRow.addEventListener('click', handleSort);
@@ -1642,6 +1672,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.textContent = '▼'; // Reset icon to closed state
             }
             document.removeEventListener('click', closeAccordionOnClickOutside); // Remove listener
+        }
+    }
+
+    function closeOtherAppsAccordionOnClickOutside(event, accordionContainer, accordionContent, accordionHeader) {
+        // Check if the clicked element is inside the accordion header or content
+        if (!accordionContainer.contains(event.target)) {
+            // If not, close the accordion
+            accordionContent.style.display = 'none';
+            const icon = accordionHeader.querySelector('.accordion-icon');
+            if (icon) {
+                icon.textContent = '▼'; // Reset icon to closed state
+            }
+            document.removeEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, accordionContainer, accordionContent, accordionHeader)); // Remove listener
         }
     }
 
