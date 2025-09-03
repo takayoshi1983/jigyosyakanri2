@@ -93,6 +93,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (connectionStatus) connectionStatus.style.display = 'none';
     }
 
+    // ローディング表示関数
+    function showLoadingIndicator(message = 'データを読み込み中...') {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const loadingMessage = document.getElementById('loading-message');
+        if (loadingIndicator && loadingMessage) {
+            loadingMessage.textContent = message;
+            loadingIndicator.style.display = 'block';
+        }
+    }
+
+    function hideLoadingIndicator() {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'none';
+        }
+    }
+
     // --- Authentication Functions ---
     function showAuthStatus(message, type = 'info') {
         authStatus.className = type;
@@ -244,9 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
         loadFilterState();
         
         try {
-            // Fetch data from Supabase
+            // ローディング表示開始
+            showLoadingIndicator('データを読み込み中...');
+            
+            // Fetch data from Supabase with optimized bulk loading
             [clients, staffs, appSettings] = await Promise.all([
-                fetchClients(),
+                fetchClientsOptimized(),
                 fetchStaffs(),
                 fetchSettings()
             ]);
@@ -256,7 +276,11 @@ document.addEventListener('DOMContentLoaded', () => {
             applyFilterState();
             renderClients();
             updateSortIcons();
+            
+            // ローディング表示終了
+            hideLoadingIndicator();
         } catch (error) {
+            hideLoadingIndicator();
             console.error("Error initializing app:", error);
             alert("アプリケーションの初期化に失敗しました: " + handleSupabaseError(error));
         }
@@ -326,6 +350,86 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error fetching clients:', error);
+            throw error;
+        }
+    }
+
+    // パフォーマンス最適化版クライアント取得
+    async function fetchClientsOptimized() {
+        try {
+            // 並列で全データを取得（N+1問題解決）
+            const [clientsData, allMonthlyTasks] = await Promise.all([
+                SupabaseAPI.getClients(),
+                SupabaseAPI.getAllMonthlyTasksForAllClients()
+            ]);
+
+            // クライアントIDごとにタスクをグループ化
+            const tasksByClientId = {};
+            for (const task of allMonthlyTasks) {
+                if (!tasksByClientId[task.client_id]) {
+                    tasksByClientId[task.client_id] = [];
+                }
+                tasksByClientId[task.client_id].push(task);
+            }
+
+            // 各クライアントの進捗計算
+            const processedClients = clientsData.map(client => {
+                const clientTasks = tasksByClientId[client.id] || [];
+                
+                let latestCompletedMonth = '-';
+                const completedMonths = [];
+
+                for (const taskMonth of clientTasks) {
+                    const monthDate = new Date(taskMonth.month + '-01');
+                    const month = monthDate.getMonth() + 1;
+                    let fiscalYear = monthDate.getFullYear();
+                    if (month <= client.fiscal_month) {
+                        fiscalYear -= 1;
+                    }
+
+                    const customTasksForYear = client.custom_tasks_by_year?.[fiscalYear.toString()] || [];
+
+                    if (customTasksForYear.length > 0) {
+                        const allTasksCompleted = customTasksForYear.every(taskName => taskMonth.tasks?.[taskName] === true);
+                        if (allTasksCompleted) {
+                            completedMonths.push(taskMonth.month);
+                        }
+                    }
+                }
+
+                if (completedMonths.length > 0) {
+                    completedMonths.sort().reverse();
+                    latestCompletedMonth = completedMonths[0];
+                }
+
+                let unattendedMonths = '-';
+                if (latestCompletedMonth !== '-') {
+                    const completedDate = new Date(latestCompletedMonth + '-01');
+                    const currentDate = new Date();
+                    completedDate.setDate(1);
+                    currentDate.setDate(1);
+
+                    const diffYear = currentDate.getFullYear() - completedDate.getFullYear();
+                    const diffMonth = currentDate.getMonth() - completedDate.getMonth();
+                    
+                    let totalMonths = diffYear * 12 + diffMonth;
+                    totalMonths = totalMonths - 1;
+                    unattendedMonths = totalMonths >= 0 ? totalMonths : 0;
+                }
+
+                return {
+                    ...client,
+                    staff_name: client.staffs?.name || '',
+                    monthlyProgress: latestCompletedMonth,
+                    unattendedMonths: unattendedMonths,
+                    status: 'active'
+                };
+            });
+
+            return processedClients;
+
+        } catch (error) {
+            console.error('Error fetching clients (optimized):', error);
             throw error;
         }
     }
@@ -1248,7 +1352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showStatus(`✅ ${result.message}`, 'success');
                 
                 // データを再読み込み
-                clients = await fetchClients();
+                clients = await fetchClientsOptimized();
                 renderClients();
                 populateFilters();
                 
@@ -1341,7 +1445,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // データを再読み込み
                 [clients, staffs, appSettings] = await Promise.all([
-                    fetchClients(),
+                    fetchClientsOptimized(),
                     fetchStaffs(),
                     fetchSettings()
                 ]);

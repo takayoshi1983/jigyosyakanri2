@@ -183,6 +183,20 @@ export class SupabaseAPI {
         }
         return data;
     }
+
+    // 全クライアントの月次タスクを一括取得（パフォーマンス最適化）
+    static async getAllMonthlyTasksForAllClients() {
+        const { data, error } = await supabase
+            .from('monthly_tasks')
+            .select('*')
+            .order('client_id', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching all monthly tasks for all clients:', error);
+            throw error;
+        }
+        return data;
+    }
     
     static async createMonthlyTask(taskData) {
         const { data, error } = await supabase

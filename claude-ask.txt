@@ -1,14 +1,190 @@
-jhjexgkzzbzxhhlezaoa…g_method&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
+# 事業者管理アプリ - 開発引き継ぎ書
 
-index.js:863 Error updating default tasks: 
-Object
-index.js:853 Error saving default tasks: 
-Object
-supabase-client.js:740 Supabase error: 
-Object
-jhjexgkzzbzxhhlezaoa…g_method&select=*:1 
- Failed to load resource: the server responded with a status of 400 ()
-index.js:863 Error updating default tasks: 
-Object
-updateDefaultTask	@	index.js:863
+## 📋 プロジェクト概要
+**事業者管理アプリケーション** - 顧問先の月次進捗管理・担当者管理・カスタムタスク管理システム
+
+### 🌐 現在の本番環境
+- **URL**: https://jigyosyakanri2.vercel.app/
+- **認証**: Google OAuth (1日1回認証)
+- **データベース**: Supabase PostgreSQL
+- **ホスティング**: Vercel (サーバーレス)
+
+## 🛠️ 技術スタック
+- **Frontend**: Vanilla JavaScript (ES6), HTML5, CSS3
+- **Backend**: Supabase (PostgreSQL + REST API + Auth)
+- **Infrastructure**: Vercel (デプロイ・ホスティング)
+- **認証**: Google OAuth 2.0 via Supabase Auth
+
+## 📁 主要ファイル構成
+```
+C:\claudecode\jigyosya-final2\
+├── index.html              # メイン画面
+├── index.js               # メイン画面ロジック (1300+ lines)
+├── details.html           # 詳細画面 (月次タスク管理)
+├── details.js             # 詳細画面ロジック
+├── edit.html              # 編集画面 (顧客情報CRUD)
+├── edit.js                # 編集画面ロジック
+├── supabase-client.js     # Supabase API操作ライブラリ (800+ lines)
+├── supabase-env.js        # 環境設定 (API Keys等)
+├── style.css              # メインスタイル
+├── custom-dropdown.css    # カスタムドロップダウンスタイル
+├── custom-dropdown.js     # カスタムドロップダウンロジック
+├── CLAUDE.md              # 開発履歴・機能詳細
+└── HANDOVER.md            # この引き継ぎ書
+```
+
+## 🗄️ データベース構造 (Supabase)
+### テーブル構成
+1. **clients** - 顧客情報
+   - `id`, `name`, `fiscal_month`, `staff_id` (FK), `accounting_method`, `status`
+   - `custom_tasks_by_year` (JSONB) - 年度別カスタムタスク
+   - `finalized_years` (JSONB) - 確定済み年度リスト
+
+2. **staffs** - 担当者情報
+   - `id`, `name`
+
+3. **monthly_tasks** - 月次タスクデータ
+   - `client_id` (FK), `month`, `tasks` (JSONB), `status`, `url`, `memo`
+
+4. **settings** - アプリケーション設定
+   - `key`, `value` - 閾値・色設定等
+
+5. **default_tasks** - 初期タスク設定
+   - `accounting_method`, `tasks` (JSONB), `name`, `sort_order`
+
+6. **editing_sessions** - 編集セッション管理
+   - 悲観ロック実装用
+
+## 🚀 主要機能一覧
+
+### ✅ 完成済み機能
+1. **顧客管理 (CRUD)** - 作成・更新・削除・復活
+2. **担当者管理** - 追加・編集・削除 (外部キー制約対応済み)
+3. **月次タスク管理** - チェックボックス・メモ機能
+4. **年度確定システム** - タスク項目ロック・継承・伝播
+5. **カスタムタスク管理** - 顧客別独自タスク設定
+6. **検索・フィルター機能** - 担当者・決算月・キーワード検索
+7. **CSV エクスポート・インポート** - 日本語エンコーディング対応
+8. **データベース初期化** - 開発・テスト用
+9. **Google OAuth認証** - セキュアなユーザー管理
+10. **レスポンシブUI** - モバイル・デスクトップ対応
+
+### 🔧 技術的特徴
+- **悲観ロック**: 編集競合防止機能
+- **データ整合性チェック**: フロントエンド・DB突合
+- **自動タスク伝播**: 項目変更の未確定年度反映
+- **外部キー制約対応**: 安全な担当者削除処理
+- **エラーハンドリング**: 包括的なエラー処理・ユーザーフィードバック
+
+## 🔑 重要な設定情報
+### Supabase設定
+- **Project URL**: `https://jhjexgkzzbzxhhlezaoa.supabase.co`
+- **設定ファイル**: `supabase-env.js` (API Keyは環境に応じて切り替え)
+- **認証設定**: Google OAuth Client ID/Secret設定済み
+
+### Vercel設定
+- **プロジェクト**: jigyosyakanri2.vercel.app
+- **自動デプロイ**: GitHubコミット時に自動実行
+- **環境変数**: Supabase接続情報設定済み
+
+## ⚠️ 重要な注意事項
+
+### 開発時の注意点
+1. **API Key管理**
+   - 本番・開発環境のAPI Key分離必須
+   - `supabase-env.js` で環境切り替え
+
+2. **データベース操作**
+   - 外部キー制約に注意 (staffs ↔ clients)
+   - JSONB型データの適切な処理が必要
+
+3. **非同期処理**
+   - Promise.all() での並列処理多用
+   - エラーハンドリング必須
+
+### 既知の制約・留意点
+1. **担当者削除制限**
+   - 顧客が割り当てられた担当者は削除不可
+   - 事前チェック機能で対応済み
+
+2. **年度確定システム**
+   - 確定済み年度のタスク項目は変更不可
+   - 未確定年度のみ編集・伝播可能
+
+3. **カスタムドロップダウン**
+   - 標準selectタグをカスタマイズ
+   - 初期化・更新タイミングに注意
+
+## 🐛 最近修正した主要バグ・改善
+### 2025年9月2日 - 担当者管理完全修復
+- **問題**: 担当者の追加・変更・削除が保存されない
+- **原因**: `saveStaffs()` 関数未実装
+- **解決**: 完全CRUD実装 + 409 Conflictエラー対策
+- **ファイル**: `index.js:643-701`, `supabase-client.js:115-151`
+
+### 2025年8月31日 - UI改善完了
+- 検索条件保持機能
+- 年度ドロップダウン修正
+- JavaScriptエラー解消
+
+## 🔍 デバッグ・トラブルシューティング
+
+### よくあるエラーパターン
+1. **Supabase接続エラー**
+   - API Key・URL設定確認
+   - Network タブで HTTP Status確認
+
+2. **認証エラー**
+   - Google OAuth設定確認
+   - ドメイン許可リスト更新
+
+3. **データ保存失敗**
+   - 外部キー制約チェック
+   - JSONB形式データ検証
+
+### デバッグ方法
+1. **ブラウザ開発者ツール**
+   - Console: JavaScript エラー確認
+   - Network: API リクエスト・レスポンス確認
+   - Application: LocalStorage・Session確認
+
+2. **Supabase Dashboard**
+   - Table Editor: データ直接確認・編集
+   - SQL Editor: クエリ実行・検証
+   - Auth: ユーザー認証状況確認
+
+## 📚 参考情報・ドキュメント
+1. **CLAUDE.md** - 詳細な開発履歴・機能説明
+2. **Supabase Docs** - https://supabase.com/docs
+3. **Vercel Docs** - https://vercel.com/docs
+
+## 🚀 今後の開発方針
+1. **安定性重視**: 既存機能の安定化優先
+2. **実用性重視**: 実運用でのフィードバック反映
+3. **段階的改善**: 大規模変更より小規模改良
+
+---
+
+## 👨‍💻 開発者向け クイックスタート
+
+### ローカル開発環境セットアップ
+1. プロジェクトクローン・移動
+2. `supabase-env.js` の API Key設定確認
+3. Live Server等でローカル実行 (HTTPS推奨)
+4. Google OAuth認証テスト
+
+### 主要な開発エントリーポイント
+- **メイン機能拡張**: `index.js` (1300+ lines)
+- **API操作追加**: `supabase-client.js` (800+ lines)  
+- **UI/スタイル修正**: `style.css`, HTML files
+- **認証・設定**: `supabase-env.js`
+
+### 緊急時対応
+- **本番障害**: Vercel Dashboard + Supabase Dashboard確認
+- **データ復旧**: データベース初期化機能利用 (要注意)
+- **認証問題**: Google OAuth設定・ドメイン設定確認
+
+---
+**最終更新**: 2025年9月2日  
+**作成者**: Claude (Anthropic)  
+**プロジェクト状況**: 本番運用中・安定稼働
