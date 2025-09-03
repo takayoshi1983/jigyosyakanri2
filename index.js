@@ -1586,6 +1586,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (icon) {
             icon.textContent = isExpanded ? '▼' : '▲';
         }
+
+        // Add/remove global click listener
+        if (!isExpanded) { // If accordion is now expanded
+            document.addEventListener('click', closeAccordionOnClickOutside);
+        } else { // If accordion is now collapsed
+            document.removeEventListener('click', closeAccordionOnClickOutside);
+        }
+    }
+
+    function closeAccordionOnClickOutside(event) {
+        // Check if the clicked element is inside the accordion header or content
+        if (!accordionHeader.contains(event.target) && !accordionContent.contains(event.target)) {
+            // If not, close the accordion
+            accordionContent.style.display = 'none';
+            const icon = accordionHeader.querySelector('.accordion-icon');
+            if (icon) {
+                icon.textContent = '▼'; // Reset icon to closed state
+            }
+            document.removeEventListener('click', closeAccordionOnClickOutside); // Remove listener
+        }
     }
 
     // Initialize the application

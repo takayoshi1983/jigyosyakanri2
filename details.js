@@ -872,19 +872,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         exportButton.style.cssText = 'padding: 10px; background: #607D8B; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
 
         let isOpen = false;
-        accordionHeader.addEventListener('click', () => {
+        accordionHeader.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent immediate closing by document click
             isOpen = !isOpen;
             const icon = accordionHeader.querySelector('.accordion-icon');
             if (isOpen) {
                 accordionContent.style.display = 'block';
                 icon.textContent = '▲';
                 accordionHeader.style.backgroundColor = '#e9ecef';
+                document.addEventListener('click', closeAccordionOnClickOutside);
             } else {
                 accordionContent.style.display = 'none';
                 icon.textContent = '▼';
                 accordionHeader.style.backgroundColor = '#f8f9fa';
+                document.removeEventListener('click', closeAccordionOnClickOutside);
             }
         });
+        
+        accordionHeader.addEventListener('mouseover', () => { if (!isOpen) accordionHeader.style.backgroundColor = '#e9ecef'; });
+        accordionHeader.addEventListener('mouseout', () => { if (!isOpen) accordionHeader.style.backgroundColor = '#f8f9fa'; });
+
+        buttonsContainer.appendChild(finalizeYearButton);
+        buttonsContainer.appendChild(syncButton);
+        buttonsContainer.appendChild(propagateButton);
+        buttonsContainer.appendChild(exportButton);
+
+        accordionContent.appendChild(buttonsContainer);
+        accordionContainer.appendChild(accordionHeader);
+        accordionContainer.appendChild(accordionContent);
+        
+        document.body.appendChild(accordionContainer);
+
+        function closeAccordionOnClickOutside(event) {
+            if (!accordionContainer.contains(event.target)) {
+                accordionContent.style.display = 'none';
+                const icon = accordionHeader.querySelector('.accordion-icon');
+                if (icon) {
+                    icon.textContent = '▼';
+                }
+                accordionHeader.style.backgroundColor = '#f8f9fa';
+                isOpen = false;
+                document.removeEventListener('click', closeAccordionOnClickOutside);
+            }
+        }
         
         accordionHeader.addEventListener('mouseover', () => { if (!isOpen) accordionHeader.style.backgroundColor = '#e9ecef'; });
         accordionHeader.addEventListener('mouseout', () => { if (!isOpen) accordionHeader.style.backgroundColor = '#f8f9fa'; });
