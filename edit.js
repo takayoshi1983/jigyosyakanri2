@@ -423,7 +423,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             console.log('Starting modal confirm process...');
             showLoading();
-            hideDeleteModal();
 
             switch (currentModalAction) {
                 case 'inactive':
@@ -449,7 +448,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await SupabaseAPI.deleteClient(currentClient.id);
                     showNotification('顧客を削除しました', 'success');
                     
-                    // Redirect to main page after delete
+                    // Close modal and redirect to main page after delete
+                    hideDeleteModal();
                     console.log('Redirecting to main page in 2 seconds...');
                     setTimeout(() => {
                         window.location.href = 'index.html';
@@ -457,12 +457,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
             }
 
-            // Update UI after status change
+            // Close modal and update UI after status change
+            hideDeleteModal();
             populateFormFields(currentClient);
             
         } catch (error) {
             console.error('Error handling modal confirm:', error);
             showNotification('操作でエラーが発生しました: ' + handleSupabaseError(error), 'error');
+            hideDeleteModal(); // Close modal on error too
         } finally {
             hideLoading();
         }
