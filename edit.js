@@ -191,7 +191,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             // 復活ボタンだけはクリック可能にする
             if (reactivateButton) {
                 reactivateButton.style.pointerEvents = 'auto';
-                reactivateButton.style.opacity = '1';
+                reactivateButton.style.opacity = '1 !important';
+                reactivateButton.style.filter = 'none';
             }
             
             // 管理者の場合は削除ボタンもクリック可能にする
