@@ -667,7 +667,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderClients() {
         if (!clientsTableBody) return;
 
+        console.log('[DEBUG] renderClients() called, total clients:', clients.length);
         const filteredClients = getFilteredClients();
+        console.log('[DEBUG] After filtering:', filteredClients.length, 'clients remain');
         const sortedClients = sortClients(filteredClients);
 
         clientsTableBody.innerHTML = '';
@@ -1180,12 +1182,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getFilteredClients() {
         // Debug: Show all clients with their status
-        console.log('[DEBUG] All clients status:', clients.map(c => ({ 
+        const clientsDebug = clients.map(c => ({ 
             id: c.id, 
             name: c.name, 
             status: c.status 
-        })));
-        console.log('[DEBUG] App settings:', { hide_inactive_clients: appSettings.hide_inactive_clients });
+        }));
+        console.log('[DEBUG] All clients status count:', clients.length);
+        console.log('[DEBUG] Inactive/deleted clients:', clientsDebug.filter(c => c.status === 'inactive' || c.status === 'deleted'));
+        console.log('[DEBUG] ID88 specifically:', clientsDebug.find(c => c.id === 88));
+        console.log('[DEBUG] App settings hide_inactive_clients:', appSettings.hide_inactive_clients);
         
         return clients.filter(client => {
             // Search filter
