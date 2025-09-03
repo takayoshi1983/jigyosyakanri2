@@ -1211,13 +1211,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const showInactive = !appSettings.hide_inactive_clients;
             const matchesStatus = client.status === 'active' || (showInactive && (client.status === 'inactive' || client.status === 'deleted'));
             
-            // Debug log for inactive clients
-            if (client.status === 'inactive' || client.status === 'deleted') {
-                console.log(`[DEBUG] Inactive client "${client.name}":`, {
+            // Debug log for ID88 specifically
+            if (client.id === 88) {
+                console.log(`[DEBUG] ID88 Filter Check:`, {
+                    name: client.name,
+                    status: client.status,
+                    searchTerm: searchTerm,
+                    matchesSearch: matchesSearch,
+                    staffFilterValue: staffFilterValue,
+                    clientStaffId: client.staff_id,
+                    matchesStaff: matchesStaff,
+                    monthFilterValue: monthFilterValue,
+                    clientFiscalMonth: client.fiscal_month,
+                    matchesMonth: matchesMonth,
                     hideInactiveSettings: appSettings.hide_inactive_clients,
                     showInactive: showInactive,
-                    clientStatus: client.status,
-                    matchesStatus: matchesStatus
+                    matchesStatus: matchesStatus,
+                    finalResult: matchesSearch && matchesStaff && matchesMonth && matchesStatus
                 });
             }
 
