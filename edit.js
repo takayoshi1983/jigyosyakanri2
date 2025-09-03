@@ -416,8 +416,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             switch (currentModalAction) {
                 case 'inactive':
-                    await SupabaseAPI.deleteClient(currentClient.id);
-                    currentClient.status = 'deleted';
+                    await SupabaseAPI.updateClient(currentClient.id, { status: 'inactive' });
+                    currentClient.status = 'inactive';
                     showNotification('顧客を関与終了にしました', 'success');
                     break;
                     

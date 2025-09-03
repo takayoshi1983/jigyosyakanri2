@@ -730,8 +730,8 @@ document.addEventListener('DOMContentLoaded', () => {
             </td>
         `;
 
-        // Apply inactive styling if client is inactive
-        if (client.status === 'inactive') {
+        // Apply inactive styling if client is inactive or deleted
+        if (client.status === 'inactive' || client.status === 'deleted') {
             row.classList.add('inactive-client');
         }
 
@@ -1179,6 +1179,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getFilteredClients() {
+        // Debug: Show all clients with their status
+        console.log('[DEBUG] All clients status:', clients.map(c => ({ 
+            id: c.id, 
+            name: c.name, 
+            status: c.status 
+        })));
+        console.log('[DEBUG] App settings:', { hide_inactive_clients: appSettings.hide_inactive_clients });
+        
         return clients.filter(client => {
             // Search filter
             const searchTerm = searchInput.value.toLowerCase();
@@ -1196,10 +1204,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Hide inactive filter
             const showInactive = !appSettings.hide_inactive_clients;
-            const matchesStatus = client.status === 'active' || (showInactive && client.status === 'inactive');
+            const matchesStatus = client.status === 'active' || (showInactive && (client.status === 'inactive' || client.status === 'deleted'));
             
             // Debug log for inactive clients
-            if (client.status === 'inactive') {
+            if (client.status === 'inactive' || client.status === 'deleted') {
                 console.log(`[DEBUG] Inactive client "${client.name}":`, {
                     hideInactiveSettings: appSettings.hide_inactive_clients,
                     showInactive: showInactive,
