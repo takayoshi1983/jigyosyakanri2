@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentClient = null;
     let staffs = [];
     let currentModalAction = null;
+    let userRole = null; // グローバルでユーザーロールを保持
 
     // --- Utility Functions ---
     function showStatus(message, type = 'info') {
@@ -191,6 +192,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (reactivateButton) {
                 reactivateButton.style.pointerEvents = 'auto';
                 reactivateButton.style.opacity = '1';
+            }
+            
+            // 管理者の場合は削除ボタンもクリック可能にする
+            if (userRole === 'admin' && deleteButton) {
+                deleteButton.style.pointerEvents = 'auto';
+                deleteButton.style.opacity = '1';
             }
             
             // Disable form inputs
@@ -573,7 +580,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showStatus('アプリケーションを初期化中...', 'warning');
 
             // ユーザーロールをチェック
-            const userRole = await SupabaseAPI.getUserRole();
+            userRole = await SupabaseAPI.getUserRole();
             
             // 管理者以外は削除ボタンを無効化
             if (userRole !== 'admin') {
