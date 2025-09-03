@@ -33,7 +33,7 @@
             <h1>顧客進捗管理 - 詳細（Supabase版）</h1>
             <div class="nav-links">
                 <a href="index.html" id="back-to-main">メイン画面に戻る</a>
-                <label for="year-filter">年度を選択してください:</label>
+                <!-- 「年度を選択してください」のラベルを削除 -->
                 <div class="custom-select-wrapper">
                     <div class="custom-select-trigger"></div>
                     <div class="custom-options"></div>
@@ -41,18 +41,14 @@
                         <!-- JavaScriptでオプションを生成 -->
                     </select>
                 </div>
+                <!-- save-changes-button をここに移動 -->
+                <button id="save-changes-button" disabled>変更を保存</button>
                 <button id="edit-tasks-button">項目の変更</button>
-                
-                <span id="finalized-status" style="display: none; color: green; font-weight: bold; margin-left: 10px;"></span>
-            </div>
-
-            <!-- Client Info and Save Button Container -->
-            <div class="client-header-container">
-                <!-- クライアント基本情報表示エリア -->
+                <!-- client-info-area をここに移動 -->
                 <div id="client-info-area">
                     <!-- JavaScriptでテーブルを生成 -->
                 </div>
-                <button id="save-changes-button" disabled>変更を保存</button>
+                <span id="finalized-status" style="display: none; color: green; font-weight: bold; margin-left: 10px;"></span>
             </div>
         </div>
 

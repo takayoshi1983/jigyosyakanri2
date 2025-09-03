@@ -100,9 +100,8 @@ table {
 }
 
 .client-info-table {
-    max-width: 600px; /* Adjust as needed */
-    margin-left: 0; /* Align to left */
-    margin-right: auto; /* Align to left */
+    width: auto; /* 自動調整 */
+    flex-shrink: 0; /* 縮小しない */
 }
 
 .client-info-table th,
@@ -755,16 +754,18 @@ th[data-sort-key]:hover .sort-icon {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.24); /* シャドウを追加 */
 }
 
+/*
 .client-header-container {
     display: flex;
     align-items: center;
     gap: 20px;
 }
+*/
 
 #client-info-area {
-    margin-bottom: 5px; /* 下のテーブルとの間隔 */
-    padding-bottom: 10px; /* 線と内容の間のスペース */
-    border-bottom: 1px solid #ddd; /* 線 */
+    margin-bottom: 0; /* 下のテーブルとの間隔をなくす */
+    padding-bottom: 0; /* 線と内容の間のスペースをなくす */
+    border-bottom: none; /* 線をなくす */
 }
 
 button {
