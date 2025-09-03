@@ -871,6 +871,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         exportButton.addEventListener('click', () => alert('CSVエクスポート機能は準備中です。'));
         exportButton.style.cssText = 'padding: 10px; background: #607D8B; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
 
+        // editTasksButton をアコーディオンメニューに追加
+        const editTasksButtonInAccordion = document.getElementById('edit-tasks-button');
+        if (editTasksButtonInAccordion) {
+            // スタイルをアコーディオンボタンに合わせる
+            editTasksButtonInAccordion.className = 'accordion-button';
+            editTasksButtonInAccordion.innerHTML = `<span>✏️</span> <span>${editTasksButtonInAccordion.textContent}</span>`;
+            editTasksButtonInAccordion.style.cssText = 'padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
+            
+            buttonsContainer.prepend(editTasksButtonInAccordion); // 一番上に追加
+        }
+
         let isOpen = false;
         accordionHeader.addEventListener('click', (event) => {
             event.stopPropagation(); // Prevent immediate closing by document click
