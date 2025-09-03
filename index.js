@@ -254,18 +254,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize app when authenticated
     async function initializeAuthenticatedApp() {
-        setupTableHeaders();
-        addEventListeners();
-        populateMonthThresholds();
-        populateFontFamilySelect();
-        loadFilterState();
-        
         try {
-            // ローディング表示開始
             showLoadingIndicator('ユーザー権限を確認中...');
 
-            // Check user role and update UI
             const userRole = await SupabaseAPI.getUserRole();
+
+            // Check if user is registered in the staffs table
+            if (userRole === null) {
+                console.warn('Unauthorized user tried to access. Signing out.');
+                hideLoadingIndicator();
+                alert('このアプリケーションへのアクセスが許可されていません。管理者に連絡してください。');
+                await SupabaseAPI.signOut();
+                return; // Stop further execution
+            }
+
+            // If user is registered, proceed with setup and UI customization
+            setupTableHeaders();
+            addEventListeners();
+            populateMonthThresholds();
+            populateFontFamilySelect();
+            loadFilterState();
+
+            // Disable admin buttons if user is not an admin
             if (userRole !== 'admin') {
                 console.log(`User role is '${userRole}'. Disabling admin buttons.`);
                 const manageStaffButton = document.getElementById('manage-staff-button');
@@ -287,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showLoadingIndicator('データを読み込み中...');
             
-            // Fetch data from Supabase with optimized bulk loading
+            // Fetch data from Supabase
             [clients, staffs, appSettings] = await Promise.all([
                 fetchClientsOptimized(),
                 fetchStaffs(),
@@ -300,8 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderClients();
             updateSortIcons();
             
-            // ローディング表示終了
             hideLoadingIndicator();
+
         } catch (error) {
             hideLoadingIndicator();
             console.error("Error initializing app:", error);
