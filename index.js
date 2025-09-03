@@ -261,10 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Check if user is registered in the staffs table
             if (userRole === null) {
-                console.warn('Unauthorized user tried to access. Signing out.');
+                console.warn('Unauthorized user. Signing out and reloading page.');
                 hideLoadingIndicator();
                 alert('このアプリケーションへのアクセスが許可されていません。管理者に連絡してください。');
+                
                 await SupabaseAPI.signOut();
+                window.location.reload(); // Reload the page to reset state
                 return; // Stop further execution
             }
 
