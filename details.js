@@ -219,9 +219,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateEditingInterface() {
         const isYearFinalized = clientDetails.finalized_years?.includes(currentYearSelection);
-        isEditingMode = !isYearFinalized;
-        editTasksButton.disabled = isYearFinalized;
-        editTasksButton.textContent = isYearFinalized ? '確定済み (編集不可)' : 'タスクの編集';
+        const isInactive = clientDetails.status === 'inactive' || clientDetails.status === 'deleted';
+        
+        isEditingMode = !isYearFinalized && !isInactive;
+        editTasksButton.disabled = isYearFinalized || isInactive;
+        
+        if (isInactive) {
+            editTasksButton.textContent = '関与終了 (閲覧のみ)';
+        } else if (isYearFinalized) {
+            editTasksButton.textContent = '確定済み (編集不可)';
+        } else {
+            editTasksButton.textContent = 'タスクの編集';
+        }
+        
         updateTableEditingState();
     }
 

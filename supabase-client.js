@@ -76,6 +76,33 @@ export class SupabaseAPI {
             
         if (error) throw error;
     }
+
+    static async permanentlyDeleteClient(id) {
+        // 関連データも含めて物理削除
+        // 1. 月次タスクデータを削除
+        const { error: monthlyTasksError } = await supabase
+            .from('monthly_tasks')
+            .delete()
+            .eq('client_id', id);
+        
+        if (monthlyTasksError) throw monthlyTasksError;
+        
+        // 2. 編集セッションを削除
+        const { error: sessionsError } = await supabase
+            .from('editing_sessions')
+            .delete()
+            .eq('client_id', id);
+        
+        if (sessionsError) throw sessionsError;
+        
+        // 3. クライアントデータを削除
+        const { error } = await supabase
+            .from('clients')
+            .delete()
+            .eq('id', id);
+            
+        if (error) throw error;
+    }
     
     // スタッフ関連
     static async getStaffs() {

@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         clientNameDisplay.textContent = client.name || '';
         
         // Show/hide inactive status and apply gray-out effect
-        if (client.status === 'deleted') {
+        if (client.status === 'deleted' || client.status === 'inactive') {
             inactiveStatusBadge.style.display = 'inline';
             if (reactivateButton) reactivateButton.style.display = 'inline-block';
             if (inactiveButton) inactiveButton.style.display = 'none';
@@ -386,8 +386,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 modalMessage.textContent = 'この顧客を関与終了にしますか？データは保持されますが、一覧から非表示になります。';
                 break;
             case 'delete':
-                modalTitle.textContent = '削除の確認';
-                modalMessage.textContent = 'この顧客を削除しますか？この操作は取り消せません。';
+                modalTitle.textContent = '完全削除の確認';
+                modalMessage.textContent = 'この顧客を完全に削除しますか？すべてのデータが削除され、この操作は取り消せません。';
                 break;
             case 'reactivate':
                 modalTitle.textContent = '復活の確認';
@@ -416,9 +416,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             switch (currentModalAction) {
                 case 'inactive':
-                    console.log('[DEBUG] Updating client', currentClient.id, 'to inactive status...');
-                    const result = await SupabaseAPI.updateClient(currentClient.id, { status: 'inactive' });
-                    console.log('[DEBUG] Update result:', result);
+                    await SupabaseAPI.updateClient(currentClient.id, { status: 'inactive' });
                     currentClient.status = 'inactive';
                     showNotification('顧客を関与終了にしました', 'success');
                     break;
@@ -430,10 +428,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     break;
                     
                 case 'delete':
-                    // For now, we'll use the same delete function as inactive
-                    // In a real implementation, you might want a separate hard delete function
-                    await SupabaseAPI.deleteClient(currentClient.id);
-                    showNotification('顧客を削除しました', 'success');
+                    await SupabaseAPI.permanentlyDeleteClient(currentClient.id);
+                    showNotification('顧客を完全に削除しました', 'success');
                     
                     // Close modal and redirect to main page after delete
                     hideDeleteModal();
@@ -569,6 +565,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function initializeApp() {
         try {
             showStatus('アプリケーションを初期化中...', 'warning');
+
+            // ユーザーロールをチェック
+            const userRole = await SupabaseAPI.getUserRole();
+            
+            // 管理者以外は削除ボタンを無効化
+            if (userRole !== 'admin') {
+                if (deleteButton) {
+                    deleteButton.disabled = true;
+                    deleteButton.title = '削除は管理者のみ実行できます';
+                    deleteButton.style.opacity = '0.5';
+                    deleteButton.style.cursor = 'not-allowed';
+                }
+            }
 
             // キャッシュされたスタッフデータを優先使用
             const cachedStaffs = sessionStorage.getItem('cached_staffs_data');

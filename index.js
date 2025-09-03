@@ -667,9 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderClients() {
         if (!clientsTableBody) return;
 
-        console.log('[DEBUG] renderClients() called, total clients:', clients.length);
         const filteredClients = getFilteredClients();
-        console.log('[DEBUG] After filtering:', filteredClients.length, 'clients remain');
         const sortedClients = sortClients(filteredClients);
 
         clientsTableBody.innerHTML = '';
@@ -1181,17 +1179,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getFilteredClients() {
-        // Debug: Show all clients with their status
-        const clientsDebug = clients.map(c => ({ 
-            id: c.id, 
-            name: c.name, 
-            status: c.status 
-        }));
-        console.log('[DEBUG] All clients status count:', clients.length);
-        console.log('[DEBUG] Inactive/deleted clients:', clientsDebug.filter(c => c.status === 'inactive' || c.status === 'deleted'));
-        console.log('[DEBUG] ID88 specifically:', clientsDebug.find(c => c.id === 88));
-        console.log('[DEBUG] ID25 specifically:', clientsDebug.find(c => c.id === 25));
-        console.log('[DEBUG] App settings hide_inactive_clients:', appSettings.hide_inactive_clients);
         
         return clients.filter(client => {
             // Search filter
@@ -1212,25 +1199,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const showInactive = !appSettings.hide_inactive_clients;
             const matchesStatus = client.status === 'active' || (showInactive && (client.status === 'inactive' || client.status === 'deleted'));
             
-            // Debug log for ID88 specifically
-            if (client.id === 88) {
-                console.log(`[DEBUG] ID88 Filter Check:`, {
-                    name: client.name,
-                    status: client.status,
-                    searchTerm: searchTerm,
-                    matchesSearch: matchesSearch,
-                    staffFilterValue: staffFilterValue,
-                    clientStaffId: client.staff_id,
-                    matchesStaff: matchesStaff,
-                    monthFilterValue: monthFilterValue,
-                    clientFiscalMonth: client.fiscal_month,
-                    matchesMonth: matchesMonth,
-                    hideInactiveSettings: appSettings.hide_inactive_clients,
-                    showInactive: showInactive,
-                    matchesStatus: matchesStatus,
-                    finalResult: matchesSearch && matchesStaff && matchesMonth && matchesStatus
-                });
-            }
 
             return matchesSearch && matchesStaff && matchesMonth && matchesStatus;
         });
