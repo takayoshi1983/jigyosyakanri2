@@ -262,6 +262,29 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             // ローディング表示開始
+            showLoadingIndicator('ユーザー権限を確認中...');
+
+            // Check user role and update UI
+            const userRole = await SupabaseAPI.getUserRole();
+            if (userRole !== 'admin') {
+                console.log(`User role is '${userRole}'. Disabling admin buttons.`);
+                const manageStaffButton = document.getElementById('manage-staff-button');
+                const resetDatabaseButton = document.getElementById('reset-database-button');
+                
+                if (manageStaffButton) {
+                    manageStaffButton.disabled = true;
+                    manageStaffButton.style.opacity = '0.5';
+                    manageStaffButton.style.cursor = 'not-allowed';
+                    manageStaffButton.title = 'この操作には管理者権限が必要です';
+                }
+                if (resetDatabaseButton) {
+                    resetDatabaseButton.disabled = true;
+                    resetDatabaseButton.style.opacity = '0.5';
+                    resetDatabaseButton.style.cursor = 'not-allowed';
+                    resetDatabaseButton.title = 'この操作には管理者権限が必要です';
+                }
+            }
+
             showLoadingIndicator('データを読み込み中...');
             
             // Fetch data from Supabase with optimized bulk loading
@@ -726,7 +749,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStaffList() {
         staffListContainer.innerHTML = '';
         
-        // キャッシュされたclientsデータから担当件数を計算（DB問い合わせ不要）
         const staffClientCounts = {};
         const staffAssignedClients = {};
         
@@ -741,120 +763,145 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        for (let index = 0; index < currentEditingStaffs.length; index++) {
-            const staff = currentEditingStaffs[index];
+        currentEditingStaffs.forEach((staff, index) => {
+            const staffItem = document.createElement('div');
+            staffItem.className = 'staff-item';
+            staffItem.dataset.index = index;
+            staffItem.dataset.staffId = staff.id || '';
+
             const clientCount = staff.id !== null ? (staffClientCounts[staff.id] || 0) : 0;
             const assignedClients = staff.id !== null ? (staffAssignedClients[staff.id] || []) : [];
             
-            const staffItem = document.createElement('div');
-            staffItem.className = 'staff-item';
-            
             const clientInfo = clientCount > 0 ? 
-                ` <span class="client-count" title="担当クライアント: ${assignedClients.map(c => c.name).join(', ')}" style="color: #666; font-size: 0.9em; margin: 0 8px;">(${clientCount}件担当)</span>` : 
-                '';
+                `<span class="client-count" title="担当クライアント: ${assignedClients.map(c => c.name).join(', ')}" style="color: #666; font-size: 0.9em; margin: 0 8px;">(${clientCount}件)</span>` : '';
             
-            const deleteButtonDisabled = clientCount > 0 ? 'disabled title="担当しているクライアントがあるため削除できません" style="opacity: 0.5; cursor: not-allowed;"' : '';
-            
+            const deleteButtonDisabled = clientCount > 0 ? 'disabled title="担当クライアントがいるため削除できません"' : '';
+
             staffItem.innerHTML = `
-                <input type="text" value="${staff.name}" data-index="${index}" data-staff-id="${staff.id}" style="flex: 1; margin-right: 10px;">
+                <input type="text" class="staff-name" value="${staff.name || ''}" placeholder="担当者名" style="flex: 1;">
+                <input type="email" class="staff-email" value="${staff.email || ''}" placeholder="メールアドレス" style="flex: 1;">
+                <select class="staff-role" style="flex: 0.7;">
+                    <option value="staff" ${staff.role === 'staff' ? 'selected' : ''}>担当者</option>
+                    <option value="admin" ${staff.role === 'admin' ? 'selected' : ''}>管理者</option>
+                </select>
                 ${clientInfo}
-                <button type="button" class="delete-staff-button" data-index="${index}" ${deleteButtonDisabled}>削除</button>
+                <button type="button" class="delete-staff-button" ${deleteButtonDisabled}>削除</button>
             `;
-            staffItem.style.display = 'flex';
-            staffItem.style.alignItems = 'center';
-            staffItem.style.marginBottom = '10px';
             staffListContainer.appendChild(staffItem);
-        }
-
-        // Add event listeners for delete buttons
-        staffListContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('delete-staff-button')) {
-                const index = parseInt(e.target.getAttribute('data-index'));
-                currentEditingStaffs.splice(index, 1);
-                renderStaffList();
-            }
-        });
-
-        // Add event listeners for input changes
-        staffListContainer.addEventListener('input', (e) => {
-            if (e.target.tagName === 'INPUT') {
-                const index = parseInt(e.target.getAttribute('data-index'));
-                currentEditingStaffs[index].name = e.target.value;
-            }
         });
     }
 
+    // Remove old event listeners and add new ones
+    // This is a simplified approach. For complex apps, a more robust event delegation is better.
+    const newStaffListContainer = staffListContainer.cloneNode(true);
+    staffListContainer.parentNode.replaceChild(newStaffListContainer, staffListContainer);
+    staffListContainer = newStaffListContainer;
+
+    staffListContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-staff-button')) {
+            const staffItem = e.target.closest('.staff-item');
+            const index = parseInt(staffItem.dataset.index);
+            currentEditingStaffs.splice(index, 1);
+            renderStaffList(); // Re-render the list
+        }
+    });
+
+    staffListContainer.addEventListener('input', (e) => {
+        const target = e.target;
+        const staffItem = target.closest('.staff-item');
+        if (!staffItem) return;
+
+        const index = parseInt(staffItem.dataset.index);
+        if (isNaN(index)) return;
+
+        if (target.classList.contains('staff-name')) {
+            currentEditingStaffs[index].name = target.value;
+        } else if (target.classList.contains('staff-email')) {
+            currentEditingStaffs[index].email = target.value;
+        } else if (target.classList.contains('staff-role')) {
+            currentEditingStaffs[index].role = target.value;
+        }
+    });
+
     function addStaffInputField() {
-        const newStaffName = newStaffInput.value.trim();
-        if (newStaffName) {
+        const newStaffNameInput = document.getElementById('new-staff-name');
+        const newStaffEmailInput = document.getElementById('new-staff-email');
+        const newStaffRoleSelect = document.getElementById('new-staff-role');
+
+        const newStaffName = newStaffNameInput.value.trim();
+        const newStaffEmail = newStaffEmailInput.value.trim();
+        const newStaffRole = newStaffRoleSelect.value;
+
+        if (newStaffName && newStaffEmail) {
             currentEditingStaffs.push({
-                id: null, // New staff will get ID from database
-                name: newStaffName
+                id: null,
+                name: newStaffName,
+                email: newStaffEmail,
+                role: newStaffRole
             });
             renderStaffList();
-            newStaffInput.value = '';
+            newStaffNameInput.value = '';
+            newStaffEmailInput.value = '';
+            newStaffRoleSelect.value = 'staff';
+        } else {
+            alert('担当者名とメールアドレスは必須です。');
         }
     }
 
     async function saveStaffs() {
         try {
-            // Compare original and current staffs to determine what operations are needed
-            const originalIds = originalStaffsState.map(s => s.id);
-            const currentIds = currentEditingStaffs.map(s => s.id).filter(id => id !== null);
-            
-            // Find staffs to delete (removed from current list)
-            const toDelete = originalStaffsState.filter(original => 
-                !currentEditingStaffs.some(current => current.id === original.id)
-            );
-            
-            // Find staffs to update (existing IDs with changed names)
-            const toUpdate = currentEditingStaffs.filter(current => 
-                current.id !== null && 
-                originalStaffsState.some(original => 
-                    original.id === current.id && original.name !== current.name
-                )
-            );
-            
-            // Find staffs to create (null IDs)
-            const toCreate = currentEditingStaffs.filter(current => current.id === null);
-            
+            // --- Data Validation ---
+            for (const staff of currentEditingStaffs) {
+                if (!staff.name || !staff.email) {
+                    alert('すべての担当者名とメールアドレスを入力してください。');
+                    return;
+                }
+                // Basic email format check
+                if (!/\S+@\S+\.\S+/.test(staff.email)) {
+                    alert(`無効なメールアドレス形式です: ${staff.email}`);
+                    return;
+                }
+            }
+
+            // --- Determine Operations ---
+            const toCreate = currentEditingStaffs.filter(c => c.id === null);
+            const toUpdate = currentEditingStaffs.filter(c => {
+                if (c.id === null) return false;
+                const original = originalStaffsState.find(o => o.id === c.id);
+                return original && (original.name !== c.name || original.email !== c.email || original.role !== c.role);
+            });
+            const toDelete = originalStaffsState.filter(o => !currentEditingStaffs.some(c => c.id === o.id));
+
             console.log('Staff operations:', { toDelete, toUpdate, toCreate });
-            
-            // Execute operations
+
+            // --- Execute DB Operations ---
             const operations = [];
-            
-            // Delete operations
-            for (const staff of toDelete) {
-                operations.push(SupabaseAPI.deleteStaff(staff.id));
+
+            if (toDelete.length > 0) {
+                operations.push(SupabaseAPI.deleteStaffs(toDelete.map(s => s.id)));
             }
-            
-            // Update operations
-            for (const staff of toUpdate) {
-                operations.push(SupabaseAPI.updateStaff(staff.id, { name: staff.name }));
+            if (toUpdate.length > 0) {
+                const updates = toUpdate.map(s => ({ id: s.id, name: s.name, email: s.email, role: s.role }));
+                operations.push(SupabaseAPI.updateStaffs(updates));
             }
-            
-            // Create operations
-            for (const staff of toCreate) {
-                operations.push(SupabaseAPI.createStaff({ name: staff.name }));
+            if (toCreate.length > 0) {
+                const creates = toCreate.map(s => ({ name: s.name, email: s.email, role: s.role }));
+                operations.push(SupabaseAPI.createStaffs(creates));
             }
-            
-            // Execute all operations
+
             await Promise.all(operations);
-            
-            // Refresh staff data from database
+
+            // --- Post-Save Refresh ---
             staffs = await fetchStaffs();
             populateFilters();
+            renderClients(); //担当者名が変わった可能性があるのでクライアントリストも更新
             closeStaffModal();
             
             alert('担当者の更新が完了しました');
+
         } catch (error) {
             console.error('Error saving staffs:', error);
-            
-            if (error.name === 'StaffAssignedError') {
-                alert(error.message + '\n\n先にクライアントの担当者を変更してから削除してください。');
-            } else {
-                alert('担当者の保存に失敗しました: ' + handleSupabaseError(error));
-            }
+            alert('担当者の保存に失敗しました: ' + handleSupabaseError(error));
         }
     }
 
@@ -862,7 +909,13 @@ document.addEventListener('DOMContentLoaded', () => {
         staffEditModal.style.display = 'none';
         currentEditingStaffs = [];
         originalStaffsState = [];
-        newStaffInput.value = '';
+        // Clear new staff input fields
+        const newStaffNameInput = document.getElementById('new-staff-name');
+        const newStaffEmailInput = document.getElementById('new-staff-email');
+        const newStaffRoleSelect = document.getElementById('new-staff-role');
+        if(newStaffNameInput) newStaffNameInput.value = '';
+        if(newStaffEmailInput) newStaffEmailInput.value = '';
+        if(newStaffRoleSelect) newStaffRoleSelect.value = 'staff';
     }
 
     // --- Settings Management ---

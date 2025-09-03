@@ -106,8 +106,13 @@
             <div id="staff-list-container">
                 <!-- 担当者項目がここに動的に追加される -->
             </div>
-            <div class="add-staff-section">
-                <input type="text" id="new-staff-input" placeholder="新しい担当者を追加">
+            <div class="add-staff-section" style="display: flex; gap: 10px;">
+                <input type="text" id="new-staff-name" placeholder="新しい担当者名" style="flex: 1;">
+                <input type="email" id="new-staff-email" placeholder="メールアドレス" style="flex: 1;">
+                <select id="new-staff-role" style="flex: 0.5;">
+                    <option value="staff">担当者</option>
+                    <option value="admin">管理者</option>
+                </select>
                 <button id="add-staff-button">追加</button>
             </div>
             <div class="modal-buttons">

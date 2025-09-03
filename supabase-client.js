@@ -88,55 +88,63 @@ export class SupabaseAPI {
         if (error) throw error;
         return data;
     }
-    
-    static async createStaff(staffData) {
+
+    static async createStaffs(staffsData) {
         const { data, error } = await supabase
             .from('staffs')
-            .insert(staffData)
-            .select()
-            .single();
-            
+            .insert(staffsData)
+            .select();
+
         if (error) throw error;
         return data;
     }
-    
-    static async updateStaff(id, staffData) {
+
+    static async updateStaffs(staffsData) {
         const { data, error } = await supabase
             .from('staffs')
-            .update(staffData)
-            .eq('id', id)
-            .select()
-            .single();
-            
+            .upsert(staffsData)
+            .select();
+
         if (error) throw error;
         return data;
     }
-    
-    static async deleteStaff(id) {
-        // First check if staff is assigned to any clients
-        const { data: assignedClients, error: checkError } = await supabase
+
+    static async deleteStaffs(staffIds) {
+        // Check if any of the staff to be deleted are assigned to clients
+        const { data: assigned, error: checkError } = await supabase
             .from('clients')
-            .select('id, name')
-            .eq('staff_id', id)
+            .select('name, staffs(name)')
+            .in('staff_id', staffIds)
             .eq('status', 'active');
-        
+
         if (checkError) throw checkError;
-        
-        if (assignedClients && assignedClients.length > 0) {
-            // Create a detailed error message
-            const clientNames = assignedClients.map(c => c.name).join(', ');
-            const error = new Error(`この担当者は以下のクライアントに割り当てられているため削除できません: ${clientNames}`);
+
+        if (assigned && assigned.length > 0) {
+            const assignments = assigned.map(a => `  - ${a.staffs.name} (担当: ${a.name})`).join('\n');
+            const error = new Error(`以下の担当者はクライアントに割り当てられているため削除できません:\n${assignments}`);
             error.name = 'StaffAssignedError';
-            error.assignedClients = assignedClients;
             throw error;
         }
-        
+
         const { error } = await supabase
             .from('staffs')
             .delete()
-            .eq('id', id);
-            
+            .in('id', staffIds);
+
         if (error) throw error;
+    }
+    
+    // 下位互換性のために単数形の関数も残しておく
+    static async createStaff(staffData) {
+        return this.createStaffs([staffData]);
+    }
+
+    static async updateStaff(id, staffData) {
+        return this.updateStaffs([{ ...staffData, id }]);
+    }
+
+    static async deleteStaff(id) {
+        return this.deleteStaffs([id]);
     }
     
     static async getClientsAssignedToStaff(staffId) {
@@ -500,6 +508,16 @@ export class SupabaseAPI {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) throw error;
         return user;
+    }
+
+    static async getUserRole() {
+        const { data, error } = await supabase.rpc('get_user_role');
+        if (error) {
+            // RLSが有効になった直後など、関数が存在しない場合も考慮
+            console.error('Error fetching user role:', error);
+            return null;
+        }
+        return data;
     }
     
     // CSV エクスポート・インポート機能
