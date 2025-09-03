@@ -261,8 +261,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Check if user is registered in the staffs table
             if (userRole === null) {
-                console.warn('Unauthorized user. Signing out and reloading page.');
+                console.warn('Unauthorized user. Applying blur, signing out and reloading page.');
                 hideLoadingIndicator();
+
+                // Blur the background container
+                const mainContainer = document.querySelector('.container');
+                if (mainContainer) mainContainer.classList.add('blur-background');
+
                 alert('このアプリケーションへのアクセスが許可されていません。管理者に連絡してください。');
                 
                 await SupabaseAPI.signOut();
