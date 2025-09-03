@@ -394,7 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     staff_name: client.staffs?.name || '',
                     monthlyProgress: latestCompletedMonth,
                     unattendedMonths: unattendedMonths,
-                    status: 'active'
+                    status: client.status || 'active'
                 });
             }
             return processedClients;
@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     staff_name: client.staffs?.name || '',
                     monthlyProgress: latestCompletedMonth,
                     unattendedMonths: unattendedMonths,
-                    status: 'active'
+                    status: client.status || 'active'
                 };
             });
 

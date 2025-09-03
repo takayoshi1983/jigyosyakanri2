@@ -1,6 +1,9 @@
+
+index.js:670 [DEBUG] renderClients() called, total clients: 86
 index.js:1190 [DEBUG] All clients status count: 86
 index.js:1191 [DEBUG] Inactive/deleted clients: []
 index.js:1192 [DEBUG] ID88 specifically: {id: 88, name: 'サンプル会社65', status: 'active'}
-index.js:1193 [DEBUG] App settings hide_inactive_clients: false
-index.js:1216 [DEBUG] ID88 Filter Check: {name: 'サンプル会社65', status: 'active', searchTerm: '', matchesSearch: true, staffFilterValue: '', …}
+index.js:1193 [DEBUG] ID25 specifically: {id: 25, name: 'サンプル会社2', status: 'active'}
+index.js:1194 [DEBUG] App settings hide_inactive_clients: false
+index.js:1217 [DEBUG] ID88 Filter Check: {name: 'サンプル会社65', status: 'active', searchTerm: '', matchesSearch: true, staffFilterValue: '', …}
 index.js:672 [DEBUG] After filtering: 86 clients remain
