@@ -261,21 +261,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Check if user is registered in the staffs table
             if (userRole === null) {
-                console.warn('Unauthorized user. Applying blur, then showing alert.');
+                console.warn('Unauthorized user. Showing access denied modal.');
                 hideLoadingIndicator();
 
-                // Blur the background container
+                // Blur the background and show the custom access denied modal
                 const mainContainer = document.querySelector('.container');
                 if (mainContainer) mainContainer.classList.add('blur-background');
+                
+                const accessDeniedModal = document.getElementById('access-denied-modal');
+                if (accessDeniedModal) accessDeniedModal.style.display = 'flex';
 
-                // Use setTimeout to allow the blur effect to render before the alert blocks the main thread.
-                setTimeout(async () => {
-                    alert('このアプリケーションへのアクセスが許可されていません。管理者に連絡してください。');
-                    await SupabaseAPI.signOut();
-                    window.location.reload(); // Reload the page to reset state
-                }, 10); // A small delay is enough for the browser to render the change.
+                // Set up the button to sign out and reload
+                const okButton = document.getElementById('access-denied-ok-button');
+                if (okButton) {
+                    okButton.onclick = async () => {
+                        // To prevent multiple clicks, disable the button
+                        okButton.disabled = true;
+                        okButton.textContent = '処理中...';
+                        await SupabaseAPI.signOut();
+                        window.location.reload();
+                    };
+                }
 
-                return; // Stop further execution of initializeAuthenticatedApp
+                return; // Stop further execution
             }
 
             // If user is registered, proceed with setup and UI customization
