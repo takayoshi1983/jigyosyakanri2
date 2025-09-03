@@ -1197,6 +1197,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Hide inactive filter
             const showInactive = !appSettings.hide_inactive_clients;
             const matchesStatus = client.status === 'active' || (showInactive && client.status === 'inactive');
+            
+            // Debug log for inactive clients
+            if (client.status === 'inactive') {
+                console.log(`[DEBUG] Inactive client "${client.name}":`, {
+                    hideInactiveSettings: appSettings.hide_inactive_clients,
+                    showInactive: showInactive,
+                    clientStatus: client.status,
+                    matchesStatus: matchesStatus
+                });
+            }
 
             return matchesSearch && matchesStaff && matchesMonth && matchesStatus;
         });
