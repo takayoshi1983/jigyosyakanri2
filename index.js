@@ -639,10 +639,17 @@ document.addEventListener('DOMContentLoaded', () => {
         row.setAttribute('data-client-id', client.id);
         row.style.cursor = 'pointer';
         
-        // Apply background color based on unattended months
-        const bgColor = getRowBackgroundColor(client.unattendedMonths);
-        if (bgColor) {
-            row.style.backgroundColor = bgColor;
+        // Apply grayout effect for deleted clients
+        if (client.status === 'deleted') {
+            row.style.opacity = '0.5';
+            row.style.textDecoration = 'line-through';
+            row.style.backgroundColor = '#f8f9fa';
+        } else {
+            // Apply background color based on unattended months (only for active clients)
+            const bgColor = getRowBackgroundColor(client.unattendedMonths);
+            if (bgColor) {
+                row.style.backgroundColor = bgColor;
+            }
         }
 
         const fiscalMonth = client.fiscal_month ? `${client.fiscal_month}月` : '-';
@@ -662,7 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${accountingMethod}</td>
             <td>
                 <span class="status-indicator ${client.status === 'active' ? 'status-active' : 'status-inactive'}">
-                    ${client.status === 'active' ? '稼働中' : '停止中'}
+                    ${client.status === 'active' ? '稼働中' : '関与終了'}
                 </span>
             </td>
             <td>
@@ -1103,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Hide inactive filter
             const showInactive = !appSettings.hide_inactive_clients;
-            const matchesStatus = showInactive || client.status === 'active';
+            const matchesStatus = client.status === 'active' || (showInactive && client.status === 'deleted');
 
             return matchesSearch && matchesStaff && matchesMonth && matchesStatus;
         });

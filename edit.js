@@ -375,14 +375,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Modal Functions ---
     function showDeleteModal(action) {
-        console.log('showDeleteModal called with action:', action);
-        if (!deleteModal || !currentClient) {
-            console.log('Early return: missing modal or client');
-            return;
-        }
+        if (!deleteModal || !currentClient) return;
 
         currentModalAction = action;
-        console.log('currentModalAction set to:', currentModalAction);
         
         // Update modal content based on action
         switch (action) {
@@ -414,35 +409,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function handleModalConfirm() {
-        console.log('handleModalConfirm called', { currentModalAction, currentClient: currentClient?.name });
-        if (!currentModalAction || !currentClient) {
-            console.log('Early return: missing action or client');
-            return;
-        }
+        if (!currentModalAction || !currentClient) return;
 
         try {
-            console.log('Starting modal confirm process...');
             showLoading();
 
             switch (currentModalAction) {
                 case 'inactive':
-                    console.log('Processing inactive action...');
                     await SupabaseAPI.deleteClient(currentClient.id);
                     currentClient.status = 'deleted';
                     showNotification('顧客を関与終了にしました', 'success');
-                    console.log('Inactive completed');
                     break;
                     
                 case 'reactivate':
-                    console.log('Processing reactivate action...');
                     await SupabaseAPI.restoreClient(currentClient.id);
                     currentClient.status = 'active';
                     showNotification('顧客を復活させました', 'success');
-                    console.log('Reactivate completed');
                     break;
                     
                 case 'delete':
-                    console.log('Processing delete action...');
                     // For now, we'll use the same delete function as inactive
                     // In a real implementation, you might want a separate hard delete function
                     await SupabaseAPI.deleteClient(currentClient.id);
@@ -450,7 +435,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     // Close modal and redirect to main page after delete
                     hideDeleteModal();
-                    console.log('Redirecting to main page in 2 seconds...');
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 2000);
@@ -541,24 +525,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Danger zone buttons (only in edit mode)
         if (!isNewMode) {
             if (inactiveButton) {
-                inactiveButton.addEventListener('click', () => {
-                    console.log('Inactive button clicked');
-                    showDeleteModal('inactive');
-                });
+                inactiveButton.addEventListener('click', () => showDeleteModal('inactive'));
             }
             
             if (deleteButton) {
-                deleteButton.addEventListener('click', () => {
-                    console.log('Delete button clicked');
-                    showDeleteModal('delete');
-                });
+                deleteButton.addEventListener('click', () => showDeleteModal('delete'));
             }
             
             if (reactivateButton) {
-                reactivateButton.addEventListener('click', () => {
-                    console.log('Reactivate button clicked');
-                    showDeleteModal('reactivate');
-                });
+                reactivateButton.addEventListener('click', () => showDeleteModal('reactivate'));
             }
         }
 
@@ -571,17 +546,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Modal buttons
         if (modalCancel) {
-            modalCancel.addEventListener('click', () => {
-                console.log('Cancel button clicked');
-                hideDeleteModal();
-            });
+            modalCancel.addEventListener('click', hideDeleteModal);
         }
         
         if (modalConfirm) {
-            modalConfirm.addEventListener('click', () => {
-                console.log('Confirm button clicked');
-                handleModalConfirm();
-            });
+            modalConfirm.addEventListener('click', handleModalConfirm);
         }
 
         // Click outside modal to close
