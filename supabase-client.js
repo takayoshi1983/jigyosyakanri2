@@ -16,7 +16,6 @@ export class SupabaseAPI {
                 *,
                 staffs(name)
             `)
-            .eq('status', 'active')
             .order('id');
             
         if (error) throw error;

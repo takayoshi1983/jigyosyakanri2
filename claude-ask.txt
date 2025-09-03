@@ -1,6 +1,22 @@
-|id|name|fiscal_month|status|custom_tasks_by_year|finalized_years|
-|:---:|:---|:---:|:---:|:---|:---|
-|87|サンプル会社64|1|deleted|{"2025": "資料受付・仕訳入力・担当チェ"}["2025"]|
-|88|サンプル会社65|2|inactive|{"2025": "資料受付・仕訳入力・担当チェ"}|[]|
-|89|サンプル会社66|3|active|{"2025": "資料受付・仕訳入力・担当チェ"}|[]|
-|90|サンプル会社67|4|active|{"2025": "資料受付・仕訳入力・担当チェ"}|[]|
+
+﻿
+index.js:236 [Main] Starting application initialization...
+index.js:189 Checking authentication state...
+index.js:193 User authenticated: takayoshi01161983@gmail.com
+index.js:298 User role is 'staff'. Disabling admin buttons.
+custom-dropdown.js:2 Initializing dropdown for selectElement: staff-filter with 8 options.
+custom-dropdown.js:2 Initializing dropdown for selectElement: month-filter with 13 options.
+index.js:670 [DEBUG] renderClients() called, total clients: 72
+index.js:1190 [DEBUG] All clients status count: 72
+index.js:1191 [DEBUG] Inactive/deleted clients: 
+Array(0)
+index.js:1192 [DEBUG] ID88 specifically: undefined
+index.js:1193 [DEBUG] App settings hide_inactive_clients: false
+index.js:672 [DEBUG] After filtering: 72 clients remain
+index.js:670 [DEBUG] renderClients() called, total clients: 72
+index.js:1190 [DEBUG] All clients status count: 72
+index.js:1191 [DEBUG] Inactive/deleted clients: 
+Array(0)
+index.js:1192 [DEBUG] ID88 specifically: undefined
+index.js:1193 [DEBUG] App settings hide_inactive_clients: false
+index.js:672 [DEBUG] After filtering: 72 clients remain
