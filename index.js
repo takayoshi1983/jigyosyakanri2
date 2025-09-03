@@ -687,9 +687,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Staff Management ---
-    async function openStaffEditModal() {
+    function openStaffEditModal() {
         try {
-            staffs = await fetchStaffs(); // Refresh staff data
+            // キャッシュされたstaffsデータを使用（DB問い合わせ不要）
             originalStaffsState = JSON.parse(JSON.stringify(staffs));
             currentEditingStaffs = JSON.parse(JSON.stringify(staffs));
             
@@ -697,27 +697,32 @@ document.addEventListener('DOMContentLoaded', () => {
             staffEditModal.style.display = 'block';
         } catch (error) {
             console.error('Error opening staff modal:', error);
-            alert('担当者データの取得に失敗しました: ' + handleSupabaseError(error));
+            alert('担当者データの表示に失敗しました: ' + error.message);
         }
     }
 
-    async function renderStaffList() {
+    function renderStaffList() {
         staffListContainer.innerHTML = '';
+        
+        // キャッシュされたclientsデータから担当件数を計算（DB問い合わせ不要）
+        const staffClientCounts = {};
+        const staffAssignedClients = {};
+        
+        for (const client of clients) {
+            if (client.staff_id) {
+                if (!staffClientCounts[client.staff_id]) {
+                    staffClientCounts[client.staff_id] = 0;
+                    staffAssignedClients[client.staff_id] = [];
+                }
+                staffClientCounts[client.staff_id]++;
+                staffAssignedClients[client.staff_id].push(client);
+            }
+        }
         
         for (let index = 0; index < currentEditingStaffs.length; index++) {
             const staff = currentEditingStaffs[index];
-            let clientCount = 0;
-            let assignedClients = [];
-            
-            // Check if this staff has assigned clients (only for existing staff)
-            if (staff.id !== null) {
-                try {
-                    assignedClients = await SupabaseAPI.getClientsAssignedToStaff(staff.id);
-                    clientCount = assignedClients.length;
-                } catch (error) {
-                    console.warn('Error checking assigned clients for staff:', staff.id, error);
-                }
-            }
+            const clientCount = staff.id !== null ? (staffClientCounts[staff.id] || 0) : 0;
+            const assignedClients = staff.id !== null ? (staffAssignedClients[staff.id] || []) : [];
             
             const staffItem = document.createElement('div');
             staffItem.className = 'staff-item';
