@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Staff modal elements
     const staffEditModal = document.getElementById('staff-edit-modal');
     const closeStaffModalButton = staffEditModal.querySelector('.close-button');
-    const staffListContainer = document.getElementById('staff-list-container');
+    let staffListContainer = document.getElementById('staff-list-container');
     const newStaffInput = document.getElementById('new-staff-input');
     const addStaffButton = document.getElementById('add-staff-button');
     const saveStaffButton = document.getElementById('save-staff-button');
