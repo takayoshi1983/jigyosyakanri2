@@ -1824,12 +1824,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const originalLink = currentEditingAppLinks.find(l => (l.id || `new-${currentEditingAppLinks.indexOf(l)}`) == id);
-                finalLinks.push({
-                    id: id.startsWith('new-') ? undefined : parseInt(id),
+                const linkData = {
                     name,
                     url,
                     display_order: finalLinks.length
-                });
+                };
+                if (!id.startsWith('new-')) {
+                    linkData.id = parseInt(id);
+                }
+                finalLinks.push(linkData);
             }
         }
 
