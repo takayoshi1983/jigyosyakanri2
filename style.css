@@ -1641,4 +1641,11 @@ button:active {
     }
 }
 
+/* デスクトップでは モバイル用カードコンテナを非表示 */
+@media screen and (min-width: 481px) {
+    .mobile-cards-container {
+        display: none !important;
+    }
+}
+
 
