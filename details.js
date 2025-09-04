@@ -3,164 +3,21 @@ import { SupabaseAPI, handleSupabaseError } from './supabase-client.js';
 document.addEventListener('DOMContentLoaded', async () => {
     let orientationLocked = false;
     
-    // 画面方向の管理
-    async function manageOrientation() {
-        if (!screen.orientation || typeof screen.orientation.lock !== 'function') {
-            console.log('Screen Orientation API not supported');
-            return; // Screen Orientation API非対応
-        }
+    // Screen Orientation API サポートチェック
+    if (screen.orientation && typeof screen.orientation.lock === 'function') {
+        console.log('📱 Screen Orientation API supported - using CSS rotation prompt only');
         
-        const isMobile = window.innerWidth <= 1024; // タブレット・横画面も含める
-        const isPortrait = window.innerHeight > window.innerWidth;
-        const currentOrientation = screen.orientation.type;
-        
-        console.log('Current state:', {
+        // API は利用可能だが、デバイスでロックが失敗する場合が多いため
+        // CSS による横画面推奨メッセージに依存する方針に変更
+        console.log('Current orientation:', {
+            type: screen.orientation.type,
+            angle: screen.orientation.angle,
             width: window.innerWidth,
-            height: window.innerHeight,
-            isMobile,
-            isPortrait,
-            orientationLocked,
-            currentOrientation,
-            angle: screen.orientation.angle
+            height: window.innerWidth
         });
-        
-        if (isMobile && isPortrait && !orientationLocked) {
-            try {
-                // 縦画面の時は横画面に推奨
-                await screen.orientation.lock('landscape');
-                orientationLocked = true;
-                console.log('✅ Orientation locked to landscape');
-            } catch (error) {
-                console.log('❌ Screen orientation lock failed:', error);
-            }
-        } else if (!isPortrait) {
-            // 横画面時は常にロック解除を試行（モバイル・デスクトップ問わず）
-            if (orientationLocked) {
-                try {
-                    screen.orientation.unlock();
-                    orientationLocked = false;
-                    console.log('🔓 Orientation lock released (landscape detected)');
-                } catch (error) {
-                    console.log('❌ Screen orientation unlock failed:', error);
-                }
-            }
-        } else {
-            console.log('No action needed:', { isMobile, isPortrait, orientationLocked });
-        }
+    } else {
+        console.log('📱 Screen Orientation API not supported - using CSS rotation prompt');
     }
-    
-    // 初期設定
-    await manageOrientation();
-    
-    // デバッグ用: 手動でロック解除できるボタンを追加 (常に表示)
-    if (screen.orientation) {
-        const debugButton = document.createElement('button');
-        debugButton.textContent = '🔓 画面固定を解除 (デバッグ)';
-        debugButton.style.cssText = `
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 10000;
-            background: #ff4444;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 12px;
-            cursor: pointer;
-        `;
-        debugButton.addEventListener('click', async () => {
-            try {
-                // 複数の解除方法を試行
-                if (typeof screen.orientation.unlock === 'function') {
-                    screen.orientation.unlock();
-                }
-                
-                // 状態をリセット
-                orientationLocked = false;
-                
-                // 追加で別の角度にロックしてから解除する方法も試行
-                try {
-                    await screen.orientation.lock('portrait');
-                    screen.orientation.unlock();
-                } catch (e) {
-                    console.log('Secondary unlock method failed:', e);
-                }
-                
-                console.log('🔓 Manual unlock attempted with multiple methods');
-                console.log('Current orientation after unlock:', {
-                    type: screen.orientation.type,
-                    angle: screen.orientation.angle,
-                    locked: orientationLocked
-                });
-                
-                debugButton.textContent = '✅ 解除実行完了';
-                debugButton.style.background = '#28a745';
-                
-                setTimeout(() => {
-                    debugButton.remove();
-                }, 3000);
-            } catch (error) {
-                console.log('❌ Manual unlock failed:', error);
-                debugButton.textContent = '❌ 解除失敗';
-                debugButton.style.background = '#dc3545';
-            }
-        });
-        document.body.appendChild(debugButton);
-        
-        // 15秒後に自動削除 (デバッグ時間を延長)
-        setTimeout(() => {
-            if (debugButton.parentNode) {
-                debugButton.remove();
-                console.log('Debug button auto-removed');
-            }
-        }, 15000);
-    }
-    
-    // 画面方向変更の監視
-    if (screen.orientation) {
-        screen.orientation.addEventListener('change', async () => {
-            console.log('Orientation changed:', screen.orientation.angle, screen.orientation.type);
-            await manageOrientation();
-        });
-    }
-    
-    // resize イベントも監視（iOS Safari対応）
-    window.addEventListener('resize', async () => {
-        setTimeout(async () => {
-            await manageOrientation();
-        }, 100); // 少し遅延を入れてサイズ変更完了を待つ
-    });
-    
-    // ページを離れる時に画面固定を解除
-    window.addEventListener('beforeunload', () => {
-        if (orientationLocked && screen.orientation && typeof screen.orientation.unlock === 'function') {
-            try {
-                screen.orientation.unlock();
-                console.log('Orientation lock released on page unload');
-            } catch (error) {
-                console.log('Failed to unlock orientation on page unload:', error);
-            }
-        }
-    });
-    
-    // Visibility API で非表示になった時も解除（タブ切り替え等）
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden && orientationLocked && screen.orientation && typeof screen.orientation.unlock === 'function') {
-            try {
-                screen.orientation.unlock();
-                orientationLocked = false;
-                console.log('Orientation lock released on visibility change');
-            } catch (error) {
-                console.log('Failed to unlock orientation on visibility change:', error);
-            }
-        } else if (!document.hidden) {
-            // ページが再び表示された時は再評価
-            setTimeout(async () => {
-                await manageOrientation();
-            }, 200);
-        }
-    });
     // --- DOM Element Selectors ---
     const clientInfoArea = document.getElementById('client-info-area');
     const detailsTableHead = document.querySelector('#details-table thead');
