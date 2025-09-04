@@ -714,12 +714,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const filteredClients = getFilteredClients();
         const sortedClients = sortClients(filteredClients);
 
+        // デスクトップ版テーブル表示
         clientsTableBody.innerHTML = '';
 
         if (sortedClients.length === 0) {
             const noDataRow = document.createElement('tr');
             noDataRow.innerHTML = '<td colspan="10" style="text-align: center; padding: 20px; color: #666;">該当するクライアントが見つかりません</td>';
             clientsTableBody.appendChild(noDataRow);
+            
+            // モバイル版も空メッセージ表示
+            renderMobileCards([]);
             return;
         }
 
@@ -727,6 +731,122 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = createClientRow(client);
             clientsTableBody.appendChild(row);
         });
+
+        // モバイル版カード表示
+        renderMobileCards(sortedClients);
+    }
+
+    // モバイル用カード表示機能
+    function renderMobileCards(clients) {
+        const mobileContainer = document.getElementById('mobile-cards-container');
+        if (!mobileContainer) return;
+
+        mobileContainer.innerHTML = '';
+
+        if (clients.length === 0) {
+            mobileContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #666; font-size: 14px;">該当するクライアントが見つかりません</div>';
+            return;
+        }
+
+        clients.forEach(client => {
+            const card = createClientCard(client);
+            mobileContainer.appendChild(card);
+        });
+    }
+
+    // モバイル用クライアントカード作成
+    function createClientCard(client) {
+        const card = document.createElement('div');
+        card.className = 'client-card';
+        card.setAttribute('data-client-id', client.id);
+
+        // Apply grayout effect for deleted clients
+        if (client.status === 'deleted') {
+            card.style.opacity = '0.5';
+        }
+
+        const fiscalMonth = client.fiscal_month ? `${client.fiscal_month}月` : '-';
+        const staffName = client.staff_name || '-';
+        const accountingMethod = client.accounting_method || '-';
+        const updatedAt = client.updated_at ? 
+            new Date(client.updated_at).toLocaleDateString('ja-JP') : '-';
+
+        // 進捗データの計算
+        const progressData = calculateProgress(client);
+        const progressPercent = progressData.totalMonths > 0 ? 
+            Math.round((progressData.completedMonths / progressData.totalMonths) * 100) : 0;
+
+        // ステータス表示
+        const statusClass = client.status === 'active' ? 'active' : 'inactive';
+        const statusText = client.status === 'active' ? 'アクティブ' : '関与終了';
+
+        card.innerHTML = `
+            <div class="client-card-header">
+                <h3 class="client-card-title">${client.name}</h3>
+                <span class="client-card-id">ID: ${client.id}</span>
+            </div>
+            
+            <div class="client-card-body">
+                <div class="client-card-field">
+                    <span class="client-card-label">決算月</span>
+                    <span class="client-card-value">${fiscalMonth}</span>
+                </div>
+                <div class="client-card-field">
+                    <span class="client-card-label">担当者</span>
+                    <span class="client-card-value">${staffName}</span>
+                </div>
+                <div class="client-card-field">
+                    <span class="client-card-label">経理方式</span>
+                    <span class="client-card-value">${accountingMethod}</span>
+                </div>
+                <div class="client-card-field">
+                    <span class="client-card-label">最終更新</span>
+                    <span class="client-card-value">${updatedAt}</span>
+                </div>
+            </div>
+            
+            <div class="client-card-progress">
+                <div class="client-card-label">月次進捗</div>
+                <div class="client-card-progress-bar">
+                    <div class="client-card-progress-fill" style="width: ${progressPercent}%"></div>
+                </div>
+                <div class="client-card-progress-text">${progressData.completedMonths}/${progressData.totalMonths} 完了 (${progressPercent}%)</div>
+            </div>
+            
+            <div class="client-card-footer">
+                <span class="client-card-status ${statusClass}">${statusText}</span>
+                <button class="client-card-edit" onclick="navigateToDetails(${client.id})">詳細を見る</button>
+            </div>
+        `;
+
+        return card;
+    }
+
+    // 進捗計算ヘルパー関数
+    function calculateProgress(client) {
+        // 月次進捗データから実際の完了率を計算
+        const monthlyProgress = client.monthlyProgress || '0/12';
+        const progressMatch = monthlyProgress.match(/(\d+)\/(\d+)/);
+        
+        if (progressMatch) {
+            const completedMonths = parseInt(progressMatch[1], 10);
+            const totalMonths = parseInt(progressMatch[2], 10);
+            return {
+                completedMonths: completedMonths,
+                totalMonths: totalMonths
+            };
+        }
+        
+        // フォールバック
+        return {
+            completedMonths: 0,
+            totalMonths: 12
+        };
+    }
+
+    // 詳細画面への遷移
+    function navigateToDetails(clientId) {
+        window.location.href = `details.html?id=${clientId}`;
     }
 
     function createClientRow(client) {

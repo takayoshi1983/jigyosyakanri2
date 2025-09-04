@@ -1268,4 +1268,377 @@ button:active {
     background-color: #dc3545; /* Red */
 }
 
+/* ================================
+   📱 モバイル対応レスポンシブデザイン
+   ================================ */
+
+/* タブレット対応 (768px以下) */
+@media screen and (max-width: 768px) {
+    body {
+        margin: 10px;
+        font-size: 14px;
+    }
+    
+    .container {
+        padding: 15px;
+        margin: 0;
+    }
+    
+    h1 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    
+    /* 検索・フィルター部分の調整 */
+    .controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .controls input,
+    .custom-select-wrapper {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* スマホ対応 (480px以下) */
+@media screen and (max-width: 480px) {
+    body {
+        margin: 5px;
+        font-size: 13px;
+    }
+    
+    .container {
+        padding: 10px;
+        border-radius: 4px;
+    }
+    
+    h1 {
+        font-size: 18px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    /* =====================================
+       📋 メインテーブル → カード形式変換
+       ===================================== */
+    
+    /* デスクトップ用テーブルを非表示 */
+    #clients-table {
+        display: none;
+    }
+    
+    /* モバイル用カードコンテナ */
+    .mobile-cards-container {
+        display: block;
+        margin-top: 15px;
+    }
+    
+    /* クライアントカード */
+    .client-card {
+        background: white;
+        border: 1px solid #e1e5e9;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: box-shadow 0.2s ease;
+    }
+    
+    .client-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    /* カードヘッダー */
+    .client-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .client-card-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0;
+    }
+    
+    .client-card-id {
+        font-size: 12px;
+        color: #6c757d;
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+    
+    /* カード本体 */
+    .client-card-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    
+    .client-card-field {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .client-card-label {
+        font-size: 11px;
+        color: #6c757d;
+        margin-bottom: 2px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .client-card-value {
+        font-size: 13px;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    /* 進捗表示 */
+    .client-card-progress {
+        margin: 10px 0;
+    }
+    
+    .client-card-progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+    
+    .client-card-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+    
+    .client-card-progress-text {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 4px;
+        text-align: right;
+    }
+    
+    /* カードフッター */
+    .client-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .client-card-status {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+    
+    .client-card-status.active {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .client-card-status.inactive {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .client-card-edit {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .client-card-edit:hover {
+        background: #0056b3;
+    }
+    
+    /* ユーザー情報エリアの調整 */
+    #user-info {
+        position: static !important;
+        width: 100% !important;
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    #user-info img {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    
+    /* アコーディオンメニューの調整 */
+    .accordion-container {
+        position: static !important;
+        width: 100% !important;
+        margin: 10px 0 !important;
+    }
+    
+    .accordion-header {
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+    }
+    
+    .accordion-button {
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+        min-height: 44px; /* タッチ操作最適化 */
+    }
+
+    /* =====================================
+       📊 詳細画面のモバイル最適化
+       ===================================== */
+
+    /* 詳細画面テーブルのモバイル対応 */
+    .details-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .details-table {
+        min-width: 100%;
+        font-size: 12px;
+    }
+
+    .details-table th,
+    .details-table td {
+        padding: 8px 4px !important;
+        min-width: 80px;
+    }
+
+    /* チェックボックスとメモ欄の最適化 */
+    .checkbox-memo-cell {
+        min-width: 100px !important;
+    }
+
+    .checkbox-memo-container input[type="checkbox"] {
+        transform: scale(1.5) !important; /* チェックボックス拡大 */
+        margin: 4px 0 !important;
+    }
+
+    .checkbox-memo-input {
+        width: calc(100% - 2px) !important;
+        height: 30px !important;
+        font-size: 11px !important;
+        padding: 3px !important;
+    }
+
+    /* タスクヘッダーの調整 */
+    .details-table thead th {
+        font-size: 11px !important;
+        padding: 6px 2px !important;
+        white-space: nowrap;
+    }
+
+    /* 月ヘッダーの調整 */
+    .details-table thead th:first-child {
+        position: sticky;
+        left: 0;
+        background: #f8f9fa;
+        z-index: 2;
+        min-width: 60px;
+    }
+
+    /* URL・メモテーブルの調整 */
+    #notes-table {
+        font-size: 12px;
+    }
+
+    #notes-table th,
+    #notes-table td {
+        padding: 6px 4px !important;
+    }
+
+    #notes-table input[type="text"],
+    #notes-table textarea {
+        width: 100% !important;
+        font-size: 11px !important;
+        padding: 4px !important;
+        min-height: 30px;
+    }
+
+    /* 年度ドロップダウンの調整 */
+    .custom-select-wrapper {
+        font-size: 14px !important;
+    }
+
+    .custom-select-trigger {
+        padding: 8px 12px !important;
+        min-height: 40px !important;
+    }
+
+    /* ナビゲーションエリアの調整 */
+    .nav-links {
+        flex-direction: column !important;
+        gap: 10px !important;
+        align-items: stretch !important;
+    }
+
+    .nav-links a,
+    .nav-links button {
+        width: 100% !important;
+        text-align: center !important;
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* クライアント情報テーブル */
+    .client-info-table {
+        font-size: 12px !important;
+    }
+
+    .client-info-table th,
+    .client-info-table td {
+        padding: 6px 4px !important;
+        font-size: 12px !important;
+    }
+
+    /* メモ欄の調整 */
+    .memo-section {
+        padding: 15px !important;
+        margin-top: 20px !important;
+    }
+
+    .memo-textarea {
+        font-size: 13px !important;
+        min-height: 120px !important;
+        padding: 8px !important;
+    }
+
+    /* 保存ボタンの調整 */
+    #save-changes-button {
+        width: 100% !important;
+        min-height: 50px !important;
+        font-size: 16px !important;
+        font-weight: bold !important;
+        margin: 10px 0 !important;
+    }
+
+    /* ズームコントロールの調整 */
+    #zoom-container {
+        display: none; /* モバイルではズーム機能を非表示 */
+    }
+}
+
 
