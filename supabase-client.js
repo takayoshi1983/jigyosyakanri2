@@ -853,6 +853,212 @@ export class SupabaseAPI {
         }
     }
 
+    // データ整合性チェック機能
+    static async checkDataConsistency(clientId, year) {
+        try {
+            // 1. クライアントのカスタムタスク取得
+            const client = await this.getClient(clientId);
+            const customTasks = client.custom_tasks_by_year?.[year] || [];
+            
+            // 2. 該当年度の全月次データ取得
+            const startMonth = `${year}-04`;
+            const endMonth = `${parseInt(year) + 1}-03`;
+            
+            const { data: monthlyData, error } = await supabase
+                .from('monthly_tasks')
+                .select('*')
+                .eq('client_id', clientId)
+                .gte('month', startMonth)
+                .lte('month', endMonth)
+                .order('month');
+            
+            if (error) throw error;
+            
+            // 3. 整合性チェック実行
+            const result = this._performConsistencyCheck(customTasks, monthlyData || [], year);
+            
+            return {
+                success: true,
+                client_name: client.name,
+                year: year,
+                ...result
+            };
+            
+        } catch (error) {
+            console.error('Data consistency check error:', error);
+            throw error;
+        }
+    }
+    
+    // データ整合性の自動修復
+    static async repairDataConsistency(clientId, year, repairActions) {
+        try {
+            const results = [];
+            
+            for (const action of repairActions) {
+                switch (action.type) {
+                    case 'add_missing_month':
+                        // 欠落した月次データを作成
+                        await this.createMonthlyTask(clientId, action.month, {
+                            tasks: action.defaultTasks || {},
+                            status: 'pending'
+                        });
+                        results.push(`${action.month}: 月次データを作成`);
+                        break;
+                        
+                    case 'update_task_structure':
+                        // タスク構造を更新
+                        await this.updateMonthlyTask(action.monthlyTaskId, {
+                            tasks: action.newTaskStructure
+                        });
+                        results.push(`${action.month}: タスク構造を更新`);
+                        break;
+                        
+                    case 'remove_obsolete_tasks':
+                        // 廃止されたタスクを削除
+                        const { data: monthlyTask } = await supabase
+                            .from('monthly_tasks')
+                            .select('tasks')
+                            .eq('id', action.monthlyTaskId)
+                            .single();
+                            
+                        if (monthlyTask) {
+                            const updatedTasks = { ...monthlyTask.tasks };
+                            for (const taskKey of action.obsoleteTaskKeys) {
+                                delete updatedTasks[taskKey];
+                            }
+                            
+                            await this.updateMonthlyTask(action.monthlyTaskId, {
+                                tasks: updatedTasks
+                            });
+                            results.push(`${action.month}: 廃止タスクを削除`);
+                        }
+                        break;
+                }
+            }
+            
+            return {
+                success: true,
+                repaired_items: results
+            };
+            
+        } catch (error) {
+            console.error('Data repair error:', error);
+            throw error;
+        }
+    }
+    
+    // 整合性チェックのコア処理
+    static _performConsistencyCheck(customTasks, monthlyData, year) {
+        const issues = [];
+        const stats = {
+            total_tasks: customTasks.length,
+            total_months: monthlyData.length,
+            missing_months: [],
+            inconsistent_tasks: [],
+            obsolete_tasks: []
+        };
+        
+        // カスタムタスクのキー一覧を作成
+        const customTaskKeys = customTasks.map(task => task.name || task);
+        
+        // 期待される月数（4月-3月の12ヶ月）
+        const expectedMonths = [];
+        const startYear = parseInt(year);
+        for (let i = 4; i <= 15; i++) {
+            const month = i <= 12 ? i : i - 12;
+            const monthYear = i <= 12 ? startYear : startYear + 1;
+            expectedMonths.push(`${monthYear}-${month.toString().padStart(2, '0')}`);
+        }
+        
+        // 1. 欠落月次データチェック
+        const existingMonths = monthlyData.map(data => data.month);
+        stats.missing_months = expectedMonths.filter(month => !existingMonths.includes(month));
+        
+        if (stats.missing_months.length > 0) {
+            issues.push({
+                type: 'missing_months',
+                severity: 'warning',
+                message: `${stats.missing_months.length}ヶ月分のデータが不足しています`,
+                details: stats.missing_months
+            });
+        }
+        
+        // 2. タスク項目の整合性チェック
+        monthlyData.forEach(monthly => {
+            const dbTaskKeys = Object.keys(monthly.tasks || {});
+            
+            // 不足しているタスク
+            const missingTasks = customTaskKeys.filter(key => !dbTaskKeys.includes(key));
+            if (missingTasks.length > 0) {
+                stats.inconsistent_tasks.push({
+                    month: monthly.month,
+                    missing: missingTasks
+                });
+            }
+            
+            // 廃止されたタスク  
+            const obsoleteTasks = dbTaskKeys.filter(key => !customTaskKeys.includes(key));
+            if (obsoleteTasks.length > 0) {
+                stats.obsolete_tasks.push({
+                    month: monthly.month,
+                    obsolete: obsoleteTasks
+                });
+            }
+        });
+        
+        if (stats.inconsistent_tasks.length > 0) {
+            issues.push({
+                type: 'inconsistent_tasks',
+                severity: 'error',
+                message: 'タスク項目に不整合があります',
+                details: stats.inconsistent_tasks
+            });
+        }
+        
+        if (stats.obsolete_tasks.length > 0) {
+            issues.push({
+                type: 'obsolete_tasks',
+                severity: 'warning',
+                message: '廃止されたタスク項目がDBに残存しています',
+                details: stats.obsolete_tasks
+            });
+        }
+        
+        // 3. 進捗整合性チェック（completedフラグとタスクチェック状況）
+        let progressInconsistencies = 0;
+        monthlyData.forEach(monthly => {
+            const tasks = monthly.tasks || {};
+            const completedTasks = Object.values(tasks).filter(Boolean).length;
+            const totalTasks = Object.keys(tasks).length;
+            const shouldBeCompleted = totalTasks > 0 && completedTasks === totalTasks;
+            
+            if (shouldBeCompleted !== monthly.completed) {
+                progressInconsistencies++;
+            }
+        });
+        
+        if (progressInconsistencies > 0) {
+            issues.push({
+                type: 'progress_inconsistency',
+                severity: 'warning',
+                message: `${progressInconsistencies}件の進捗状態に不整合があります`,
+                details: progressInconsistencies
+            });
+        }
+        
+        return {
+            is_consistent: issues.length === 0,
+            issues: issues,
+            stats: stats,
+            summary: {
+                total_issues: issues.length,
+                critical_issues: issues.filter(i => i.severity === 'error').length,
+                warnings: issues.filter(i => i.severity === 'warning').length
+            }
+        };
+    }
+
     // App Links (Other Apps)
     static async getAppLinks() {
         const { data, error } = await supabase

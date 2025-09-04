@@ -864,10 +864,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
 
         const syncButton = document.createElement('button');
-        syncButton.innerHTML = `<span>🔄</span> <span>データ整合性チェック (準備中)</span>`;
+        syncButton.innerHTML = `<span>🔄</span> <span>データ整合性チェック</span>`;
         syncButton.className = 'accordion-button';
-        syncButton.disabled = true;
-        syncButton.style.cssText = 'padding: 10px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; text-align: left; display: flex; align-items: center; gap: 8px;';
+        syncButton.disabled = false;
+        syncButton.style.cssText = 'padding: 10px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
+        
+        syncButton.addEventListener('click', async () => {
+            await performDataConsistencyCheck();
+        });
 
         const propagateButton = document.createElement('button');
         propagateButton.innerHTML = `<span>🚀</span> <span>タスクを将来年度に伝播 (準備中)</span>`;
@@ -983,6 +987,160 @@ document.addEventListener('DOMContentLoaded', async () => {
         } finally {
             hideLoading();
         }
+    }
+
+    // データ整合性チェック機能
+    async function performDataConsistencyCheck() {
+        if (!currentClientId) {
+            toast.error('クライアントIDが不明です');
+            return;
+        }
+
+        const year = currentYearSelection || new Date().getFullYear();
+        
+        try {
+            // Loading状態の表示
+            toast.info('データ整合性をチェック中...');
+            
+            // API呼び出し
+            const result = await SupabaseAPI.checkDataConsistency(currentClientId, year);
+            
+            if (result.success) {
+                displayConsistencyCheckResult(result);
+            } else {
+                toast.error('整合性チェックに失敗しました');
+            }
+            
+        } catch (error) {
+            console.error('Consistency check error:', error);
+            toast.error(`整合性チェックエラー: ${handleSupabaseError(error)}`);
+        }
+    }
+
+    // 整合性チェック結果の表示
+    function displayConsistencyCheckResult(result) {
+        const { is_consistent, issues, stats, summary } = result;
+        
+        // モーダルまたは専用エリアに結果を表示
+        const resultModal = createConsistencyResultModal(result);
+        document.body.appendChild(resultModal);
+        resultModal.style.display = 'block';
+    }
+
+    // 結果表示モーダルの作成
+    function createConsistencyResultModal(result) {
+        const { is_consistent, issues, stats, summary, client_name, year } = result;
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.cssText = 'display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);';
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        modalContent.style.cssText = 'background-color: #fefefe; margin: 5% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);';
+        
+        const header = document.createElement('div');
+        header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px;';
+        
+        const title = document.createElement('h2');
+        title.style.cssText = 'margin: 0; color: #333;';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.cssText = 'background: none; border: none; font-size: 24px; cursor: pointer; color: #999;';
+        closeBtn.addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        if (is_consistent) {
+            title.innerHTML = '✅ データ整合性チェック結果';
+            title.style.color = '#28a745';
+            modalContent.innerHTML += `
+                <div style="text-align: center; padding: 20px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px; margin: 20px 0;">
+                    <h3 style="color: #155724; margin-top: 0;">🎉 すべて正常です！</h3>
+                    <p style="color: #155724; margin-bottom: 0;">
+                        <strong>${client_name}</strong>（${year}年度）のデータに問題はありません。
+                    </p>
+                </div>
+            `;
+        } else {
+            title.innerHTML = '⚠️ データ整合性チェック結果';
+            title.style.color = '#dc3545';
+            
+            let issueHtml = `
+                <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                    <h3 style="color: #721c24; margin-top: 0;">検出された問題</h3>
+                    <p><strong>クライアント:</strong> ${client_name} (${year}年度)</p>
+                    <p><strong>問題総数:</strong> ${summary.total_issues}件 (エラー: ${summary.critical_issues}件, 警告: ${summary.warnings}件)</p>
+                </div>
+                <div style="margin: 20px 0;">
+            `;
+            
+            issues.forEach(issue => {
+                const severityColor = issue.severity === 'error' ? '#dc3545' : '#ffc107';
+                const severityIcon = issue.severity === 'error' ? '❌' : '⚠️';
+                
+                issueHtml += `
+                    <div style="border-left: 4px solid ${severityColor}; padding: 10px 15px; margin: 10px 0; background: #f8f9fa;">
+                        <h4 style="margin: 0 0 5px 0; color: ${severityColor};">${severityIcon} ${issue.message}</h4>
+                        <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 14px;">
+                            種類: ${issue.type} | 重要度: ${issue.severity}
+                        </p>
+                    </div>
+                `;
+            });
+            
+            issueHtml += `</div>`;
+            
+            // 自動修復ボタンを追加（将来の機能拡張用）
+            if (summary.critical_issues > 0 || summary.warnings > 0) {
+                issueHtml += `
+                    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+                        <button id="auto-repair-btn" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                            🔧 自動修復を実行 (準備中)
+                        </button>
+                    </div>
+                `;
+            }
+            
+            modalContent.innerHTML += issueHtml;
+        }
+        
+        // 統計情報を追加
+        const statsHtml = `
+            <div style="background: #e9ecef; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                <h4 style="margin-top: 0; color: #495057;">📊 データ統計</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                    <div><strong>タスク項目数:</strong> ${stats.total_tasks}個</div>
+                    <div><strong>月次データ:</strong> ${stats.total_months}ヶ月分</div>
+                    <div><strong>欠落月:</strong> ${stats.missing_months.length}ヶ月</div>
+                    <div><strong>不整合タスク:</strong> ${stats.inconsistent_tasks.length}件</div>
+                </div>
+            </div>
+        `;
+        modalContent.innerHTML += statsHtml;
+        
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        modalContent.insertBefore(header, modalContent.firstChild);
+        
+        modal.appendChild(modalContent);
+        
+        // ESCキーでモーダルを閉じる
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.parentNode) {
+                modal.remove();
+            }
+        });
+        
+        // モーダル外クリックで閉じる
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+        
+        return modal;
     }
 
     initialize();
