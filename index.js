@@ -791,9 +791,16 @@ document.addEventListener('DOMContentLoaded', () => {
             container.removeChild(container.lastChild);
         }
 
+        // Add a separator if there are links
+        if (appLinks.length > 0) {
+            const separator = document.createElement('hr');
+            separator.style.margin = '8px 0';
+            container.appendChild(separator);
+        }
+
         appLinks.forEach(link => {
             const button = document.createElement('button');
-            button.className = 'accordion-button';
+            button.className = 'accordion-button app-link-button'; // Apply new style
             button.textContent = link.name;
             button.addEventListener('click', () => {
                 window.open(link.url, '_blank', 'noopener,noreferrer');
