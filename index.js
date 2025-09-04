@@ -116,6 +116,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- Table Column Width Management ---
+    function resetColumnWidths() {
+        if (window.tableResizer) {
+            window.tableResizer.resetColumnWidths();
+        } else {
+            toast.warning('テーブルリサイザーが初期化されていません');
+        }
+    }
+
     // --- Authentication Functions ---
     function showAuthStatus(message, type = 'info') {
         authStatus.className = type;
@@ -627,6 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         document.getElementById('csv-file-input').addEventListener('change', importCSV);
         document.getElementById('reset-database-button').addEventListener('click', resetDatabase);
+        document.getElementById('reset-column-widths-button').addEventListener('click', resetColumnWidths);
     }
 
     // --- Client Management ---

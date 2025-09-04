@@ -1,0 +1,132 @@
+/* Table Column Resizing Styles */
+
+/* Resizable table setup */
+.resizable-table {
+    position: relative;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.resizable-table th {
+    position: relative;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Resize handle */
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    border-right: 2px solid transparent;
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+/* Visual feedback on hover */
+.resize-handle:hover {
+    background: linear-gradient(to bottom, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.2));
+    border-right-color: rgba(59, 130, 246, 0.6);
+}
+
+.resize-handle:active,
+.resize-handle.dragging {
+    background: linear-gradient(to bottom, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.3));
+    border-right-color: #3b82f6;
+}
+
+/* Active resize state for the table */
+.resizable-table.resizing {
+    user-select: none;
+    cursor: col-resize;
+}
+
+.resizable-table.resizing * {
+    cursor: col-resize !important;
+}
+
+/* Minimum width constraints */
+.resizable-table th {
+    min-width: 60px;
+    max-width: 500px;
+}
+
+/* Special handling for specific columns */
+.resizable-table th[data-column="id"] {
+    min-width: 50px;
+    max-width: 80px;
+}
+
+.resizable-table th[data-column="name"] {
+    min-width: 150px;
+    max-width: 400px;
+}
+
+.resizable-table th[data-column="edit"] {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+/* Resize indicator line */
+.resize-indicator {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: #3b82f6;
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+}
+
+.resize-indicator.active {
+    opacity: 1;
+}
+
+/* Enhanced table appearance during resize */
+.resizable-table th:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Tooltip for resize hint */
+.resize-tooltip {
+    position: absolute;
+    bottom: -30px;
+    right: -20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    pointer-events: none;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1001;
+}
+
+.resize-handle:hover .resize-tooltip {
+    opacity: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .resize-handle {
+        width: 8px;
+        border-right-width: 3px;
+    }
+    
+    .resizable-table th {
+        min-width: 80px;
+    }
+    
+    .resize-tooltip {
+        display: none;
+    }
+}
