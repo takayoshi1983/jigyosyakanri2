@@ -864,10 +864,20 @@ export class SupabaseAPI {
         return data;
     }
 
-    static async upsertAppLinks(links) {
+    static async createAppLinks(links) {
         const { data, error } = await supabase
             .from('app_links')
-            .upsert(links, { onConflict: 'id' })
+            .insert(links)
+            .select('*');
+
+        if (error) throw error;
+        return data;
+    }
+
+    static async updateAppLinks(links) {
+        const { data, error } = await supabase
+            .from('app_links')
+            .upsert(links)
             .select('*');
 
         if (error) throw error;

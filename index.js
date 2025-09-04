@@ -1840,13 +1840,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const finalIds = new Set(finalLinks.filter(l => l.id).map(l => l.id));
         const idsToDelete = [...originalIds].filter(id => !finalIds.has(id));
 
+        const linksToCreate = finalLinks.filter(l => l.id === undefined);
+        const linksToUpdate = finalLinks.filter(l => l.id !== undefined);
+
         try {
             const promises = [];
             if (idsToDelete.length > 0) {
                 promises.push(SupabaseAPI.deleteAppLinks(idsToDelete));
             }
-            if (finalLinks.length > 0) {
-                promises.push(SupabaseAPI.upsertAppLinks(finalLinks));
+            if (linksToCreate.length > 0) {
+                promises.push(SupabaseAPI.createAppLinks(linksToCreate));
+            }
+            if (linksToUpdate.length > 0) {
+                promises.push(SupabaseAPI.updateAppLinks(linksToUpdate));
             }
 
             await Promise.all(promises);
