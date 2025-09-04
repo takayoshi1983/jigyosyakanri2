@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return; // Screen Orientation API非対応
         }
         
-        const isMobile = window.innerWidth <= 480;
+        const isMobile = window.innerWidth <= 1024; // タブレット・横画面も含める
         const isPortrait = window.innerHeight > window.innerWidth;
         const currentOrientation = screen.orientation.type;
         
@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 初期設定
     await manageOrientation();
     
-    // デバッグ用: 手動でロック解除できるボタンを追加
-    if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+    // デバッグ用: 手動でロック解除できるボタンを追加 (常に表示)
+    if (screen.orientation) {
         const debugButton = document.createElement('button');
         debugButton.textContent = '🔓 画面固定を解除 (デバッグ)';
         debugButton.style.cssText = `
@@ -71,25 +71,50 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
         debugButton.addEventListener('click', async () => {
             try {
-                screen.orientation.unlock();
+                // 複数の解除方法を試行
+                if (typeof screen.orientation.unlock === 'function') {
+                    screen.orientation.unlock();
+                }
+                
+                // 状態をリセット
                 orientationLocked = false;
-                console.log('🔓 Manual unlock successful');
-                debugButton.textContent = '✅ 解除完了';
+                
+                // 追加で別の角度にロックしてから解除する方法も試行
+                try {
+                    await screen.orientation.lock('portrait');
+                    screen.orientation.unlock();
+                } catch (e) {
+                    console.log('Secondary unlock method failed:', e);
+                }
+                
+                console.log('🔓 Manual unlock attempted with multiple methods');
+                console.log('Current orientation after unlock:', {
+                    type: screen.orientation.type,
+                    angle: screen.orientation.angle,
+                    locked: orientationLocked
+                });
+                
+                debugButton.textContent = '✅ 解除実行完了';
+                debugButton.style.background = '#28a745';
+                
                 setTimeout(() => {
                     debugButton.remove();
-                }, 2000);
+                }, 3000);
             } catch (error) {
                 console.log('❌ Manual unlock failed:', error);
+                debugButton.textContent = '❌ 解除失敗';
+                debugButton.style.background = '#dc3545';
             }
         });
         document.body.appendChild(debugButton);
         
-        // 5秒後に自動削除
+        // 15秒後に自動削除 (デバッグ時間を延長)
         setTimeout(() => {
             if (debugButton.parentNode) {
                 debugButton.remove();
+                console.log('Debug button auto-removed');
             }
-        }, 10000);
+        }, 15000);
     }
     
     // 画面方向変更の監視
