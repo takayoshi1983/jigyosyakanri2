@@ -1639,6 +1639,47 @@ button:active {
     #zoom-container {
         display: none; /* モバイルではズーム機能を非表示 */
     }
+
+    /* スティッキーヘッダーをモバイルで無効化 */
+    .sticky-header-area {
+        position: static !important;
+        background-color: transparent !important;
+        z-index: auto !important;
+    }
+
+    /* 詳細画面のタイトル調整 */
+    .sticky-header-area h1 {
+        margin: 10px 0 !important;
+        text-align: center;
+    }
+
+    /* テーブルヘッダーのスティッキー無効化 */
+    .details-table thead th {
+        position: static !important;
+        z-index: auto !important;
+    }
+
+    .details-table thead th:first-child {
+        position: static !important;
+        left: auto !important;
+        background: inherit !important;
+        z-index: auto !important;
+    }
+
+    /* 編集中バナーの調整 */
+    .editing-by-other-banner {
+        position: static !important;
+        margin-bottom: 10px;
+    }
+
+    /* セーブステータスの調整 */
+    #save-status {
+        position: static !important;
+        bottom: auto !important;
+        right: auto !important;
+        margin: 10px 0;
+        text-align: center;
+    }
 }
 
 /* デスクトップでは モバイル用カードコンテナを非表示 */
