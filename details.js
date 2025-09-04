@@ -1,16 +1,85 @@
 import { SupabaseAPI, handleSupabaseError } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // スマホでの横画面推奨 (Screen Orientation API対応ブラウザのみ)
-    if (screen.orientation && typeof screen.orientation.lock === 'function') {
-        try {
-            // 横画面に強制 (Android Chromeなどで動作)
-            await screen.orientation.lock('landscape');
-        } catch (error) {
-            console.log('Screen orientation lock not supported or denied:', error);
-            // 横画面推奨メッセージを表示する方法に フォールバック
+    let orientationLocked = false;
+    
+    // 画面方向の管理
+    async function manageOrientation() {
+        if (!screen.orientation || typeof screen.orientation.lock !== 'function') {
+            return; // Screen Orientation API非対応
+        }
+        
+        const isMobile = window.innerWidth <= 480;
+        const isPortrait = window.innerHeight > window.innerWidth;
+        
+        if (isMobile && isPortrait && !orientationLocked) {
+            try {
+                // 縦画面の時は横画面に推奨
+                await screen.orientation.lock('landscape');
+                orientationLocked = true;
+                console.log('Orientation locked to landscape');
+            } catch (error) {
+                console.log('Screen orientation lock failed:', error);
+            }
+        } else if (isMobile && !isPortrait && orientationLocked) {
+            try {
+                // 横画面になったら固定を解除
+                screen.orientation.unlock();
+                orientationLocked = false;
+                console.log('Orientation lock released');
+            } catch (error) {
+                console.log('Screen orientation unlock failed:', error);
+            }
         }
     }
+    
+    // 初期設定
+    await manageOrientation();
+    
+    // 画面方向変更の監視
+    if (screen.orientation) {
+        screen.orientation.addEventListener('change', async () => {
+            console.log('Orientation changed:', screen.orientation.angle, screen.orientation.type);
+            await manageOrientation();
+        });
+    }
+    
+    // resize イベントも監視（iOS Safari対応）
+    window.addEventListener('resize', async () => {
+        setTimeout(async () => {
+            await manageOrientation();
+        }, 100); // 少し遅延を入れてサイズ変更完了を待つ
+    });
+    
+    // ページを離れる時に画面固定を解除
+    window.addEventListener('beforeunload', () => {
+        if (orientationLocked && screen.orientation && typeof screen.orientation.unlock === 'function') {
+            try {
+                screen.orientation.unlock();
+                console.log('Orientation lock released on page unload');
+            } catch (error) {
+                console.log('Failed to unlock orientation on page unload:', error);
+            }
+        }
+    });
+    
+    // Visibility API で非表示になった時も解除（タブ切り替え等）
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && orientationLocked && screen.orientation && typeof screen.orientation.unlock === 'function') {
+            try {
+                screen.orientation.unlock();
+                orientationLocked = false;
+                console.log('Orientation lock released on visibility change');
+            } catch (error) {
+                console.log('Failed to unlock orientation on visibility change:', error);
+            }
+        } else if (!document.hidden) {
+            // ページが再び表示された時は再評価
+            setTimeout(async () => {
+                await manageOrientation();
+            }, 200);
+        }
+    });
     // --- DOM Element Selectors ---
     const clientInfoArea = document.getElementById('client-info-area');
     const detailsTableHead = document.querySelector('#details-table thead');
