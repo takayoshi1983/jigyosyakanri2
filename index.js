@@ -261,14 +261,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize app when authenticated
     async function initializeAuthenticatedApp() {
         try {
-            showLoadingIndicator('ユーザー権限を確認中...');
+            const authCheckToast = toast.loading('ユーザー権限を確認中...');
 
             const userRole = await SupabaseAPI.getUserRole();
 
             // Check if user is registered in the staffs table
             if (userRole === null) {
                 console.warn('Unauthorized user. Showing access denied modal.');
-                hideLoadingIndicator();
+                toast.hide(authCheckToast);
 
                 // Blur the background and show the custom access denied modal
                 const mainContainer = document.querySelector('.container');
@@ -319,7 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            showLoadingIndicator('データを読み込み中...');
+            toast.hide(authCheckToast);
+            const dataLoadToast = toast.loading('データを読み込み中...');
             
             // Fetch data from Supabase
             [clients, staffs, appSettings] = await Promise.all([
@@ -334,10 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
             renderClients();
             updateSortIcons();
             
-            hideLoadingIndicator();
+            toast.update(dataLoadToast, 'データ読み込み完了', 'success');
 
         } catch (error) {
-            hideLoadingIndicator();
+            if (typeof dataLoadToast !== 'undefined') toast.hide(dataLoadToast);
+            if (typeof authCheckToast !== 'undefined') toast.hide(authCheckToast);
             console.error("Error initializing app:", error);
             alert("アプリケーションの初期化に失敗しました: " + handleSupabaseError(error));
         }
@@ -1469,7 +1471,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- CSV Export/Import Functions ---
     async function exportCSV() {
         try {
-            showStatus('CSVエクスポート中...', 'warning');
+            const exportToast = toast.loading('CSVエクスポート中...');
             
             const csvData = await SupabaseAPI.exportClientsCSV();
             
@@ -1492,11 +1494,11 @@ document.addEventListener('DOMContentLoaded', () => {
             link.click();
             document.body.removeChild(link);
             
-            showStatus('✅ CSVエクスポート完了', 'success');
+            toast.update(exportToast, 'CSVエクスポート完了', 'success');
             setTimeout(hideStatus, 2000);
         } catch (error) {
             console.error('CSV export error:', error);
-            showStatus(`❌ エクスポートエラー: ${handleSupabaseError(error)}`, 'error');
+            toast.error(`エクスポートエラー: ${handleSupabaseError(error)}`);
         }
     }
     
@@ -1510,7 +1512,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         try {
-            showStatus('CSVインポート中...', 'warning');
+            const importToast = toast.loading('CSVインポート中...');
             
             // ファイルを読み込み
             const text = await readFileAsText(file);
@@ -1531,7 +1533,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await SupabaseAPI.importClientsCSV(csvData);
             
             if (result.success) {
-                showStatus(`✅ ${result.message}`, 'success');
+                toast.update(importToast, result.message, 'success');
                 
                 // データを再読み込み
                 clients = await fetchClientsOptimized();
@@ -1542,7 +1544,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('CSV import error:', error);
-            showStatus(`❌ インポートエラー: ${handleSupabaseError(error)}`, 'error');
+            toast.hide(importToast);
+            toast.error(`インポートエラー: ${handleSupabaseError(error)}`);
             alert(`インポートに失敗しました:\n${error.message}`);
         } finally {
             // ファイル入力をクリア
@@ -1618,12 +1621,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!secondConfirm) return;
         
         try {
-            showStatus('データベースを初期化中... この処理には時間がかかります', 'warning');
+            const resetToast = toast.loading('データベースを初期化中... この処理には時間がかかります');
             
             const result = await SupabaseAPI.resetDatabase();
             
             if (result.success) {
-                showStatus('✅ データベース初期化完了', 'success');
+                toast.update(resetToast, 'データベース初期化完了', 'success');
                 
                 // データを再読み込み
                 [clients, staffs, appSettings] = await Promise.all([
@@ -1639,7 +1642,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Database reset error:', error);
-            showStatus(`❌ 初期化エラー: ${handleSupabaseError(error)}`, 'error');
+            toast.hide(resetToast);
+            toast.error(`初期化エラー: ${handleSupabaseError(error)}`);
             alert(`データベース初期化に失敗しました:\n${error.message}`);
         }
     }

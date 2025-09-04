@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 showNotification('新規顧客が作成されました', 'success');
-                showStatus('✅ 新規顧客作成完了', 'success');
+                toast.success('新規顧客作成完了');
                 
                 // Redirect to main page
                 setTimeout(() => {
@@ -374,8 +374,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 populateFormFields(currentClient);
                 
                 showNotification('顧客情報が更新されました', 'success');
-                showStatus('✅ 更新完了', 'success');
-                setTimeout(hideStatus, 2000);
+                toast.success('更新完了');
             }
 
         } catch (error) {
@@ -578,7 +577,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Main Initialization ---
     async function initializeApp() {
         try {
-            showStatus('アプリケーションを初期化中...', 'warning');
+            const initToast = toast.loading('アプリケーションを初期化中...');
 
             // ユーザーロールをチェック
             userRole = await SupabaseAPI.getUserRole();
@@ -615,7 +614,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Add event listeners
             addEventListeners();
 
-            showStatus('✅ 初期化完了', 'success');
+            toast.update(initToast, '初期化完了', 'success');
             setTimeout(hideStatus, 2000);
             
             // キャッシュデータをクリア（メモリリーク防止）
@@ -624,7 +623,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (error) {
             console.error('Initialization failed:', error);
-            showStatus('❌ 初期化エラー: ' + handleSupabaseError(error), 'error');
+            toast.error('初期化エラー: ' + handleSupabaseError(error));
             
             pageTitle.textContent = 'エラー';
             document.getElementById('edit-form').innerHTML = `

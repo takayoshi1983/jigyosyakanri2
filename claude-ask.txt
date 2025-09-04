@@ -1,9 +1,2 @@
-
-index.js:670 [DEBUG] renderClients() called, total clients: 86
-index.js:1190 [DEBUG] All clients status count: 86
-index.js:1191 [DEBUG] Inactive/deleted clients: []
-index.js:1192 [DEBUG] ID88 specifically: {id: 88, name: 'サンプル会社65', status: 'active'}
-index.js:1193 [DEBUG] ID25 specifically: {id: 25, name: 'サンプル会社2', status: 'active'}
-index.js:1194 [DEBUG] App settings hide_inactive_clients: false
-index.js:1217 [DEBUG] ID88 Filter Check: {name: 'サンプル会社65', status: 'active', searchTerm: '', matchesSearch: true, staffFilterValue: '', …}
-index.js:672 [DEBUG] After filtering: 86 clients remain
+画面遷移の際に読み込みをするときに「データ読み込み完了」や「初期化完了」等の文字が間に入って、画面 が上下し騒がしく見えます。
+右サイドから通知する感じで出てくるタイプ(トースト通知）に変更できますか？それとも良いアイデアがあったら教えてください 

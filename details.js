@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Data Loading Functions ---
     async function loadClientDetails() {
         showLoading();
-        showStatus('クライアントデータを読み込み中...', 'warning');
+        const loadToast = toast.loading('クライアントデータを読み込み中...');
         try {
             // キャッシュされたクライアントデータを優先使用
             const cachedClient = sessionStorage.getItem('cached_client_data');
@@ -106,11 +106,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             clientDetails.finalized_years = clientDetails.finalized_years || [];
 
             await checkAndSetupInitialTasks();
-            showStatus('✅ データ読み込み完了', 'success');
-            setTimeout(hideStatus, 2000);
+            toast.update(loadToast, 'データ読み込み完了', 'success');
         } catch (error) {
             console.error('Error loading client details:', error);
-            showStatus(`❌ データ読み込みエラー: ${handleSupabaseError(error)}`, 'error');
+            toast.hide(loadToast);
+            toast.error(`データ読み込みエラー: ${handleSupabaseError(error)}`);
             throw error;
         } finally {
             hideLoading();
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateFinalizeButtonState();
             updateEditingInterface();
         } catch (error) {
-            showStatus(`❌ 年度確定エラー: ${handleSupabaseError(error)}`, 'error');
+            toast.error(`年度確定エラー: ${handleSupabaseError(error)}`);
         }
     }
 
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showNotification('タスクが保存されました', 'success');
             return true;
         } catch (error) {
-            showStatus(`❌ タスク保存エラー: ${handleSupabaseError(error)}`, 'error');
+            toast.error(`タスク保存エラー: ${handleSupabaseError(error)}`);
             return false;
         }
     }
@@ -689,7 +689,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await Promise.all(savePromises);
             showNotification('変更が保存されました', 'success');
         } catch (error) {
-            showStatus(`❌ 保存エラー: ${handleSupabaseError(error)}`, 'error');
+            toast.error(`保存エラー: ${handleSupabaseError(error)}`);
             setUnsavedChanges(true);
         } finally {
             isSaving = false;
@@ -956,6 +956,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await renderAll();
         } catch (error) {
             console.error('Fatal initialization error:', error);
+            toast.error(`初期化エラー: ${handleSupabaseError(error)}`);
             if (clientInfoArea) clientInfoArea.innerHTML = `<div class="error-message"><h3>初期化エラー</h3><p>${handleSupabaseError(error)}</p><button onclick="location.reload()">再読み込み</button></div>`;
         } finally {
             hideLoading();
