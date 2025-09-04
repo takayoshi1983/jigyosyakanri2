@@ -868,7 +868,7 @@ export class SupabaseAPI {
         const { data, error } = await supabase
             .from('app_links')
             .upsert(links, { onConflict: 'id' })
-            .select();
+            .select('*');
 
         if (error) throw error;
         return data;
