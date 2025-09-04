@@ -171,41 +171,76 @@
 
     <!-- Basic Settings Modal -->
     <div id="basic-settings-modal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2>基本設定</h2>
-            <div class="settings-form">
-                <div class="form-group">
-                    <label for="yellow-threshold">背景を黄色にする未入力期間:</label>
-                    <select id="yellow-threshold">
-                        <!-- Options will be populated by JS -->
-                    </select>
-                    <input type="color" id="yellow-color" value="#FFFF99">
+            
+            <div class="settings-section">
+                <h3>アラート表示設定</h3>
+                <div class="setting-item">
+                    <label for="yellow-threshold">警告表示 (黄色):</label>
+                    <select id="yellow-threshold"></select>
+                    <span>以上未入力で表示</span>
                 </div>
-                <div class="form-group">
-                    <label for="red-threshold">背景を赤色にする未入力期間:</label>
-                    <select id="red-threshold">
-                        <!-- Options will be populated by JS -->
-                    </select>
-                    <input type="color" id="red-color" value="#FFCDD2">
+                <div class="setting-item">
+                    <label for="red-threshold">危険表示 (赤色):</label>
+                    <select id="red-threshold"></select>
+                    <span>以上未入力で表示</span>
                 </div>
-                <div class="form-group">
+                <div class="setting-item">
+                    <label for="yellow-color">警告色:</label>
+                    <input type="color" id="yellow-color">
+                </div>
+                <div class="setting-item">
+                    <label for="red-color">危険色:</label>
+                    <input type="color" id="red-color">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>表示設定</h3>
+                <div class="setting-item">
                     <label for="font-family-select">全体のフォント:</label>
-                    <select id="font-family-select">
-                        <!-- Options will be populated by JS -->
-                    </select>
+                    <select id="font-family-select"></select>
                 </div>
-                <div class="form-group">
-                    <label for="hide-inactive-clients">関与終了は表示しない:</label>
+                <div class="setting-item">
+                    <label for="hide-inactive-clients">関与終了した顧問先を隠す:</label>
                     <input type="checkbox" id="hide-inactive-clients">
                 </div>
             </div>
-            <div class="modal-buttons">
-                <button id="save-basic-settings-button">保存</button>
-                <button id="cancel-basic-settings-button">キャンセル</button>
+
+            <div class="modal-actions">
+                <button id="save-basic-settings-button" class="save-button">保存</button>
+                <button id="cancel-basic-settings-button" class="cancel-button">キャンセル</button>
             </div>
         </div>
     </div>
+
+    <!-- URL Settings Modal -->
+    <div id="url-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>URL設定</h2>
+            <p>「その他アプリ」メニューに表示するカスタムリンクを設定します。</p>
+            
+            <div id="url-list-container" class="list-container">
+                <!-- URLアイテムがここに動的に追加されます -->
+            </div>
+
+            <div class="new-item-form">
+                <input type="text" id="new-url-name" placeholder="リンク名">
+                <input type="url" id="new-url-link" placeholder="https://example.com">
+                <button id="add-url-button" class="add-button">追加</button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="save-url-settings-button" class="save-button">保存</button>
+                <button id="cancel-url-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+</body>
 
     <!-- 認証モーダル -->
     <div id="auth-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; backdrop-filter: blur(5px);">
@@ -351,6 +386,7 @@
     <script src="toast.js"></script>
     <script src="table-resize.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <script type="module" src="index.js"></script>
 

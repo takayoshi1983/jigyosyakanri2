@@ -852,6 +852,36 @@ export class SupabaseAPI {
             throw error;
         }
     }
+
+    // App Links (Other Apps)
+    static async getAppLinks() {
+        const { data, error } = await supabase
+            .from('app_links')
+            .select('*')
+            .order('display_order');
+            
+        if (error) throw error;
+        return data;
+    }
+
+    static async upsertAppLinks(links) {
+        const { data, error } = await supabase
+            .from('app_links')
+            .upsert(links, { onConflict: 'id' })
+            .select();
+
+        if (error) throw error;
+        return data;
+    }
+
+    static async deleteAppLinks(ids) {
+        const { error } = await supabase
+            .from('app_links')
+            .delete()
+            .in('id', ids);
+
+        if (error) throw error;
+    }
     
     // リアルタイム機能（将来拡張用）
     static subscribeToClientChanges(callback) {

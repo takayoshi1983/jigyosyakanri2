@@ -58,6 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const fontFamilySelect = document.getElementById('font-family-select');
     const hideInactiveClientsCheckbox = document.getElementById('hide-inactive-clients');
 
+    // URL Settings Modal elements
+    const urlSettingsModal = document.getElementById('url-settings-modal');
+    const closeUrlSettingsModalButton = urlSettingsModal.querySelector('.close-button');
+    const urlListContainer = document.getElementById('url-list-container');
+    const newUrlNameInput = document.getElementById('new-url-name');
+    const newUrlLinkInput = document.getElementById('new-url-link');
+    const addUrlButton = document.getElementById('add-url-button');
+    const saveUrlSettingsButton = document.getElementById('save-url-settings-button');
+    const cancelUrlSettingsButton = document.getElementById('cancel-url-settings-button');
+
     // --- State Variables ---
     let clients = [];
     let staffs = [];
@@ -68,6 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let defaultTasks = {}; // State for default tasks
     let appSettings = {}; // State for application settings
     let filterState = {}; // フィルター状態を保存
+    let appLinks = []; // State for app links
+    let originalAppLinksState = [];
+    let currentEditingAppLinks = [];
+    let sortableUrlList = null;
 
     // --- Mappings ---
     const headerMap = {
@@ -332,16 +346,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const dataLoadToast = toast.loading('データを読み込み中...');
             
             // Fetch data from Supabase
-            [clients, staffs, appSettings] = await Promise.all([
+            [clients, staffs, appSettings, appLinks] = await Promise.all([
                 fetchClientsOptimized(),
                 fetchStaffs(),
-                fetchSettings()
+                fetchSettings(),
+                SupabaseAPI.getAppLinks()
             ]);
 
             applyFontFamily(appSettings.font_family);
             populateFilters();
             applyFilterState();
             renderClients();
+            renderAppLinksButtons(); // Render the app link buttons
             updateSortIcons();
             
             toast.update(dataLoadToast, 'データ読み込み完了', 'success');
@@ -588,10 +604,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // URL設定ボタンのイベントリスナー
-        urlSettingsButton.addEventListener('click', () => {
-            alert('URL設定ボタンがクリックされました！'); // 仮の処理
-            // ここにURL設定モーダルを開くなどの処理を記述
-        });
+        urlSettingsButton.addEventListener('click', openUrlSettingsModal);
+        closeUrlSettingsModalButton.addEventListener('click', closeUrlSettingsModal);
+        cancelUrlSettingsButton.addEventListener('click', closeUrlSettingsModal);
+        addUrlButton.addEventListener('click', addNewUrlItem);
+        saveUrlSettingsButton.addEventListener('click', saveUrlSettings);
 
         // Table header sorting
         clientsTableHeadRow.addEventListener('click', handleSort);
@@ -611,6 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === staffEditModal) closeStaffModal();
             if (e.target === defaultTasksModal) closeDefaultTasksModal();
             if (e.target === basicSettingsModal) closeBasicSettingsModal();
+            if (e.target === urlSettingsModal) closeUrlSettingsModal();
         });
 
         // CSV and DB Reset Buttons
@@ -762,6 +780,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return row;
+    }
+
+    function renderAppLinksButtons() {
+        const container = otherAppsAccordionContent.querySelector('.accordion-buttons-container');
+        if (!container) return;
+
+        // Clear existing buttons except the settings button
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+        }
+
+        appLinks.forEach(link => {
+            const button = document.createElement('button');
+            button.className = 'accordion-button';
+            button.textContent = link.name;
+            button.addEventListener('click', () => {
+                window.open(link.url, '_blank', 'noopener,noreferrer');
+            });
+            container.appendChild(button);
+        });
     }
 
     // 編集画面に遷移（データキャッシュ付き）
@@ -1695,6 +1733,128 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.textContent = '▼'; // Reset icon to closed state
             }
             document.removeEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, accordionContainer, accordionContent, accordionHeader)); // Remove listener
+        }
+    }
+
+    // --- URL Settings Modal Functions ---
+    function openUrlSettingsModal() {
+        originalAppLinksState = JSON.parse(JSON.stringify(appLinks));
+        currentEditingAppLinks = JSON.parse(JSON.stringify(appLinks));
+        renderUrlListForEdit();
+        urlSettingsModal.style.display = 'block';
+    }
+
+    function closeUrlSettingsModal() {
+        if (sortableUrlList) {
+            sortableUrlList.destroy();
+            sortableUrlList = null;
+        }
+        urlSettingsModal.style.display = 'none';
+    }
+
+    function renderUrlListForEdit() {
+        urlListContainer.innerHTML = '';
+        currentEditingAppLinks.forEach((link, index) => {
+            const item = document.createElement('div');
+            item.className = 'url-item';
+            item.dataset.id = link.id || `new-${index}`;
+            item.innerHTML = `
+                <span class="drag-handle">☰</span>
+                <input type="text" class="url-name-input" value="${link.name || ''}" placeholder="リンク名">
+                <input type="url" class="url-link-input" value="${link.url || ''}" placeholder="https://example.com">
+                <button class="delete-button">削除</button>
+            `;
+            urlListContainer.appendChild(item);
+
+            item.querySelector('.delete-button').addEventListener('click', () => {
+                const idToDelete = item.dataset.id;
+                currentEditingAppLinks = currentEditingAppLinks.filter(l => (l.id || `new-${currentEditingAppLinks.indexOf(l)}`) != idToDelete);
+                renderUrlListForEdit();
+            });
+        });
+
+        if (sortableUrlList) {
+            sortableUrlList.destroy();
+        }
+        sortableUrlList = new Sortable(urlListContainer, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'dragging'
+        });
+    }
+
+    function addNewUrlItem() {
+        const name = newUrlNameInput.value.trim();
+        const url = newUrlLinkInput.value.trim();
+
+        if (!name || !url) {
+            toast.warning('リンク名とURLの両方を入力してください。');
+            return;
+        }
+        try {
+            new URL(url);
+        } catch (_) {
+            toast.error('有効なURLを入力してください。');
+            return;
+        }
+
+        currentEditingAppLinks.push({ name, url });
+        renderUrlListForEdit();
+        newUrlNameInput.value = '';
+        newUrlLinkInput.value = '';
+    }
+
+    async function saveUrlSettings() {
+        const saveToast = toast.loading('URL設定を保存中...');
+        
+        // Get the final order from the DOM
+        const orderedIds = Array.from(urlListContainer.children).map(item => item.dataset.id);
+        const finalLinks = [];
+        const inputs = Array.from(urlListContainer.querySelectorAll('.url-item'));
+
+        for (const id of orderedIds) {
+            const itemElement = inputs.find(el => el.dataset.id === id);
+            if (itemElement) {
+                const name = itemElement.querySelector('.url-name-input').value.trim();
+                const url = itemElement.querySelector('.url-link-input').value.trim();
+
+                if (!name || !url) {
+                    toast.update(saveToast, 'リンク名とURLは必須です。', 'error');
+                    return;
+                }
+
+                const originalLink = currentEditingAppLinks.find(l => (l.id || `new-${currentEditingAppLinks.indexOf(l)}`) == id);
+                finalLinks.push({
+                    id: id.startsWith('new-') ? undefined : parseInt(id),
+                    name,
+                    url,
+                    display_order: finalLinks.length
+                });
+            }
+        }
+
+        const originalIds = new Set(originalAppLinksState.map(l => l.id));
+        const finalIds = new Set(finalLinks.filter(l => l.id).map(l => l.id));
+        const idsToDelete = [...originalIds].filter(id => !finalIds.has(id));
+
+        try {
+            const promises = [];
+            if (idsToDelete.length > 0) {
+                promises.push(SupabaseAPI.deleteAppLinks(idsToDelete));
+            }
+            if (finalLinks.length > 0) {
+                promises.push(SupabaseAPI.upsertAppLinks(finalLinks));
+            }
+
+            await Promise.all(promises);
+
+            appLinks = await SupabaseAPI.getAppLinks();
+            renderAppLinksButtons();
+            closeUrlSettingsModal();
+            toast.update(saveToast, 'URL設定を保存しました', 'success');
+        } catch (error) {
+            console.error('Error saving URL settings:', error);
+            toast.update(saveToast, `保存エラー: ${handleSupabaseError(error)}`, 'error');
         }
     }
 
