@@ -6,35 +6,91 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 画面方向の管理
     async function manageOrientation() {
         if (!screen.orientation || typeof screen.orientation.lock !== 'function') {
+            console.log('Screen Orientation API not supported');
             return; // Screen Orientation API非対応
         }
         
         const isMobile = window.innerWidth <= 480;
         const isPortrait = window.innerHeight > window.innerWidth;
+        const currentOrientation = screen.orientation.type;
+        
+        console.log('Current state:', {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            isMobile,
+            isPortrait,
+            orientationLocked,
+            currentOrientation,
+            angle: screen.orientation.angle
+        });
         
         if (isMobile && isPortrait && !orientationLocked) {
             try {
                 // 縦画面の時は横画面に推奨
                 await screen.orientation.lock('landscape');
                 orientationLocked = true;
-                console.log('Orientation locked to landscape');
+                console.log('✅ Orientation locked to landscape');
             } catch (error) {
-                console.log('Screen orientation lock failed:', error);
+                console.log('❌ Screen orientation lock failed:', error);
             }
-        } else if (isMobile && !isPortrait && orientationLocked) {
-            try {
-                // 横画面になったら固定を解除
-                screen.orientation.unlock();
-                orientationLocked = false;
-                console.log('Orientation lock released');
-            } catch (error) {
-                console.log('Screen orientation unlock failed:', error);
+        } else if (!isPortrait) {
+            // 横画面時は常にロック解除を試行（モバイル・デスクトップ問わず）
+            if (orientationLocked) {
+                try {
+                    screen.orientation.unlock();
+                    orientationLocked = false;
+                    console.log('🔓 Orientation lock released (landscape detected)');
+                } catch (error) {
+                    console.log('❌ Screen orientation unlock failed:', error);
+                }
             }
+        } else {
+            console.log('No action needed:', { isMobile, isPortrait, orientationLocked });
         }
     }
     
     // 初期設定
     await manageOrientation();
+    
+    // デバッグ用: 手動でロック解除できるボタンを追加
+    if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+        const debugButton = document.createElement('button');
+        debugButton.textContent = '🔓 画面固定を解除 (デバッグ)';
+        debugButton.style.cssText = `
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 10000;
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        `;
+        debugButton.addEventListener('click', async () => {
+            try {
+                screen.orientation.unlock();
+                orientationLocked = false;
+                console.log('🔓 Manual unlock successful');
+                debugButton.textContent = '✅ 解除完了';
+                setTimeout(() => {
+                    debugButton.remove();
+                }, 2000);
+            } catch (error) {
+                console.log('❌ Manual unlock failed:', error);
+            }
+        });
+        document.body.appendChild(debugButton);
+        
+        // 5秒後に自動削除
+        setTimeout(() => {
+            if (debugButton.parentNode) {
+                debugButton.remove();
+            }
+        }, 10000);
+    }
     
     // 画面方向変更の監視
     if (screen.orientation) {
