@@ -1,6 +1,16 @@
 import { SupabaseAPI, handleSupabaseError } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // スマホでの横画面推奨 (Screen Orientation API対応ブラウザのみ)
+    if (screen.orientation && typeof screen.orientation.lock === 'function') {
+        try {
+            // 横画面に強制 (Android Chromeなどで動作)
+            await screen.orientation.lock('landscape');
+        } catch (error) {
+            console.log('Screen orientation lock not supported or denied:', error);
+            // 横画面推奨メッセージを表示する方法に フォールバック
+        }
+    }
     // --- DOM Element Selectors ---
     const clientInfoArea = document.getElementById('client-info-area');
     const detailsTableHead = document.querySelector('#details-table thead');
