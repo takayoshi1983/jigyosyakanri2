@@ -685,11 +685,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 monthlyTasksToUpdate[month][field] = input.value;
             });
 
+            // 各月のタスク完了状態を判定し、`completed`フラグを設定
+            const currentTasksForYear = getCurrentYearTasks();
+            Object.keys(monthlyTasksToUpdate).forEach(month => {
+                const updatedTasks = monthlyTasksToUpdate[month].tasks || {};
+                const allTasksCompleted = currentTasksForYear.every(taskName => updatedTasks[taskName] === true);
+                monthlyTasksToUpdate[month].completed = allTasksCompleted;
+            });
+
             const savePromises = Object.entries(monthlyTasksToUpdate).map(([month, data]) => 
                 SupabaseAPI.upsertMonthlyTask(clientId, month, data)
             );
 
-            await Promise.all(savePromises);
+            const updatedResults = await Promise.all(savePromises);
+
+            // 完了になった月に紙吹雪を飛ばす
+            updatedResults.forEach(result => {
+                if (result.completed) {
+                    // 以前の状態と比較して、今回初めて完了になった場合のみ飛ばすのが理想だが、
+                    // ここでは簡略化し、完了状態で保存された場合は常に飛ばす
+                    triggerConfetti();
+                }
+            });
+
             toast.update(saveToast, '変更が保存されました', 'success');
             showNotification('変更が保存されました', 'success');
         } catch (error) {

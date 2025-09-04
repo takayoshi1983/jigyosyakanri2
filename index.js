@@ -444,27 +444,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const processedClients = clientsData.map(client => {
                 const clientTasks = tasksByClientId[client.id] || [];
                 
+                // 'completed' フラグに基づいて完了月を特定
+                const completedTasks = clientTasks.filter(task => task.completed === true);
+                const completedMonths = completedTasks.map(task => task.month);
+
                 let latestCompletedMonth = '-';
-                const completedMonths = [];
-
-                for (const taskMonth of clientTasks) {
-                    const monthDate = new Date(taskMonth.month + '-01');
-                    const month = monthDate.getMonth() + 1;
-                    let fiscalYear = monthDate.getFullYear();
-                    if (month <= client.fiscal_month) {
-                        fiscalYear -= 1;
-                    }
-
-                    const customTasksForYear = client.custom_tasks_by_year?.[fiscalYear.toString()] || [];
-
-                    if (customTasksForYear.length > 0) {
-                        const allTasksCompleted = customTasksForYear.every(taskName => taskMonth.tasks?.[taskName] === true);
-                        if (allTasksCompleted) {
-                            completedMonths.push(taskMonth.month);
-                        }
-                    }
-                }
-
                 if (completedMonths.length > 0) {
                     completedMonths.sort().reverse();
                     latestCompletedMonth = completedMonths[0];
@@ -488,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return {
                     ...client,
                     staff_name: client.staffs?.name || '',
-                    monthlyProgress: latestCompletedMonth,
+                    monthlyProgress: latestCompletedMonth, // 年月表示に戻す
                     unattendedMonths: unattendedMonths,
                     status: client.status || 'active'
                 };
@@ -1287,6 +1271,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 let aValue = a[currentSortKey];
                 let bValue = b[currentSortKey];
 
+                // 「-」の値を常に最後に配置する特別ルール
+                const isADash = aValue === '-' || aValue === null || aValue === undefined;
+                const isBDash = bValue === '-' || bValue === null || bValue === undefined;
+                if (isADash && isBDash) return 0;
+                if (isADash) return 1; // aが「-」ならaをbの後ろに
+                if (isBDash) return -1; // bが「-」ならbをaの後ろに
+
                 // Handle different data types
                 if (typeof aValue === 'string' && typeof bValue === 'string') {
                     aValue = aValue.toLowerCase();
@@ -1310,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const headerText = header.textContent.trim();
             const sortKey = headerMap[headerText];
             
-            if (sortKey && sortKey !== 'monthlyProgress') {
+            if (sortKey) {
                 header.style.cursor = 'pointer';
                 header.setAttribute('data-sort-key', sortKey);
                 
