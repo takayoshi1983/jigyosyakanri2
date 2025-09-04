@@ -1298,6 +1298,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const headers = clientsTableHeadRow.querySelectorAll('th');
         headers.forEach((header, index) => {
+            // 既にアイコンが追加されている場合は何もしない
+            if (header.querySelector('.sort-icon')) {
+                return;
+            }
+
             const headerText = header.textContent.trim();
             const sortKey = headerMap[headerText];
             
