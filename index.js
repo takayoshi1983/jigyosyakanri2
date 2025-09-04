@@ -815,9 +815,15 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <div class="client-card-footer">
                 <span class="client-card-status ${statusClass}">${statusText}</span>
-                <button class="client-card-edit" onclick="navigateToDetails(${client.id})">詳細を見る</button>
+                <button class="client-card-edit" data-client-id="${client.id}">詳細を見る</button>
             </div>
         `;
+
+        // ボタンにイベントリスナーを追加
+        const editButton = card.querySelector('.client-card-edit');
+        editButton.addEventListener('click', () => {
+            window.location.href = `details.html?id=${client.id}`;
+        });
 
         return card;
     }
@@ -842,11 +848,6 @@ document.addEventListener('DOMContentLoaded', () => {
             completedMonths: 0,
             totalMonths: 12
         };
-    }
-
-    // 詳細画面への遷移
-    function navigateToDetails(clientId) {
-        window.location.href = `details.html?id=${clientId}`;
     }
 
     function createClientRow(client) {
