@@ -1021,7 +1021,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncButton.innerHTML = `<span>🔄</span> <span>データ整合性チェック</span>`;
         syncButton.className = 'accordion-button';
         syncButton.disabled = false;
-        syncButton.style.cssText = 'padding: 10px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
+        syncButton.style.cssText = 'padding: 10px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;';
         
         syncButton.addEventListener('click', async () => {
             await performDataConsistencyCheck();
@@ -1031,7 +1031,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         propagateButton.innerHTML = `<span>🚀</span> <span>タスクを将来年度に伝播 (準備中)</span>`;
         propagateButton.className = 'accordion-button';
         propagateButton.disabled = true;
-        propagateButton.style.cssText = 'padding: 10px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; text-align: left; display: flex; align-items: center; gap: 8px;';
+        propagateButton.style.cssText = 'padding: 10px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; text-align: left; display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;';
 
         const finalizeYearButton = document.createElement('button');
         finalizeYearButton.innerHTML = `<span>📋</span> <span>この年度の項目を確定</span>`;
@@ -1043,13 +1043,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await finalizeYear(currentYearSelection, !isFinalized);
             }
         });
-        finalizeYearButton.style.cssText = 'padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
+        finalizeYearButton.style.cssText = 'padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;';
         
         const exportButton = document.createElement('button');
         exportButton.innerHTML = `<span>📄</span> <span>CSVエクスポート</span>`;
         exportButton.className = 'accordion-button export-button';
         exportButton.addEventListener('click', () => alert('CSVエクスポート機能は準備中です。'));
-        exportButton.style.cssText = 'padding: 10px; background: #607D8B; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
+        exportButton.style.cssText = 'padding: 10px; background: #607D8B; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;';
 
         // editTasksButton をアコーディオンメニューに追加
         const editTasksButtonInAccordion = document.getElementById('edit-tasks-button');
@@ -1057,7 +1057,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // スタイルをアコーディオンボタンに合わせる
             editTasksButtonInAccordion.className = 'accordion-button';
             editTasksButtonInAccordion.innerHTML = `<span>✏️</span> <span>${editTasksButtonInAccordion.textContent}</span>`;
-            editTasksButtonInAccordion.style.cssText = 'padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px;';
+            editTasksButtonInAccordion.style.cssText = 'padding: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box;';
             
             buttonsContainer.prepend(editTasksButtonInAccordion); // 一番上に追加
         }
