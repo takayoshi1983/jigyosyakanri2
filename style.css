@@ -872,7 +872,7 @@ button:active {
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.2s;
-    text-align: left;
+    justify-content: center; /* テキストとアイコンを中央揃え */
 }
 
 .accordion-button:hover {
