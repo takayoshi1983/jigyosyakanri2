@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function saveDataHandler() {
         try {
             showLoading();
-            showStatus('保存中...', 'warning');
+            const saveToast = toast.loading('保存中...');
 
             // Validate form data
             const formData = {
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
                 
                 showNotification('新規顧客が作成されました', 'success');
-                toast.success('新規顧客作成完了');
+                toast.update(saveToast, '新規顧客作成完了', 'success');
                 
                 // Redirect to main page
                 setTimeout(() => {
@@ -374,12 +374,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 populateFormFields(currentClient);
                 
                 showNotification('顧客情報が更新されました', 'success');
-                toast.success('更新完了');
+                toast.update(saveToast, '更新完了', 'success');
             }
 
         } catch (error) {
             console.error('Error saving data:', error);
-            showStatus('❌ 保存エラー: ' + handleSupabaseError(error), 'error');
+            toast.hide(saveToast);
+            toast.error('保存エラー: ' + handleSupabaseError(error));
             showNotification('保存でエラーが発生しました', 'error');
         } finally {
             hideLoading();

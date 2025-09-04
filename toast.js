@@ -31,9 +31,11 @@ class ToastManager {
         this.container.appendChild(toast);
         this.toasts.set(toastId, toast);
 
-        // Trigger animation
+        // Trigger animation with slight delay for natural feel
         requestAnimationFrame(() => {
-            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 50);
         });
 
         // Auto hide (unless persistent)
@@ -80,7 +82,9 @@ class ToastManager {
                 toast.parentNode.removeChild(toast);
             }
             this.toasts.delete(toastId);
-        }, 300); // Match CSS transition duration
+            // Reposition remaining toasts smoothly
+            this.repositionToasts();
+        }, 500); // Match CSS transition duration
     }
 
     hideAll() {
@@ -111,20 +115,33 @@ class ToastManager {
         }
     }
 
+    repositionToasts() {
+        // Smooth repositioning animation for remaining toasts
+        const toasts = Array.from(this.container.children);
+        toasts.forEach((toast, index) => {
+            if (toast.classList.contains('show')) {
+                toast.style.transition = 'transform 0.3s ease-out';
+                setTimeout(() => {
+                    toast.style.transition = ''; // Reset to original transition
+                }, 300);
+            }
+        });
+    }
+
     getDefaultDuration(type) {
         switch (type) {
             case 'loading':
                 return 0; // Persistent until manually hidden
             case 'success':
-                return 3000;
+                return 4000; // Slightly longer for better readability
             case 'info':
-                return 4000;
-            case 'warning':
                 return 5000;
-            case 'error':
+            case 'warning':
                 return 6000;
+            case 'error':
+                return 8000; // Longer for errors
             default:
-                return 4000;
+                return 5000;
         }
     }
 

@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Year Finalization ---
     async function finalizeYear(year, shouldFinalize) {
-        showStatus('年度確定処理中...', 'warning');
+        const finalizeToast = toast.loading('年度確定処理中...');
         try {
             clientDetails.finalized_years = clientDetails.finalized_years || [];
             if (shouldFinalize) {
@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             await SupabaseAPI.updateClient(clientId, { finalized_years: clientDetails.finalized_years });
             const action = shouldFinalize ? '確定' : '確定解除';
+            toast.update(finalizeToast, `${year}年度を${action}しました`, 'success');
             showNotification(`${year}年度を${action}しました`, 'success');
             updateFinalizeButtonState();
             updateEditingInterface();
@@ -254,14 +255,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function saveCustomTasks(newTasks) {
-        showStatus('タスクを保存中...', 'warning');
+        const saveTaskToast = toast.loading('タスクを保存中...');
         try {
             clientDetails.custom_tasks_by_year[currentYearSelection] = newTasks;
             propagateTasksToFutureYears(currentYearSelection, newTasks);
             await SupabaseAPI.updateClient(clientId, { custom_tasks_by_year: clientDetails.custom_tasks_by_year });
+            toast.update(saveTaskToast, 'タスクが保存されました', 'success');
             showNotification('タスクが保存されました', 'success');
             return true;
         } catch (error) {
+            toast.hide(saveTaskToast);
             toast.error(`タスク保存エラー: ${handleSupabaseError(error)}`);
             return false;
         }
@@ -640,7 +643,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isSaving) return;
         isSaving = true;
         setUnsavedChanges(false);
-        showStatus('保存中...', 'warning');
+        const saveToast = toast.loading('保存中...');
 
         try {
             const monthlyTasksToUpdate = {};
@@ -687,13 +690,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
 
             await Promise.all(savePromises);
+            toast.update(saveToast, '変更が保存されました', 'success');
             showNotification('変更が保存されました', 'success');
         } catch (error) {
+            toast.hide(saveToast);
             toast.error(`保存エラー: ${handleSupabaseError(error)}`);
             setUnsavedChanges(true);
         } finally {
             isSaving = false;
-            hideStatus();
         }
     }
 
