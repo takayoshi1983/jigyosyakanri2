@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const accordionHeader = document.querySelector('#management-accordion .accordion-header');
     const accordionContent = document.querySelector('#management-accordion .accordion-content');
     const defaultTasksModal = document.getElementById('default-tasks-modal');
-    const openDefaultTasksModalButton = document.getElementById('default-tasks-settings-button');
+    // 削除されたアコーディオンメニューのボタンはコメントアウト
+    // const openDefaultTasksModalButton = document.getElementById('default-tasks-settings-button');
     const closeDefaultTasksModalButton = defaultTasksModal.querySelector('.close-button');
     const saveDefaultTasksButton = document.getElementById('save-default-tasks-button');
     const cancelDefaultTasksButton = document.getElementById('cancel-default-tasks-button');
@@ -338,19 +339,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userRole !== 'admin') {
                 console.log(`User role is '${userRole}'. Disabling admin buttons.`);
                 const manageStaffButton = document.getElementById('manage-staff-button');
-                const resetDatabaseButton = document.getElementById('reset-database-button');
+                // resetDatabaseButton は基本設定モーダル内に移動済み
                 
                 if (manageStaffButton) {
                     manageStaffButton.disabled = true;
                     manageStaffButton.style.opacity = '0.5';
                     manageStaffButton.style.cursor = 'not-allowed';
                     manageStaffButton.title = 'この操作には管理者権限が必要です';
-                }
-                if (resetDatabaseButton) {
-                    resetDatabaseButton.disabled = true;
-                    resetDatabaseButton.style.opacity = '0.5';
-                    resetDatabaseButton.style.cursor = 'not-allowed';
-                    resetDatabaseButton.title = 'この操作には管理者権限が必要です';
                 }
             }
 
@@ -587,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelStaffButton.addEventListener('click', closeStaffModal);
 
         // Default Tasks modal
-        openDefaultTasksModalButton.addEventListener('click', openDefaultTasksModal);
+        // openDefaultTasksModalButton.addEventListener('click', openDefaultTasksModal); // 削除されたボタン
         closeDefaultTasksModalButton.addEventListener('click', closeDefaultTasksModal);
         saveDefaultTasksButton.addEventListener('click', saveDefaultTasks);
         cancelDefaultTasksButton.addEventListener('click', closeDefaultTasksModal);
@@ -647,13 +642,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === urlSettingsModal) closeUrlSettingsModal();
         });
 
-        // CSV and DB Reset Buttons (アコーディオンメニューのボタン)
-        document.getElementById('export-csv-button').addEventListener('click', exportCSV);
-        document.getElementById('import-csv-button').addEventListener('click', () => {
-            document.getElementById('csv-file-input').click();
-        });
+        // CSV file input (共通で使用)
         document.getElementById('csv-file-input').addEventListener('change', importCSV);
-        document.getElementById('reset-database-button').addEventListener('click', resetDatabase);
 
         // 基本設定モーダル内のボタン
         document.getElementById('export-csv-button-modal').addEventListener('click', exportCSV);
