@@ -545,12 +545,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 🎉 7種類の達成時エフェクト
+    // 🎉 10種類の達成時エフェクト（Canvas Confetti + カスタムエフェクト）
     class AchievementEffects {
         constructor() {
             this.effectOverlay = document.getElementById('achievement-effect-overlay');
             this.effects = [
-                this.triggerConfetti.bind(this),
+                // Canvas Confetti エフェクト
+                this.triggerBasicConfetti.bind(this),
+                this.triggerStarsEffect.bind(this),
+                this.triggerCustomShapes.bind(this),
+                this.triggerEmojiEffect.bind(this),
+                // カスタムエフェクト
                 this.triggerDivineLight.bind(this),
                 this.triggerThumbsUp.bind(this),
                 this.triggerKusudama.bind(this),
@@ -568,25 +573,77 @@ document.addEventListener('DOMContentLoaded', async () => {
             return randomIndex;
         }
 
-        // 1. 紙吹雪エフェクト（既存改良）
-        triggerConfetti() {
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff'];
-            
-            for (let i = 0; i < 100; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.width = Math.random() * 10 + 5 + 'px';
-                confetti.style.height = confetti.style.width;
-                confetti.style.animationDelay = Math.random() * 2 + 's';
-                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        // === Canvas Confetti エフェクト ===
+        // 1. 基本的な紙吹雪エフェクト
+        triggerBasicConfetti() {
+            if (typeof confetti !== 'undefined') {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // 2. 星のエフェクト
+        triggerStarsEffect() {
+            if (typeof confetti !== 'undefined') {
+                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
                 
-                this.effectOverlay.appendChild(confetti);
+                function randomInRange(min, max) {
+                    return Math.random() * (max - min) + min;
+                }
                 
-                setTimeout(() => {
-                    if (confetti.parentNode) confetti.remove();
-                }, 5000);
+                confetti({
+                    ...defaults,
+                    particleCount: 40,
+                    scalar: 1.2,
+                    shapes: ["star"]
+                });
+                
+                confetti({
+                    ...defaults,
+                    particleCount: 10,
+                    scalar: 0.75,
+                    shapes: ["circle"]
+                });
+            }
+        }
+
+        // 3. カスタムシェイプエフェクト
+        triggerCustomShapes() {
+            if (typeof confetti !== 'undefined') {
+                const colors = ['#bb0000', '#ffffff'];
+                confetti({
+                    particleCount: 150,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 150,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+            }
+        }
+
+        // 4. 絵文字エフェクト
+        triggerEmojiEffect() {
+            if (typeof confetti !== 'undefined') {
+                const scalar = 2;
+                const emojis = ['🦄', '⭐️', '💀', '👻', '🎃'];
+                
+                confetti({
+                    particleCount: 40,
+                    spread: 55,
+                    origin: { y: 0.6 },
+                    scalar: scalar,
+                    shapes: emojis
+                });
             }
         }
 
