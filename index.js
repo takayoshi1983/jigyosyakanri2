@@ -76,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSortDirection = 'asc';
     let originalStaffsState = [];
     let currentEditingStaffs = [];
+    let userRole = null; // ユーザーの権限（'admin' or 'staff' or null）
     let defaultTasks = {}; // State for default tasks
     let appSettings = {}; // State for application settings
     let filterState = {}; // フィルター状態を保存
@@ -297,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const authCheckToast = toast.loading('ユーザー権限を確認中...');
 
-            const userRole = await SupabaseAPI.getUserRole();
+            userRole = await SupabaseAPI.getUserRole();
 
             // Check if user is registered in the staffs table
             if (userRole === null) {
