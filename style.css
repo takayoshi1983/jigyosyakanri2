@@ -1270,6 +1270,55 @@ button:active {
     }
 }
 
+/* ユーザー情報セクションスタイル（管理メニュー内） */
+.user-info-section {
+    padding: 12px 0;
+    margin: 8px 0;
+}
+
+.user-info-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.user-avatar-menu {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: none;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name-menu {
+    font-weight: bold;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.user-email-menu {
+    font-size: 11px;
+    color: #666;
+}
+
+.logout-button {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.logout-button:hover {
+    background-color: #c82333 !important;
+}
+
 /* Zoom Slider Styles */
 #zoom-container {
     position: fixed;

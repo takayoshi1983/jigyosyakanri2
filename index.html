@@ -17,8 +17,8 @@
     <link rel="stylesheet" href="table-resize.css">
 </head>
 <body>
-    <!-- ユーザー情報表示エリア -->
-    <div id="user-info" style="display:none; position:fixed; top:15px; right:15px; background:white; padding:12px 16px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1001; border: 1px solid #e1e5e9;">
+    <!-- ユーザー情報表示エリア（非表示、管理メニューに統合） -->
+    <div id="user-info" style="display:none;">
         <div style="display: flex; align-items: center; gap: 12px;">
             <img id="user-avatar" src="" alt="" style="width: 32px; height: 32px; border-radius: 50%; display: none;">
             <div>
@@ -32,7 +32,7 @@
     </div>
 
     <!-- その他アプリ用アコーディオンメニュー -->
-    <div id="other-apps-accordion" class="accordion-container" style="position: absolute; right: 300px; top: 85px; z-index: 1000;">
+    <div id="other-apps-accordion" class="accordion-container" style="position: absolute; right: 300px; top: 25px; z-index: 1000;">
         <button class="accordion-header">
             <span>🔗 その他アプリ</span>
             <span class="accordion-icon">▼</span>
@@ -45,7 +45,7 @@
     </div>
 
     <!-- 管理者用アコーディオンメニュー -->
-    <div id="management-accordion" class="accordion-container" style="position: absolute; right: 20px; top: 85px; z-index: 1000;">
+    <div id="management-accordion" class="accordion-container" style="position: absolute; right: 20px; top: 25px; z-index: 1000;">
         <button class="accordion-header">
             <span>🎛️ 管理メニュー</span>
             <span class="accordion-icon">▼</span>
@@ -57,6 +57,18 @@
                 <hr>
                 <button id="basic-settings-button" class="accordion-button">基本設定</button>
                 <button id="reset-column-widths-button" class="accordion-button">📏 列幅リセット</button>
+                <hr>
+                <!-- ユーザー情報セクション -->
+                <div class="user-info-section">
+                    <div class="user-info-display">
+                        <img id="user-avatar-menu" src="" alt="" class="user-avatar-menu">
+                        <div class="user-details">
+                            <div id="user-name-menu" class="user-name-menu"></div>
+                            <div id="user-email-menu" class="user-email-menu"></div>
+                        </div>
+                    </div>
+                    <button id="signout-button-menu" class="accordion-button logout-button">🚪 ログアウト</button>
+                </div>
                 <input type="file" id="csv-file-input" style="display: none;" accept=".csv">
             </div>
         </div>

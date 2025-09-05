@@ -212,19 +212,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateUserDisplay(user) {
         if (user) {
-            userName.textContent = user.user_metadata?.full_name || user.email.split('@')[0];
-            userEmail.textContent = user.email;
+            const displayName = user.user_metadata?.full_name || user.email.split('@')[0];
+            const displayEmail = user.email;
+            
+            // 従来のユーザー表示エリア（非表示）
+            userName.textContent = displayName;
+            userEmail.textContent = displayEmail;
+            
+            // 管理メニュー内のユーザー表示
+            const userNameMenu = document.getElementById('user-name-menu');
+            const userEmailMenu = document.getElementById('user-email-menu');
+            const userAvatarMenu = document.getElementById('user-avatar-menu');
+            
+            if (userNameMenu) userNameMenu.textContent = displayName;
+            if (userEmailMenu) userEmailMenu.textContent = displayEmail;
             
             if (user.user_metadata?.avatar_url) {
                 userAvatar.src = user.user_metadata.avatar_url;
                 userAvatar.style.display = 'block';
+                
+                if (userAvatarMenu) {
+                    userAvatarMenu.src = user.user_metadata.avatar_url;
+                    userAvatarMenu.style.display = 'block';
+                }
             }
             
-            userInfo.style.display = 'block';
+            // userInfo は非表示のまま（管理メニューに統合済み）
             authModal.style.display = 'none';
         } else {
             userInfo.style.display = 'none';
             authModal.style.display = 'flex';
+            
+            // 管理メニュー内のユーザー表示もクリア
+            const userNameMenu = document.getElementById('user-name-menu');
+            const userEmailMenu = document.getElementById('user-email-menu');
+            if (userNameMenu) userNameMenu.textContent = '';
+            if (userEmailMenu) userEmailMenu.textContent = '';
         }
     }
 
@@ -257,6 +280,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (signOutButton) {
             signOutButton.addEventListener('click', signOut);
+        }
+        
+        // 管理メニュー内のログアウトボタン
+        const signOutButtonMenu = document.getElementById('signout-button-menu');
+        if (signOutButtonMenu) {
+            signOutButtonMenu.addEventListener('click', signOut);
         }
 
         // Listen for auth state changes
