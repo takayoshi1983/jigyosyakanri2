@@ -727,14 +727,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const updatedResults = await Promise.all(savePromises);
 
-            // 完了になった月に紙吹雪を飛ばす
-            updatedResults.forEach(result => {
-                if (result.completed) {
-                    // 以前の状態と比較して、今回初めて完了になった場合のみ飛ばすのが理想だが、
-                    // ここでは簡略化し、完了状態で保存された場合は常に飛ばす
-                    triggerConfetti();
-                }
-            });
+            // 紙吹雪は個別のチェックボックス操作でのみ発生、保存時には発生しない
 
             toast.update(saveToast, '変更が保存されました', 'success');
             showNotification('変更が保存されました', 'success');

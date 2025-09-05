@@ -1293,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const defaults = {
             fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
             hideInactiveClients: false,
-            enableConfettiEffect: true
+            enableConfettiEffect: false
         };
         
         // 既存の古い設定を移行（一度だけ）
