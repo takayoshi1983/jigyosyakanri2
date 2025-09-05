@@ -654,7 +654,13 @@ document.addEventListener('DOMContentLoaded', () => {
         saveUrlSettingsButton.addEventListener('click', saveUrlSettings);
 
         // Table header sorting
-        clientsTableHeadRow.addEventListener('click', handleSort);
+        console.log('Adding sort event listener to:', clientsTableHeadRow);
+        if (clientsTableHeadRow) {
+            clientsTableHeadRow.addEventListener('click', handleSort);
+            console.log('Sort event listener added successfully');
+        } else {
+            console.error('clientsTableHeadRow not found!');
+        }
 
         // Client click handler
         clientsTableBody.addEventListener('click', handleClientClick);
@@ -780,6 +786,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = createClientRow(client);
             clientsTableBody.appendChild(row);
         });
+
+        // ソート機能をテーブル描画後に再設定（renderClients内部からの呼び出しは避ける）
+        if (!window.isRenderingClients) {
+            setupTableHeaders();
+            updateSortIcons();
+        }
 
         // モバイル版カード表示
         renderMobileCards(sortedClients);
@@ -1587,17 +1599,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Setup Functions ---
     function setupTableHeaders() {
+        console.log('Setting up table headers...');
+        console.log('clientsTableHeadRow:', clientsTableHeadRow);
         if (!clientsTableHeadRow) return;
 
         const headers = clientsTableHeadRow.querySelectorAll('th');
+        console.log('Found headers:', headers.length);
         headers.forEach((header, index) => {
             // 既にアイコンが追加されている場合は何もしない
             if (header.querySelector('.sort-icon')) {
+                console.log('Header already has sort icon:', header.textContent.trim());
                 return;
             }
 
             const headerText = header.textContent.trim();
             const sortKey = headerMap[headerText];
+            console.log(`Header ${index}: "${headerText}" -> sortKey: "${sortKey}"`);
             
             if (sortKey) {
                 header.style.cursor = 'pointer';
@@ -1608,25 +1625,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5-5 5 5H7z"/><path d="M7 14l5 5 5-5H7z"/></svg>';
                 icon.style.cssText = 'margin-left: 8px; opacity: 0.4; transition: opacity 0.2s; vertical-align: middle;';
                 header.appendChild(icon);
+                console.log('Added sort icon to:', headerText);
             }
         });
     }
 
     function handleSort(e) {
+        console.log('Sort clicked:', e.target);
         const header = e.target.closest('th');
+        console.log('Header found:', header);
         if (!header) return;
 
         const sortKey = header.getAttribute('data-sort-key');
+        console.log('Sort key:', sortKey);
         if (!sortKey) return;
 
+        console.log('Current sort:', currentSortKey, currentSortDirection);
         if (currentSortKey === sortKey) {
             currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
         } else {
             currentSortKey = sortKey;
             currentSortDirection = 'asc';
         }
+        console.log('New sort:', currentSortKey, currentSortDirection);
 
+        // 無限ループ防止フラグ
+        window.isRenderingClients = true;
         renderClients();
+        window.isRenderingClients = false;
+        
         updateSortIcons();
     }
 
