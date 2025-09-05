@@ -971,7 +971,6 @@ button:active {
 .setting-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-bottom: 15px;
     padding: 12px 15px;
     background-color: #ffffff;
@@ -987,8 +986,42 @@ button:active {
 .setting-item label {
     font-weight: 600;
     color: #495057;
-    flex: 1;
     margin-right: 15px;
+    white-space: nowrap;
+}
+
+/* 色設定項目専用のレイアウト */
+.setting-item.color-setting {
+    justify-content: flex-start;
+    gap: 15px;
+}
+
+.setting-item.color-setting label {
+    flex: 0 0 auto;
+    margin-right: 10px;
+}
+
+.setting-item.color-setting input[type="color"] {
+    flex: 0 0 auto;
+    margin-right: 15px;
+}
+
+.setting-item.color-setting select {
+    flex: 1;
+    max-width: 150px;
+}
+
+.setting-item.color-setting span {
+    flex: 0 0 auto;
+}
+
+/* 通常の設定項目（色以外） */
+.setting-item:not(.color-setting) {
+    justify-content: space-between;
+}
+
+.setting-item:not(.color-setting) label {
+    flex: 1;
 }
 
 .setting-item select {
@@ -999,7 +1032,6 @@ button:active {
     background-color: #fff;
     color: #495057;
     min-width: 120px;
-    margin-right: 10px;
 }
 
 .setting-item input[type="color"] {
