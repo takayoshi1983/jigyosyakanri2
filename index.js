@@ -1613,8 +1613,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const headerText = header.textContent.trim();
-            const sortKey = headerMap[headerText];
-            console.log(`Header ${index}: "${headerText}" -> sortKey: "${sortKey}"`);
+            // 「ドラッグして幅を調整」のテキストを除去して判定
+            const cleanHeaderText = headerText.replace(/ドラッグして幅を調整$/, '');
+            const sortKey = headerMap[cleanHeaderText] || headerMap[headerText];
+            console.log(`Header ${index}: "${headerText}" -> cleanText: "${cleanHeaderText}" -> sortKey: "${sortKey}"`);
             
             if (sortKey) {
                 header.style.cursor = 'pointer';
