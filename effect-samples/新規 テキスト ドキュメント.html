@@ -1,0 +1,38 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .dove {
+      animation: fly 2s linear infinite;
+    }
+    .wing {
+      animation: flap 0.5s linear infinite;
+      transform-origin: 50% 50%;
+    }
+    @keyframes fly {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(150px, -150px) scale(0);
+        opacity: 0;
+      }
+    }
+    @keyframes flap {
+      0% {
+        transform: rotate(0deg);
+      }
+      50% {
+        transform: rotate(20deg);
+      }
+      100% {
+        transform: rotate(0deg);
+      }
+    }
+  </style>
+  <g class="dove">
+    <g class="wing">
+      <path d="M100 100 L80 80 L120 80 Z" fill="white" stroke="black"/>
+    </g>
+    <path d="M100 100 Q120 120 100 140 Q80 120 100 100" fill="white" stroke="black"/>
+  </g>
+</svg>
