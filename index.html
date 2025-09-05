@@ -176,39 +176,69 @@
 
     <!-- Basic Settings Modal -->
     <div id="basic-settings-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content settings-modal-content">
             <span class="close-button">&times;</span>
             <h2>基本設定</h2>
             
-            <div class="settings-section">
-                <h3>アラート表示設定</h3>
-                <div class="setting-item threshold-setting">
-                    <label for="yellow-threshold">警告表示 (黄色):</label>
-                    <select id="yellow-threshold"></select>
-                    <span>ヶ月以上未入力で表示</span>
-                    <input type="color" id="yellow-color">
+            <div class="settings-container">
+                <!-- 個別設定 -->
+                <div class="settings-column">
+                    <div class="settings-section">
+                        <h3>📋 個別設定</h3>
+                        <div class="setting-item">
+                            <label for="font-family-select">全体のフォント:</label>
+                            <select id="font-family-select"></select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="hide-inactive-clients">関与終了した顧問先を隠す:</label>
+                            <input type="checkbox" id="hide-inactive-clients">
+                        </div>
+                        <div class="setting-item">
+                            <label for="enable-confetti-effect">紙吹雪エフェクトを表示する:</label>
+                            <input type="checkbox" id="enable-confetti-effect">
+                        </div>
+                    </div>
                 </div>
-                <div class="setting-item threshold-setting">
-                    <label for="red-threshold">危険表示 (赤色):</label>
-                    <select id="red-threshold"></select>
-                    <span>ヶ月以上未入力で表示</span>
-                    <input type="color" id="red-color">
-                </div>
-            </div>
 
-            <div class="settings-section">
-                <h3>表示設定</h3>
-                <div class="setting-item">
-                    <label for="font-family-select">全体のフォント:</label>
-                    <select id="font-family-select"></select>
+                <!-- 共通設定 -->
+                <div class="settings-column">
+                    <div class="settings-section">
+                        <h3>⚙️ 共通設定</h3>
+                        <div class="setting-item threshold-setting">
+                            <label for="yellow-threshold">警告表示 (黄色):</label>
+                            <select id="yellow-threshold"></select>
+                            <span>ヶ月以上未入力で表示</span>
+                            <input type="color" id="yellow-color">
+                        </div>
+                        <div class="setting-item threshold-setting">
+                            <label for="red-threshold">危険表示 (赤色):</label>
+                            <select id="red-threshold"></select>
+                            <span>ヶ月以上未入力で表示</span>
+                            <input type="color" id="red-color">
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="default-tasks-settings-button-modal" class="settings-button">📝 項目の初期値設定</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="setting-item">
-                    <label for="hide-inactive-clients">関与終了した顧問先を隠す:</label>
-                    <input type="checkbox" id="hide-inactive-clients">
-                </div>
-                <div class="setting-item">
-                    <label for="enable-confetti-effect">紙吹雪エフェクトを表示する:</label>
-                    <input type="checkbox" id="enable-confetti-effect">
+
+                <!-- 管理者設定 -->
+                <div class="settings-column admin-settings">
+                    <div class="settings-section">
+                        <h3>🔐 管理者設定</h3>
+                        <div class="admin-notice">
+                            <small>※ 管理者のみ操作可能</small>
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="export-csv-button-modal" class="settings-button admin-only">📊 CSVエクスポート</button>
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="import-csv-button-modal" class="settings-button admin-only">📁 CSVインポート</button>
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="reset-database-button-modal" class="settings-button admin-only danger-button">⚠️ データベース初期化</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

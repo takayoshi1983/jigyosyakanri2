@@ -642,13 +642,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === urlSettingsModal) closeUrlSettingsModal();
         });
 
-        // CSV and DB Reset Buttons
+        // CSV and DB Reset Buttons (アコーディオンメニューのボタン)
         document.getElementById('export-csv-button').addEventListener('click', exportCSV);
         document.getElementById('import-csv-button').addEventListener('click', () => {
             document.getElementById('csv-file-input').click();
         });
         document.getElementById('csv-file-input').addEventListener('change', importCSV);
         document.getElementById('reset-database-button').addEventListener('click', resetDatabase);
+
+        // 基本設定モーダル内のボタン
+        document.getElementById('export-csv-button-modal').addEventListener('click', exportCSV);
+        document.getElementById('import-csv-button-modal').addEventListener('click', () => {
+            document.getElementById('csv-file-input').click();
+        });
+        document.getElementById('reset-database-button-modal').addEventListener('click', resetDatabase);
+        document.getElementById('default-tasks-settings-button-modal').addEventListener('click', () => {
+            closeBasicSettingsModal();
+            openDefaultTasksModal();
+        });
         document.getElementById('reset-column-widths-button').addEventListener('click', resetColumnWidths);
     }
 
@@ -1168,6 +1179,9 @@ document.addEventListener('DOMContentLoaded', () => {
             hideInactiveClientsCheckbox.checked = appSettings.hide_inactive_clients;
             enableConfettiEffectCheckbox.checked = getConfettiEffectSetting();
             
+            // 管理者権限チェックと管理者設定の制御
+            checkAndSetAdminPermissions();
+            
             basicSettingsModal.style.display = 'block';
         } catch (error) {
             console.error('Error opening basic settings modal:', error);
@@ -1213,6 +1227,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeBasicSettingsModal() {
         basicSettingsModal.style.display = 'none';
+    }
+
+    // 管理者権限チェックと管理者設定エリアの制御
+    function checkAndSetAdminPermissions() {
+        const adminSettingsColumn = document.querySelector('.admin-settings');
+        const adminButtons = document.querySelectorAll('.admin-only');
+        
+        if (userRole !== 'admin') {
+            // 管理者でない場合、管理者設定エリアを無効化
+            adminSettingsColumn.classList.add('non-admin');
+            adminButtons.forEach(button => {
+                button.disabled = true;
+                button.title = '管理者権限が必要です';
+            });
+        } else {
+            // 管理者の場合、管理者設定エリアを有効化
+            adminSettingsColumn.classList.remove('non-admin');
+            adminButtons.forEach(button => {
+                button.disabled = false;
+                button.title = '';
+            });
+        }
     }
 
     // --- Default Tasks Management ---
