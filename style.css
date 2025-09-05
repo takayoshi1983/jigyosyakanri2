@@ -305,10 +305,13 @@ tr:hover {
 }
 
 .form-group label {
-    text-align: right;
+    text-align: center; /* 中央揃えに変更 */
     font-weight: bold;
     color: #495057;
-    padding-right: 10px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
 }
 
 /* Ensure inputs and wrappers take up the full cell width */
@@ -1317,6 +1320,32 @@ button:active {
 
 .logout-button:hover {
     background-color: #c82333 !important;
+}
+
+/* 小さなログアウトボタンのスタイル */
+.logout-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.logout-button-small {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.logout-button-small:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 /* Zoom Slider Styles */
