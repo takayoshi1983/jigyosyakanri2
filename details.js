@@ -58,9 +58,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     let isEditingMode = true;
 
     // --- Local Storage Helper Functions ---
+    function loadPersonalSettings() {
+        const savedSettings = JSON.parse(localStorage.getItem('personalSettings') || '{}');
+        console.log('[Details] Loading personal settings:', savedSettings);
+        
+        // デフォルト値
+        const defaults = {
+            fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+            hideInactiveClients: false,
+            enableConfettiEffect: false
+        };
+        
+        // 既存の古い設定を移行（一度だけ）
+        if (savedSettings.enableConfettiEffect === undefined && localStorage.getItem('enableConfettiEffect') !== null) {
+            savedSettings.enableConfettiEffect = localStorage.getItem('enableConfettiEffect') === 'true';
+            console.log('[Details] Migrated old confetti setting:', savedSettings.enableConfettiEffect);
+        }
+        
+        const mergedSettings = { ...defaults, ...savedSettings };
+        console.log('[Details] Final personal settings:', mergedSettings);
+        return mergedSettings;
+    }
+
     function getConfettiEffectSetting() {
-        const setting = localStorage.getItem('enableConfettiEffect');
-        return setting === null ? true : setting === 'true'; // デフォルトは true
+        const personalSettings = loadPersonalSettings();
+        console.log('[Details] Confetti effect setting:', personalSettings.enableConfettiEffect);
+        return personalSettings.enableConfettiEffect;
     }
 
     // --- Utility Functions ---

@@ -1634,6 +1634,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.style.cssText = 'margin-left: 8px; opacity: 0.4; transition: opacity 0.2s; vertical-align: middle;';
                 header.appendChild(icon);
                 console.log('Added sort icon to:', headerText);
+            } else {
+                // ソートできない列（「編集」など）は通常のカーソルのままにする
+                header.style.cursor = 'default';
+                console.log(`Header "${cleanHeaderText}" is not sortable, skipping sort icon`);
             }
         });
     }
