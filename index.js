@@ -1301,6 +1301,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 個別設定のローカルストレージ管理 ---
     function loadPersonalSettings() {
         const savedSettings = JSON.parse(localStorage.getItem('personalSettings') || '{}');
+        console.log('Loading personal settings:', savedSettings);
         
         // デフォルト値
         const defaults = {
@@ -1310,15 +1311,20 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         // 既存の古い設定を移行（一度だけ）
-        if (!savedSettings.enableConfettiEffect && localStorage.getItem('enableConfettiEffect') !== null) {
+        if (savedSettings.enableConfettiEffect === undefined && localStorage.getItem('enableConfettiEffect') !== null) {
             savedSettings.enableConfettiEffect = localStorage.getItem('enableConfettiEffect') === 'true';
+            console.log('Migrated old confetti setting:', savedSettings.enableConfettiEffect);
         }
         
-        return { ...defaults, ...savedSettings };
+        const mergedSettings = { ...defaults, ...savedSettings };
+        console.log('Final personal settings:', mergedSettings);
+        return mergedSettings;
     }
 
     function savePersonalSettings(settings) {
+        console.log('Saving personal settings:', settings);
         localStorage.setItem('personalSettings', JSON.stringify(settings));
+        console.log('Saved to localStorage:', localStorage.getItem('personalSettings'));
     }
 
     function applyPersonalSettings(settings) {
