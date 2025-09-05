@@ -361,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // If user is registered, proceed with setup and UI customization
             setupTableHeaders();
+            updateSortIcons(); // ソートアイコンの初期表示
             addEventListeners();
             populateMonthThresholds();
             populateFontFamilySelect();
@@ -1604,7 +1605,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const icon = document.createElement('span');
                 icon.className = 'sort-icon';
-                icon.innerHTML = '↕️';
+                icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5-5 5 5H7z"/><path d="M7 14l5 5 5-5H7z"/></svg>';
+                icon.style.cssText = 'margin-left: 8px; opacity: 0.4; transition: opacity 0.2s; vertical-align: middle;';
                 header.appendChild(icon);
             }
         });
@@ -1636,11 +1638,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const sortKey = header.getAttribute('data-sort-key');
             if (sortKey === currentSortKey) {
-                icon.innerHTML = currentSortDirection === 'asc' ? '↑' : '↓';
-                icon.style.opacity = '1';
+                // アクティブソート状態のクラスを追加
+                header.classList.add('active-sort');
+                
+                if (currentSortDirection === 'asc') {
+                    icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5H7z"/></svg>';
+                } else {
+                    icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5H7z"/></svg>';
+                }
+                icon.style.opacity = '0.9';
+                icon.style.color = '#007bff';
             } else {
-                icon.innerHTML = '↕️';
-                icon.style.opacity = '0.5';
+                // アクティブソート状態のクラスを削除
+                header.classList.remove('active-sort');
+                
+                icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5-5 5 5H7z"/><path d="M7 14l5 5 5-5H7z"/></svg>';
+                icon.style.opacity = '0.4';
+                icon.style.color = 'inherit';
             }
         });
     }

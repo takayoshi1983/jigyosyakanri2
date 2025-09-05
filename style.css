@@ -378,32 +378,35 @@ table#clients-table thead th.sorted-column {
     padding-left: 10px;
 }
 
-/* Sort Icon Styles */
+/* Modern Sort Icon Styles */
 .sort-icon {
     display: inline-block;
-    width: 0;
-    height: 0;
-    margin-left: 5px;
+    margin-left: 8px;
     vertical-align: middle;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    opacity: 0; /* 非表示 */
-    transition: opacity 0.2s ease; /* トランジションを追加 */
+    opacity: 0.4;
+    transition: all 0.2s ease;
+    color: inherit;
 }
 
-.sort-icon.asc {
-    border-bottom: 4px solid #333; /* Up arrow */
-    opacity: 1; /* 表示 */
+.sort-icon svg {
+    display: block;
+    pointer-events: none;
 }
 
-.sort-icon.desc {
-    border-top: 4px solid #333; /* Down arrow */
-    opacity: 1; /* 表示 */
+/* Hover effect for sortable headers */
+th[data-sort-key]:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+    transition: background-color 0.2s ease;
 }
 
-/* Only show icon when sorting or on hover */
 th[data-sort-key]:hover .sort-icon {
-    opacity: 1;
+    opacity: 0.7;
+    transform: scale(1.1);
+}
+
+/* Active sort state styling */
+th[data-sort-key].active-sort {
+    background-color: rgba(0, 123, 255, 0.08);
 }
 
 /* Modal Styles */
