@@ -365,7 +365,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 SupabaseAPI.getAppLinks()
             ]);
 
-            applyFontFamily(appSettings.font_family);
+            // Apply settings
+            const personalSettings = loadPersonalSettings();
+            applyPersonalSettings(personalSettings);
+            applyFontFamily(appSettings.font_family); // 共通設定のフォントは廃止予定、個別設定を優先
+            
             populateFilters();
             applyFilterState();
             renderClients();
@@ -1170,15 +1174,18 @@ document.addEventListener('DOMContentLoaded', () => {
     async function openBasicSettingsModal() {
         try {
             appSettings = await fetchSettings();
+            const personalSettings = loadPersonalSettings();
             
-            // Populate form with current settings
+            // 共通設定（Supabaseから取得）
             yellowThresholdSelect.value = appSettings.yellow_threshold;
             redThresholdSelect.value = appSettings.red_threshold;
             yellowColorInput.value = appSettings.yellow_color;
             redColorInput.value = appSettings.red_color;
-            fontFamilySelect.value = appSettings.font_family;
-            hideInactiveClientsCheckbox.checked = appSettings.hide_inactive_clients;
-            enableConfettiEffectCheckbox.checked = getConfettiEffectSetting();
+            
+            // 個別設定（ローカルストレージから取得）
+            fontFamilySelect.value = personalSettings.fontFamily;
+            hideInactiveClientsCheckbox.checked = personalSettings.hideInactiveClients;
+            enableConfettiEffectCheckbox.checked = personalSettings.enableConfettiEffect;
             
             // 管理者権限チェックと管理者設定の制御
             checkAndSetAdminPermissions();
@@ -1192,30 +1199,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function saveBasicSettings() {
         try {
-            const newSettings = {
+            // 共通設定（Supabaseに保存）
+            const commonSettings = {
                 yellow_threshold: parseInt(yellowThresholdSelect.value),
                 red_threshold: parseInt(redThresholdSelect.value),
                 yellow_color: yellowColorInput.value,
-                red_color: redColorInput.value,
-                font_family: fontFamilySelect.value,
-                hide_inactive_clients: hideInactiveClientsCheckbox.checked
+                red_color: redColorInput.value
             };
 
-            // Save settings to Supabase
+            // 個別設定（ローカルストレージに保存）
+            const personalSettings = {
+                fontFamily: fontFamilySelect.value,
+                hideInactiveClients: hideInactiveClientsCheckbox.checked,
+                enableConfettiEffect: enableConfettiEffectCheckbox.checked
+            };
+
+            // 共通設定をSupabaseに保存
             await Promise.all([
-                SupabaseAPI.setSetting('yellow_threshold', newSettings.yellow_threshold),
-                SupabaseAPI.setSetting('red_threshold', newSettings.red_threshold),
-                SupabaseAPI.setSetting('yellow_color', newSettings.yellow_color),
-                SupabaseAPI.setSetting('red_color', newSettings.red_color),
-                SupabaseAPI.setSetting('font_family', newSettings.font_family),
-                SupabaseAPI.setSetting('hide_inactive_clients', newSettings.hide_inactive_clients)
+                SupabaseAPI.setSetting('yellow_threshold', commonSettings.yellow_threshold),
+                SupabaseAPI.setSetting('red_threshold', commonSettings.red_threshold),
+                SupabaseAPI.setSetting('yellow_color', commonSettings.yellow_color),
+                SupabaseAPI.setSetting('red_color', commonSettings.red_color)
             ]);
             
-            // Save confetti effect setting to localStorage
-            setConfettiEffectSetting(enableConfettiEffectCheckbox.checked);
+            // 個別設定をローカルストレージに保存
+            savePersonalSettings(personalSettings);
+            
+            // 紙吹雪エフェクト設定（既存の機能を維持）
+            setConfettiEffectSetting(personalSettings.enableConfettiEffect);
 
-            appSettings = newSettings;
-            applyFontFamily(appSettings.font_family);
+            appSettings = {...appSettings, ...commonSettings};
+            applyPersonalSettings(personalSettings);
             renderClients(); // Re-render with new color settings
             
             closeBasicSettingsModal();
@@ -1250,6 +1264,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.title = '';
             });
         }
+    }
+
+    // --- 個別設定のローカルストレージ管理 ---
+    function loadPersonalSettings() {
+        const savedSettings = JSON.parse(localStorage.getItem('personalSettings') || '{}');
+        
+        // デフォルト値
+        const defaults = {
+            fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+            hideInactiveClients: false,
+            enableConfettiEffect: true
+        };
+        
+        return { ...defaults, ...savedSettings };
+    }
+
+    function savePersonalSettings(settings) {
+        localStorage.setItem('personalSettings', JSON.stringify(settings));
+    }
+
+    function applyPersonalSettings(settings) {
+        // フォントの適用
+        if (settings.fontFamily) {
+            document.body.style.fontFamily = settings.fontFamily;
+        }
+        
+        // 関与終了顧問先の表示制御
+        if (settings.hideInactiveClients) {
+            document.body.classList.add('hide-inactive-clients');
+        } else {
+            document.body.classList.remove('hide-inactive-clients');
+        }
+        
+        // 紙吹雪エフェクト設定は個別の関数で管理（既存機能を維持）
+        // この設定も実際にはローカルストレージに保存される
     }
 
     // --- Default Tasks Management ---

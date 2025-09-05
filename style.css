@@ -1064,12 +1064,41 @@ button:active {
     margin-left: auto;
 }
 
+/* 簡素化された閾値設定項目（ラベル → セレクト → カラーピッカー） */
+.setting-item.threshold-setting-simple {
+    justify-content: flex-start;
+    gap: 10px;
+    align-items: center;
+}
+
+.setting-item.threshold-setting-simple label {
+    flex: 0 0 120px;
+    margin-right: 0;
+    white-space: nowrap;
+}
+
+.setting-item.threshold-setting-simple select {
+    flex: 0 0 80px;
+    min-width: 60px;
+}
+
+.setting-item.threshold-setting-simple span {
+    flex: 0 0 auto;
+    font-size: 14px;
+    color: #6c757d;
+    margin-right: 5px;
+}
+
+.setting-item.threshold-setting-simple input[type="color"] {
+    flex: 0 0 auto;
+}
+
 /* 通常の設定項目（色・閾値設定以外） */
-.setting-item:not(.color-setting):not(.threshold-setting) {
+.setting-item:not(.color-setting):not(.threshold-setting):not(.threshold-setting-simple) {
     justify-content: space-between;
 }
 
-.setting-item:not(.color-setting):not(.threshold-setting) label {
+.setting-item:not(.color-setting):not(.threshold-setting):not(.threshold-setting-simple) label {
     flex: 1;
 }
 

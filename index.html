@@ -56,13 +56,8 @@
                 <button id="add-client-button" class="accordion-button">顧問先追加</button>
                 <hr>
                 <button id="basic-settings-button" class="accordion-button">基本設定</button>
-                <button id="default-tasks-settings-button" class="accordion-button">項目の初期値の設定</button>
-                <button id="export-csv-button" class="accordion-button">📊 CSVエクスポート</button>
-                <button id="import-csv-button" class="accordion-button">📁 CSVインポート</button>
-                <input type="file" id="csv-file-input" style="display: none;" accept=".csv">
                 <button id="reset-column-widths-button" class="accordion-button">📏 列幅リセット</button>
-                <hr>
-                <button id="reset-database-button" class="accordion-button" style="color: #d32f2f; font-weight: bold;">⚠️ データベース初期化</button>
+                <input type="file" id="csv-file-input" style="display: none;" accept=".csv">
             </div>
         </div>
     </div>
@@ -204,16 +199,16 @@
                 <div class="settings-column">
                     <div class="settings-section">
                         <h3>⚙️ 共通設定</h3>
-                        <div class="setting-item threshold-setting">
-                            <label for="yellow-threshold">警告表示 (黄色):</label>
+                        <div class="setting-item threshold-setting-simple">
+                            <label for="yellow-threshold">警告表示:</label>
                             <select id="yellow-threshold"></select>
-                            <span>ヶ月以上未入力で表示</span>
+                            <span>ヶ月</span>
                             <input type="color" id="yellow-color">
                         </div>
-                        <div class="setting-item threshold-setting">
-                            <label for="red-threshold">危険表示 (赤色):</label>
+                        <div class="setting-item threshold-setting-simple">
+                            <label for="red-threshold">危険表示:</label>
                             <select id="red-threshold"></select>
-                            <span>ヶ月以上未入力で表示</span>
+                            <span>ヶ月</span>
                             <input type="color" id="red-color">
                         </div>
                         <div class="setting-item button-setting">
