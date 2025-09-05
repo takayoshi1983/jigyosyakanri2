@@ -88,12 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Local Storage Helper Functions ---
     function getConfettiEffectSetting() {
-        const setting = localStorage.getItem('enableConfettiEffect');
-        return setting === null ? true : setting === 'true'; // デフォルトは true
+        const personalSettings = loadPersonalSettings();
+        return personalSettings.enableConfettiEffect;
     }
 
     function setConfettiEffectSetting(enabled) {
-        localStorage.setItem('enableConfettiEffect', enabled.toString());
+        const personalSettings = loadPersonalSettings();
+        personalSettings.enableConfettiEffect = enabled;
+        savePersonalSettings(personalSettings);
     }
 
     // --- Mappings ---
@@ -1214,9 +1216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // 個別設定をローカルストレージに保存
             savePersonalSettings(personalSettings);
-            
-            // 紙吹雪エフェクト設定（既存の機能を維持）
-            setConfettiEffectSetting(personalSettings.enableConfettiEffect);
+            // 紙吹雪エフェクト設定は personalSettings に含まれるため、重複削除
 
             appSettings = {...appSettings, ...commonSettings};
             applyPersonalSettings(personalSettings);
@@ -1266,6 +1266,11 @@ document.addEventListener('DOMContentLoaded', () => {
             hideInactiveClients: false,
             enableConfettiEffect: true
         };
+        
+        // 既存の古い設定を移行（一度だけ）
+        if (!savedSettings.enableConfettiEffect && localStorage.getItem('enableConfettiEffect') !== null) {
+            savedSettings.enableConfettiEffect = localStorage.getItem('enableConfettiEffect') === 'true';
+        }
         
         return { ...defaults, ...savedSettings };
     }
@@ -1478,8 +1483,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const monthFilterValue = monthFilter.value;
             const matchesMonth = !monthFilterValue || client.fiscal_month?.toString() === monthFilterValue;
 
-            // Hide inactive filter
-            const showInactive = !appSettings.hide_inactive_clients;
+            // Hide inactive filter (個別設定から取得)
+            const personalSettings = loadPersonalSettings();
+            const showInactive = !personalSettings.hideInactiveClients;
             const matchesStatus = client.status === 'active' || (showInactive && (client.status === 'inactive' || client.status === 'deleted'));
             
 
