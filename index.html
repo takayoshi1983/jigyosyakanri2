@@ -182,22 +182,16 @@
             
             <div class="settings-section">
                 <h3>アラート表示設定</h3>
-                <div class="setting-item">
+                <div class="setting-item threshold-setting">
                     <label for="yellow-threshold">警告表示 (黄色):</label>
                     <select id="yellow-threshold"></select>
-                    <span>以上未入力で表示</span>
-                </div>
-                <div class="setting-item">
-                    <label for="red-threshold">危険表示 (赤色):</label>
-                    <select id="red-threshold"></select>
-                    <span>以上未入力で表示</span>
-                </div>
-                <div class="setting-item color-setting">
-                    <label for="yellow-color">警告色:</label>
+                    <span>ヶ月以上未入力で表示</span>
                     <input type="color" id="yellow-color">
                 </div>
-                <div class="setting-item color-setting">
-                    <label for="red-color">危険色:</label>
+                <div class="setting-item threshold-setting">
+                    <label for="red-threshold">危険表示 (赤色):</label>
+                    <select id="red-threshold"></select>
+                    <span>ヶ月以上未入力で表示</span>
                     <input type="color" id="red-color">
                 </div>
             </div>
