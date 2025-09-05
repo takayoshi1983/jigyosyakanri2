@@ -1059,6 +1059,135 @@ export class SupabaseAPI {
         };
     }
 
+    // データ整合性の自動修復機能
+    static async fixDataConsistency(clientId, year) {
+        try {
+            const result = await this.checkDataConsistency(clientId, year);
+            const fixes = [];
+
+            if (result.is_consistent) {
+                return {
+                    success: true,
+                    message: 'データは既に整合性が保たれています',
+                    fixes: []
+                };
+            }
+
+            // 1. progress_inconsistency の修復
+            const progressIssue = result.issues.find(issue => issue.type === 'progress_inconsistency');
+            if (progressIssue) {
+                // 該当年度の全月次データを取得
+                const startMonth = `${year}-04`;
+                const endMonth = `${parseInt(year) + 1}-03`;
+                
+                const { data: monthlyData, error } = await supabase
+                    .from('monthly_tasks')
+                    .select('*')
+                    .eq('client_id', clientId)
+                    .gte('month', startMonth)
+                    .lte('month', endMonth);
+                
+                if (error) throw error;
+
+                // 進捗状態を修正
+                for (const monthly of monthlyData) {
+                    const tasks = monthly.tasks || {};
+                    const completedTasks = Object.values(tasks).filter(Boolean).length;
+                    const totalTasks = Object.keys(tasks).length;
+                    const shouldBeCompleted = totalTasks > 0 && completedTasks === totalTasks;
+                    
+                    // completedフラグが実際の完了状況と違う場合のみ更新
+                    if (shouldBeCompleted !== monthly.completed) {
+                        const { error: updateError } = await supabase
+                            .from('monthly_tasks')
+                            .update({ completed: shouldBeCompleted })
+                            .eq('id', monthly.id);
+                        
+                        if (updateError) throw updateError;
+                        
+                        fixes.push({
+                            type: 'progress_fix',
+                            month: monthly.month,
+                            old_value: monthly.completed,
+                            new_value: shouldBeCompleted,
+                            message: `${monthly.month}月の完了状態を ${monthly.completed} から ${shouldBeCompleted} に修正`
+                        });
+                    }
+                }
+            }
+
+            // 2. obsolete_tasks の修復
+            const obsoleteIssue = result.issues.find(issue => issue.type === 'obsolete_tasks');
+            if (obsoleteIssue) {
+                // クライアントの現在のカスタムタスクを取得
+                const client = await this.getClient(clientId);
+                const currentTasks = client.custom_tasks_by_year?.[year] || [];
+                
+                // 該当年度の全月次データから廃止されたタスクを削除
+                const startMonth = `${year}-04`;
+                const endMonth = `${parseInt(year) + 1}-03`;
+                
+                const { data: monthlyData, error } = await supabase
+                    .from('monthly_tasks')
+                    .select('*')
+                    .eq('client_id', clientId)
+                    .gte('month', startMonth)
+                    .lte('month', endMonth);
+                
+                if (error) throw error;
+
+                for (const monthly of monthlyData) {
+                    const tasks = monthly.tasks || {};
+                    const cleanedTasks = {};
+                    let hasObsoleteTasks = false;
+                    
+                    // 現在のカスタムタスクに存在するタスクのみ保持
+                    for (const [taskName, taskValue] of Object.entries(tasks)) {
+                        if (currentTasks.includes(taskName)) {
+                            cleanedTasks[taskName] = taskValue;
+                        } else {
+                            hasObsoleteTasks = true;
+                            fixes.push({
+                                type: 'obsolete_task_removal',
+                                month: monthly.month,
+                                task_name: taskName,
+                                message: `${monthly.month}月から廃止されたタスク「${taskName}」を削除`
+                            });
+                        }
+                    }
+                    
+                    // 廃止されたタスクがあった場合、データベースを更新
+                    if (hasObsoleteTasks) {
+                        // 完了状態も再計算
+                        const completedTasks = Object.values(cleanedTasks).filter(Boolean).length;
+                        const totalTasks = Object.keys(cleanedTasks).length;
+                        const shouldBeCompleted = totalTasks > 0 && completedTasks === totalTasks;
+                        
+                        const { error: updateError } = await supabase
+                            .from('monthly_tasks')
+                            .update({ 
+                                tasks: cleanedTasks,
+                                completed: shouldBeCompleted
+                            })
+                            .eq('id', monthly.id);
+                        
+                        if (updateError) throw updateError;
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                message: `${fixes.length}件の問題を修復しました`,
+                fixes: fixes
+            };
+
+        } catch (error) {
+            console.error('Data consistency fix error:', error);
+            throw error;
+        }
+    }
+
     // App Links (Other Apps)
     static async getAppLinks() {
         const { data, error } = await supabase

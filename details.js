@@ -933,13 +933,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             issueHtml += `</div>`;
             
-            // 自動修復ボタンを追加（将来の機能拡張用）
+            // 自動修復ボタンを追加
             if (summary.critical_issues > 0 || summary.warnings > 0) {
                 issueHtml += `
                     <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6;">
                         <button id="auto-repair-btn" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">
-                            🔧 自動修復を実行 (準備中)
+                            🔧 自動修復を実行
                         </button>
+                        <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                            進捗状態の不整合や廃止されたタスクの削除を自動で修復します
+                        </p>
                     </div>
                 `;
             }
@@ -966,6 +969,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         modalContent.insertBefore(header, modalContent.firstChild);
         
         modal.appendChild(modalContent);
+        
+        // 自動修復ボタンのイベントハンドラー
+        const autoRepairBtn = modalContent.querySelector('#auto-repair-btn');
+        if (autoRepairBtn) {
+            autoRepairBtn.addEventListener('click', async () => {
+                try {
+                    autoRepairBtn.disabled = true;
+                    autoRepairBtn.innerHTML = '🔧 修復中...';
+                    autoRepairBtn.style.background = '#6c757d';
+                    
+                    const result = await SupabaseAPI.fixDataConsistency(clientId, currentYearSelection || new Date().getFullYear());
+                    
+                    if (result.success) {
+                        toast.success(result.message);
+                        
+                        // 修復結果をモーダルに表示
+                        const fixResultHtml = `
+                            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px; padding: 15px; margin: 15px 0;">
+                                <h4 style="color: #155724; margin-top: 0;">✅ 修復完了！</h4>
+                                <p style="color: #155724; margin-bottom: 10px;">${result.message}</p>
+                                ${result.fixes.length > 0 ? `
+                                    <details style="color: #155724; margin-top: 10px;">
+                                        <summary style="cursor: pointer; font-weight: bold;">修復内容の詳細</summary>
+                                        <ul style="margin-top: 10px;">
+                                            ${result.fixes.map(fix => `<li>${fix.message}</li>`).join('')}
+                                        </ul>
+                                    </details>
+                                ` : ''}
+                            </div>
+                        `;
+                        
+                        // 自動修復ボタンを成功状態に更新
+                        autoRepairBtn.outerHTML = `
+                            <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+                                ${fixResultHtml}
+                                <button style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;" onclick="location.reload()">
+                                    🔄 データを再読み込み
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        toast.error('修復に失敗しました');
+                        autoRepairBtn.disabled = false;
+                        autoRepairBtn.innerHTML = '🔧 自動修復を実行';
+                        autoRepairBtn.style.background = '#28a745';
+                    }
+                } catch (error) {
+                    console.error('Auto repair error:', error);
+                    toast.error(`修復エラー: ${error.message}`);
+                    autoRepairBtn.disabled = false;
+                    autoRepairBtn.innerHTML = '🔧 自動修復を実行';
+                    autoRepairBtn.style.background = '#28a745';
+                }
+            });
+        }
         
         // ESCキーでモーダルを閉じる
         document.addEventListener('keydown', (e) => {
