@@ -57,6 +57,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     let hasUnsavedChanges = false;
     let isEditingMode = true;
 
+    // --- Local Storage Helper Functions ---
+    function getConfettiEffectSetting() {
+        const setting = localStorage.getItem('enableConfettiEffect');
+        return setting === null ? true : setting === 'true'; // デフォルトは true
+    }
+
     // --- Utility Functions ---
     function showStatus(message, type = 'info') {
         if (!connectionStatus || !statusText) return;
@@ -540,6 +546,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function triggerConfetti() {
+        // 設定をチェックしてエフェクトを制御
+        if (!getConfettiEffectSetting()) {
+            return; // エフェクトが無効な場合は何もしない
+        }
+        
         // Basic Cannon エフェクト
         if (typeof confetti !== 'undefined') {
             confetti({

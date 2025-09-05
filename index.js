@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const redColorInput = document.getElementById('red-color');
     const fontFamilySelect = document.getElementById('font-family-select');
     const hideInactiveClientsCheckbox = document.getElementById('hide-inactive-clients');
+    const enableConfettiEffectCheckbox = document.getElementById('enable-confetti-effect');
 
     // URL Settings Modal elements
     const urlSettingsModal = document.getElementById('url-settings-modal');
@@ -82,6 +83,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let originalAppLinksState = [];
     let currentEditingAppLinks = [];
     let sortableUrlList = null;
+
+    // --- Local Storage Helper Functions ---
+    function getConfettiEffectSetting() {
+        const setting = localStorage.getItem('enableConfettiEffect');
+        return setting === null ? true : setting === 'true'; // デフォルトは true
+    }
+
+    function setConfettiEffectSetting(enabled) {
+        localStorage.setItem('enableConfettiEffect', enabled.toString());
+    }
 
     // --- Mappings ---
     const headerMap = {
@@ -1155,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             redColorInput.value = appSettings.red_color;
             fontFamilySelect.value = appSettings.font_family;
             hideInactiveClientsCheckbox.checked = appSettings.hide_inactive_clients;
+            enableConfettiEffectCheckbox.checked = getConfettiEffectSetting();
             
             basicSettingsModal.style.display = 'block';
         } catch (error) {
@@ -1183,6 +1195,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 SupabaseAPI.setSetting('font_family', newSettings.font_family),
                 SupabaseAPI.setSetting('hide_inactive_clients', newSettings.hide_inactive_clients)
             ]);
+            
+            // Save confetti effect setting to localStorage
+            setConfettiEffectSetting(enableConfettiEffectCheckbox.checked);
 
             appSettings = newSettings;
             applyFontFamily(appSettings.font_family);
