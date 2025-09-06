@@ -1395,9 +1395,10 @@ export class SupabaseAPI {
     }
 
     // データ復元機能
-    static async restoreFromBackup(backupData) {
+    static async restoreFromBackup(backupData, skipDelete = false) {
         try {
             console.log('データ復元を開始:', backupData);
+            console.log('削除スキップモード:', skipDelete);
             
             if (!backupData.tables) {
                 throw new Error('無効なバックアップファイルです');
@@ -1409,34 +1410,63 @@ export class SupabaseAPI {
             const deleteOrder = [...insertOrder].reverse(); // 逆順
             const allTables = Object.keys(backupData.tables);
             
-            // まず既存データを安全な順序で削除
-            console.log('既存データの削除を開始...');
-            for (const tableName of deleteOrder) {
-                if (allTables.includes(tableName)) {
-                    console.log(`削除中: ${tableName}`);
-                    
-                    if (tableName === 'staffs') {
-                        // staffsテーブルの場合、先にclientsテーブルのstaff_idをnullに設定
-                        const { error: updateError } = await supabase
-                            .from('clients')
-                            .update({ staff_id: null })
-                            .not('staff_id', 'is', null);
+            if (!skipDelete) {
+                // まず既存データを安全な順序で削除（小さなバッチで処理）
+                console.log('既存データの削除を開始...');
+                for (const tableName of deleteOrder) {
+                    if (allTables.includes(tableName)) {
+                        console.log(`削除中: ${tableName}`);
                         
-                        if (updateError) {
-                            console.warn('clients.staff_id null更新エラー:', updateError);
+                        if (tableName === 'staffs') {
+                            // staffsテーブルの場合、先にclientsテーブルのstaff_idをnullに設定
+                            console.log('clients.staff_id をnullに設定中...');
+                            const { data: updateData, error: updateError } = await supabase
+                                .from('clients')
+                                .update({ staff_id: null })
+                                .not('staff_id', 'is', null)
+                                .select('id');
+                            
+                            if (updateError) {
+                                console.error('clients.staff_id null更新エラー:', updateError);
+                            } else {
+                                console.log(`clients.staff_id を ${updateData?.length || 0} 件null設定完了`);
+                            }
                         }
-                    }
-                    
-                    // 既存データ削除
-                    const { error: deleteError } = await supabase
-                        .from(tableName)
-                        .delete()
-                        .neq('id', -1);
-                    
-                    if (deleteError && deleteError.code !== 'PGRST116') {
-                        console.warn(`${tableName} 削除エラー:`, deleteError);
+                        
+                        // 小さなバッチで削除（Supabaseの制限対策）
+                        let deleteCount = 0;
+                        const batchSize = 50; // 削除バッチサイズを小さく
+                        
+                        while (true) {
+                            const { data: deletedData, error: deleteError } = await supabase
+                                .from(tableName)
+                                .delete()
+                                .limit(batchSize)
+                                .select('id');
+                            
+                            if (deleteError) {
+                                console.error(`${tableName} 削除エラー:`, deleteError);
+                                break;
+                            }
+                            
+                            const batchDeleteCount = deletedData?.length || 0;
+                            deleteCount += batchDeleteCount;
+                            
+                            if (batchDeleteCount === 0) {
+                                break; // 削除するデータがない
+                            }
+                            
+                            console.log(`${tableName}: ${deleteCount} 件削除済み（バッチ: ${batchDeleteCount}）`);
+                            
+                            // 少し待機してレート制限を回避
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
+                        
+                        console.log(`${tableName} 削除完了: 合計 ${deleteCount} 件`);
                     }
                 }
+            } else {
+                console.log('削除処理をスキップ: upsertのみで復元します');
             }
             
             // 順序指定されたテーブル + その他のテーブル（挿入用）
@@ -1463,27 +1493,54 @@ export class SupabaseAPI {
                             const batch = tableData.slice(i, i + batchSize);
                             
                             // upsert方式でIDを保持して確実に復元
+                            console.log(`${tableName} upsert実行: ${batch.length} 件 (${insertedCount + 1}-${insertedCount + batch.length})`);
+                            
                             const { data: upsertData, error: upsertError } = await supabase
                                 .from(tableName)
                                 .upsert(batch, { 
                                     onConflict: 'id',
                                     ignoreDuplicates: false 
-                                });
+                                })
+                                .select('id');
                             
                             if (upsertError) {
-                                console.error(`${tableName} upsertエラー:`, upsertError);
+                                console.error(`${tableName} upsertエラー詳細:`, {
+                                    code: upsertError.code,
+                                    message: upsertError.message,
+                                    details: upsertError.details,
+                                    hint: upsertError.hint
+                                });
+                                
+                                // RLS(Row Level Security)エラーの場合は特別な処理
+                                if (upsertError.code === '42501' || upsertError.message?.includes('RLS')) {
+                                    console.warn(`${tableName}: RLS制限によりupsertスキップ`);
+                                    continue;
+                                }
+                                
                                 // フォールバック: 通常のinsertを試行
+                                console.log(`${tableName}: insertモードで再試行`);
                                 const { data: insertData, error: insertError } = await supabase
                                     .from(tableName)
-                                    .insert(batch);
+                                    .insert(batch)
+                                    .select('id');
                                 
                                 if (insertError) {
+                                    console.error(`${tableName} insertエラー:`, insertError);
                                     throw new Error(`${tableName} の復元に失敗: ${insertError.message}`);
                                 }
+                                
+                                console.log(`${tableName}: insertで ${insertData?.length || batch.length} 件成功`);
+                            } else {
+                                console.log(`${tableName}: upsertで ${upsertData?.length || batch.length} 件成功`);
                             }
                             
                             insertedCount += batch.length;
                             console.log(`${tableName}: ${insertedCount}/${tableData.length} 件処理完了`);
+                            
+                            // レート制限対策の待機
+                            if (i + batchSize < tableData.length) {
+                                await new Promise(resolve => setTimeout(resolve, 200));
+                            }
                         }
                         
                         // clientsテーブル復元後、staff_idの整合性を再確認

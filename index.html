@@ -360,6 +360,13 @@
                 <div class="backup-section">
                     <h3>📥 データ復元</h3>
                     <div class="backup-setting-item">
+                        <label for="restore-skip-delete">
+                            <input type="checkbox" id="restore-skip-delete">
+                            削除処理をスキップ（upsertのみ）
+                        </label>
+                        <small>Supabase制限回避用。既存データに上書きのみ行います</small>
+                    </div>
+                    <div class="backup-setting-item">
                         <button id="restore-backup-button" class="backup-action-button restore-button">
                             バックアップファイルから復元
                         </button>

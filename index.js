@@ -2315,6 +2315,9 @@ document.addEventListener('DOMContentLoaded', () => {
             let results;
             let format = 'JSON';
             
+            // 削除スキップオプションを取得
+            const skipDelete = document.getElementById('restore-skip-delete').checked;
+            
             // バックアップ形式を判定して適切な復元方法を選択
             if (backupData.format === 'csv' && backupData.files) {
                 // CSV形式バックアップの復元
@@ -2322,7 +2325,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 results = await SupabaseAPI.restoreFromCSVBackup(backupData);
             } else if (backupData.tables) {
                 // 従来のJSON形式バックアップの復元
-                results = await SupabaseAPI.restoreFromBackup(backupData);
+                results = await SupabaseAPI.restoreFromBackup(backupData, skipDelete);
             } else {
                 throw new Error('無効なバックアップファイル形式です');
             }

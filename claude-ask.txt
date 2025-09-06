@@ -1,11 +1,19 @@
-jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/staffs?id=neq.0:1  Failed to load resource: the server responded with a status of 409 ()Understand this error
-supabase-client.js:1343 staffs 削除エラー: Objectcode: "23503"details: "Key is still referenced from table \"clients\"."hint: nullmessage: "update or delete on table \"staffs\" violates foreign key constraint \"clients_staff_id_fkey\" on table \"clients\""[[Prototype]]: Object
-restoreFromBackup @ supabase-client.js:1343Understand this warning
-jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/staffs?columns=%22id%22%2C%22name%22%2C%22email%22%2C%22role%22%2C%22created_at%22%2C%22updated_at%22:1  Failed to load resource: the server responded with a status of 409 ()Understand this error
-supabase-client.js:1366 データ復元エラー: Error: staffs の復元に失敗: duplicate key value violates unique constraint "staffs_pkey"
-    at SupabaseAPI.restoreFromBackup (supabase-client.js:1352:31)
-    at async HTMLInputElement.<anonymous> (index.js:2252:29)
-restoreFromBackup @ supabase-client.js:1366Understand this error
-index.js:2268 Restore error: Error: staffs の復元に失敗: duplicate key value violates unique constraint "staffs_pkey"
-    at SupabaseAPI.restoreFromBackup (supabase-client.js:1352:31)
-    at async HTMLInputElement.<anonymous> (index.js:2252:29)
+自動バックアップが有効です
+supabase-client.js:1754 次回自動バックアップ: 2025/9/7 3:00:00
+index.js:1304 Loading personal settings: {fontFamily: '', hideInactiveClients: false, enableConfettiEffect: false}
+index.js:1320 Final personal settings: {fontFamily: '', hideInactiveClients: false, enableConfettiEffect: false}
+supabase-client.js:1272 バックアップ中: clients
+supabase-client.js:1279 clients: 80 件
+supabase-client.js:1272 バックアップ中: staffs
+supabase-client.js:1279 staffs: 7 件
+supabase-client.js:1272 バックアップ中: monthly_tasks
+supabase-client.js:1279 monthly_tasks: 24 件
+supabase-client.js:1272 バックアップ中: editing_sessions
+supabase-client.js:1279 editing_sessions: 0 件
+supabase-client.js:1272 バックアップ中: settings
+supabase-client.js:1279 settings: 6 件
+supabase-client.js:1272 バックアップ中: default_tasks
+supabase-client.js:1279 default_tasks: 2 件
+supabase-client.js:1272 バックアップ中: app_links
+supabase-client.js:1279 app_links: 2 件
+supabase-client.js:1282 バックアップ作成完了: {timestamp: '2025-09-06T05-49-41-899Z', version: '1.0', database: 'jigyosya-management', tables: {…}}
