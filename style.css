@@ -64,6 +64,34 @@ h1, h2 {
     margin-bottom: 20px;
 }
 
+/* メイン画面テーブルの完全固定ヘッダー */
+#clients-table {
+    width: 100%;
+    border-collapse: collapse;
+    position: relative;
+}
+
+#clients-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+#clients-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #eef2f5;
+    color: #333;
+    font-weight: bold;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-bottom: 2px solid #ddd;
+    text-align: center;
+    vertical-align: middle;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 /* モバイルでのテーブル固定ヘッダー調整 */
 @media screen and (max-width: 480px) {
     .table-container {
@@ -167,15 +195,15 @@ th, td {
     vertical-align: middle;
 }
 
+/* 一般的なテーブルヘッダー（詳細画面など） */
 th {
     background-color: #eef2f5;
     color: #333;
     font-weight: bold;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border-bottom: 2px solid #ddd;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+    vertical-align: middle;
 }
 
 tr:nth-child(even) {
