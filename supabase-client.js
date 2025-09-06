@@ -1604,10 +1604,18 @@ export class SupabaseAPI {
             
             for (const tableName of tables) {
                 console.log(`CSV生成中: ${tableName}`);
+                
+                // テーブルごとのソート設定
+                const tableSortColumns = {
+                    'settings': 'key',
+                    // 他のテーブルはidカラムでソート（デフォルト）
+                };
+                const sortColumn = tableSortColumns[tableName] || 'id';
+                
                 const { data, error } = await supabase
                     .from(tableName)
                     .select('*')
-                    .order('id');
+                    .order(sortColumn);
                 
                 if (error) {
                     console.warn(`${tableName} データ取得エラー:`, error);
