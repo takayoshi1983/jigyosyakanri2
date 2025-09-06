@@ -2407,4 +2407,144 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         initializeBackupSystem();
     }, 1000);
+
+    // レスポンシブテーブル幅調整機能
+    function initResponsiveTable() {
+        let resizeTimeout;
+        
+        function adjustTableLayout() {
+            const tableContainer = document.querySelector('.table-container');
+            const clientsTable = document.getElementById('clients-table');
+            
+            if (!tableContainer || !clientsTable) return;
+            
+            // コンテナ幅を取得
+            const containerWidth = tableContainer.offsetWidth;
+            const zoomLevel = window.devicePixelRatio || 1;
+            
+            // 横スクロール無効化
+            tableContainer.style.overflowX = 'hidden';
+            
+            // ウィンドウ幅に基づく動的調整
+            if (containerWidth < 800) {
+                // 狭い画面では最小限の列幅
+                clientsTable.style.fontSize = '11px';
+                adjustColumnWidths(containerWidth, 'compact');
+            } else if (containerWidth < 1200) {
+                // 中程度の画面では適度な列幅
+                clientsTable.style.fontSize = '12px';
+                adjustColumnWidths(containerWidth, 'medium');
+            } else {
+                // 広い画面では標準の列幅
+                clientsTable.style.fontSize = '14px';
+                adjustColumnWidths(containerWidth, 'standard');
+            }
+        }
+        
+        function adjustColumnWidths(containerWidth, mode) {
+            const table = document.getElementById('clients-table');
+            if (!table) return;
+            
+            const ths = table.querySelectorAll('th');
+            const totalCols = ths.length;
+            
+            // モード別の列幅配分（%）
+            const widthDistribution = {
+                compact: [8, 35, 12, 15, 10, 8, 7, 5],    // 狭い画面
+                medium: [6, 30, 12, 18, 12, 10, 8, 4],     // 中程度
+                standard: [5, 28, 12, 20, 15, 10, 8, 2]    // 広い画面
+            };
+            
+            const widths = widthDistribution[mode] || widthDistribution.standard;
+            
+            ths.forEach((th, index) => {
+                if (widths[index]) {
+                    th.style.width = `${widths[index]}%`;
+                    th.style.minWidth = mode === 'compact' ? '30px' : '50px';
+                    th.style.maxWidth = 'none';
+                }
+            });
+        }
+        
+        function toggleScrollMode() {
+            const tableContainer = document.querySelector('.table-container');
+            const clientsTable = document.getElementById('clients-table');
+            
+            if (!tableContainer || !clientsTable) return;
+            
+            const isScrollMode = tableContainer.style.overflowX === 'auto';
+            
+            if (isScrollMode) {
+                // レスポンシブモードに切り替え
+                tableContainer.style.overflowX = 'hidden';
+                adjustTableLayout();
+            } else {
+                // スクロールモードに切り替え
+                tableContainer.style.overflowX = 'auto';
+                clientsTable.style.fontSize = '14px';
+                // 元の幅に戻す
+                const ths = clientsTable.querySelectorAll('th');
+                ths.forEach(th => {
+                    th.style.width = '';
+                    th.style.minWidth = '';
+                    th.style.maxWidth = '';
+                });
+            }
+        }
+        
+        // ウィンドウリサイズイベント
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(adjustTableLayout, 150);
+        });
+        
+        // ズーム変更検出
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(adjustTableLayout, 150);
+        });
+        
+        // 初期調整
+        setTimeout(adjustTableLayout, 500);
+        
+        // 切り替えボタンをアコーディオンメニューに追加
+        addTableModeToggle(toggleScrollMode);
+    }
+    
+    function addTableModeToggle(toggleFunction) {
+        const accordionContent = document.querySelector('#management-accordion .accordion-content');
+        if (!accordionContent) return;
+        
+        const toggleButton = document.createElement('button');
+        toggleButton.textContent = '📏 テーブル表示モード切替';
+        toggleButton.className = 'btn';
+        toggleButton.style.cssText = 'width: 100%; margin: 5px 0; text-align: center;';
+        
+        toggleButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleFunction();
+            
+            // 現在のモードを表示
+            const tableContainer = document.querySelector('.table-container');
+            const mode = tableContainer.style.overflowX === 'auto' ? 'スクロールモード' : 'フィット表示モード';
+            
+            // トースト通知で状態を表示
+            if (window.showToast) {
+                window.showToast(`${mode}に切り替えました`, 'info', 2000);
+            }
+        });
+        
+        // バックアップ設定ボタンの後に追加
+        const backupButton = accordionContent.querySelector('button[onclick*="backup"]');
+        if (backupButton) {
+            backupButton.parentNode.insertBefore(toggleButton, backupButton.nextSibling);
+        } else {
+            accordionContent.appendChild(toggleButton);
+        }
+    }
+    
+    // レスポンシブテーブル機能を初期化
+    setTimeout(() => {
+        initResponsiveTable();
+    }, 1500);
 });

@@ -24,10 +24,11 @@ body {
     transform: scale(0.95);
 }
 
-/* メインテーブル全体の調整 */
+/* メインテーブル全体の調整 - レスポンシブ対応 */
 #clients-table {
     width: 100% !important;
     table-layout: auto !important;
+    font-size: clamp(12px, 1.5vw, 14px); /* レスポンシブフォントサイズ */
 }
 
 /* 編集ボタンのセル強制表示 */
@@ -246,9 +247,77 @@ tr:hover {
     width: 100%;
 }
 
+/* レスポンシブテーブル幅調整システム */
+.responsive-table-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden; /* 横スクロールを隠して自動調整 */
+}
+
+/* ウィンドウ幅に応じた動的調整 */
+@media screen and (max-width: 1400px) {
+    .client-info-table th:nth-child(2), /* 事業所名 */
+    .client-info-table td:nth-child(2) {
+        width: clamp(200px, 18vw, 250px) !important;
+    }
+    
+    .client-info-table th:nth-child(4), /* 担当者 */
+    .client-info-table td:nth-child(4) {
+        width: clamp(100px, 12vw, 150px) !important;
+    }
+    
+    #clients-table {
+        font-size: clamp(11px, 1.3vw, 13px);
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .client-info-table th:nth-child(2), /* 事業所名 */
+    .client-info-table td:nth-child(2) {
+        width: clamp(150px, 20vw, 200px) !important;
+    }
+    
+    .client-info-table th:nth-child(3), /* 決算月 */
+    .client-info-table td:nth-child(3) {
+        width: clamp(70px, 8vw, 100px) !important;
+    }
+    
+    .client-info-table th:nth-child(4), /* 担当者 */
+    .client-info-table td:nth-child(4) {
+        width: clamp(80px, 10vw, 120px) !important;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    #clients-table {
+        font-size: clamp(10px, 1.2vw, 12px);
+    }
+    
+    .client-info-table th:nth-child(2), /* 事業所名 */
+    .client-info-table td:nth-child(2) {
+        width: clamp(120px, 22vw, 180px) !important;
+    }
+    
+    .client-info-table th:nth-child(1), /* No. */
+    .client-info-table td:nth-child(1) {
+        width: clamp(35px, 4vw, 50px) !important;
+    }
+    
+    .client-info-table th:nth-child(3), /* 決算月 */
+    .client-info-table td:nth-child(3) {
+        width: clamp(60px, 7vw, 80px) !important;
+    }
+    
+    .client-info-table th:nth-child(4), /* 担当者 */
+    .client-info-table td:nth-child(4) {
+        width: clamp(70px, 9vw, 100px) !important;
+    }
+}
+
 .details-table {
-    min-width: 1200px; /* Ensure table is wide enough to scroll */
-    table-layout: fixed; /* Add this for consistent column widths */
+    min-width: 100%; /* 詳細テーブルもレスポンシブに */
+    table-layout: auto; /* 自動列幅調整に変更 */
+    font-size: clamp(11px, 1.4vw, 13px); /* レスポンシブフォントサイズ */
 }
 
 #notes-table td {

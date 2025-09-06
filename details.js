@@ -1626,5 +1626,138 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+    // レスポンシブ詳細テーブル幅調整機能
+    function initResponsiveDetailsTable() {
+        let resizeTimeout;
+        
+        function adjustDetailsTableLayout() {
+            const detailsWrapper = document.querySelector('.details-table-wrapper');
+            const detailsTable = document.querySelector('.details-table');
+            const notesTable = document.getElementById('notes-table');
+            
+            if (!detailsWrapper || !detailsTable) return;
+            
+            const containerWidth = detailsWrapper.offsetWidth;
+            
+            // 横スクロールを無効化してフィット表示
+            detailsWrapper.style.overflowX = 'hidden';
+            
+            // ウィンドウ幅に基づくフォントサイズ調整
+            if (containerWidth < 800) {
+                detailsTable.style.fontSize = '10px';
+                if (notesTable) notesTable.style.fontSize = '10px';
+                adjustDetailsColumnWidths('compact');
+            } else if (containerWidth < 1200) {
+                detailsTable.style.fontSize = '11px';
+                if (notesTable) notesTable.style.fontSize = '11px';
+                adjustDetailsColumnWidths('medium');
+            } else {
+                detailsTable.style.fontSize = '13px';
+                if (notesTable) notesTable.style.fontSize = '12px';
+                adjustDetailsColumnWidths('standard');
+            }
+        }
+        
+        function adjustDetailsColumnWidths(mode) {
+            const detailsTable = document.querySelector('.details-table');
+            if (!detailsTable) return;
+            
+            // 最初の列（項目名）と各月の列幅を調整
+            const firstColWidth = mode === 'compact' ? '15%' : mode === 'medium' ? '18%' : '20%';
+            const monthColWidth = mode === 'compact' ? '7%' : mode === 'medium' ? '6.8%' : '6.6%';
+            
+            // 項目名列の幅を設定
+            const firstCells = detailsTable.querySelectorAll('td:first-child, th:first-child');
+            firstCells.forEach(cell => {
+                cell.style.width = firstColWidth;
+                cell.style.minWidth = mode === 'compact' ? '80px' : '100px';
+            });
+            
+            // 月次列の幅を設定
+            const monthCells = detailsTable.querySelectorAll('th.month-header, td:not(:first-child)');
+            monthCells.forEach(cell => {
+                if (!cell.classList.contains('sticky-col')) {
+                    cell.style.width = monthColWidth;
+                    cell.style.minWidth = mode === 'compact' ? '40px' : '50px';
+                    cell.style.textAlign = 'center';
+                }
+            });
+        }
+        
+        function toggleDetailsScrollMode() {
+            const detailsWrapper = document.querySelector('.details-table-wrapper');
+            const detailsTable = document.querySelector('.details-table');
+            const notesTable = document.getElementById('notes-table');
+            
+            if (!detailsWrapper || !detailsTable) return;
+            
+            const isScrollMode = detailsWrapper.style.overflowX === 'auto';
+            
+            if (isScrollMode) {
+                // フィット表示モードに切り替え
+                detailsWrapper.style.overflowX = 'hidden';
+                adjustDetailsTableLayout();
+            } else {
+                // スクロールモードに切り替え
+                detailsWrapper.style.overflowX = 'auto';
+                detailsTable.style.fontSize = '13px';
+                if (notesTable) notesTable.style.fontSize = '12px';
+                
+                // 元の幅に戻す
+                const allCells = detailsTable.querySelectorAll('th, td');
+                allCells.forEach(cell => {
+                    cell.style.width = '';
+                    cell.style.minWidth = '';
+                });
+            }
+        }
+        
+        // ウィンドウリサイズイベント
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(adjustDetailsTableLayout, 150);
+        });
+        
+        // 初期調整
+        setTimeout(adjustDetailsTableLayout, 1000);
+        
+        // 切り替えボタンを管理メニューに追加
+        addDetailsTableModeToggle(toggleDetailsScrollMode);
+    }
+    
+    function addDetailsTableModeToggle(toggleFunction) {
+        const accordionContent = document.querySelector('#data-management-accordion .accordion-content');
+        if (!accordionContent) return;
+        
+        const toggleButton = document.createElement('button');
+        toggleButton.textContent = '📏 テーブル表示モード切替';
+        toggleButton.className = 'btn';
+        toggleButton.style.cssText = 'width: 100%; margin: 5px 0; text-align: center; background: linear-gradient(135deg, #4CAF50, #45a049); color: white;';
+        
+        toggleButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleFunction();
+            
+            // 現在のモードを表示
+            const detailsWrapper = document.querySelector('.details-table-wrapper');
+            const mode = detailsWrapper && detailsWrapper.style.overflowX === 'auto' ? 'スクロールモード' : 'フィット表示モード';
+            
+            // トースト通知で状態を表示
+            if (window.showToast) {
+                window.showToast(`詳細テーブル: ${mode}に切り替えました`, 'info', 2000);
+            } else if (toast && toast.info) {
+                toast.info(`詳細テーブル: ${mode}に切り替えました`);
+            }
+        });
+        
+        // アコーディオン内の最後に追加
+        accordionContent.appendChild(toggleButton);
+    }
+
     initialize();
+    
+    // レスポンシブ詳細テーブル機能を初期化
+    setTimeout(() => {
+        initResponsiveDetailsTable();
+    }, 2000);
 });
