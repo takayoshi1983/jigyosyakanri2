@@ -375,7 +375,10 @@ tr:hover {
 }
 
 /* Ensure inputs and wrappers take up the full cell width */
-#edit-form input[type="text"],
+#edit-form input[type="text"] {
+    width: 100%;
+    text-align: center;
+}
 #edit-form .custom-select-wrapper {
     width: 100%;
 }

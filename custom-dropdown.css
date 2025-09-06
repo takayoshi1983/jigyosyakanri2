@@ -11,8 +11,8 @@
     position: relative; /* For positioning the arrow */
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 8px 12px;
+    justify-content: center; /* Horizontally center the text */
+    padding: 8px 30px 8px 12px; /* Adjust padding for arrow */
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #fff;
@@ -32,17 +32,20 @@
 /* Arrow icon for custom-select-trigger */
 .custom-select-trigger::after {
     content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 0;
     height: 0;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 5px solid #333;
-    margin-left: 8px;
     transition: transform 0.2s ease;
 }
 
 .custom-select-trigger.active::after {
-    transform: rotate(180deg); /* Rotate arrow when open */
+    transform: translateY(-50%) rotate(180deg); /* Rotate arrow when open */
 }
 
 
