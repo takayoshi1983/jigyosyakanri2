@@ -2241,20 +2241,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // Manual backup
     manualBackupButton.addEventListener('click', async () => {
         const settings = SupabaseAPI.getBackupSettings();
+        const backupFormat = document.getElementById('backup-format').value;
         const loadingToast = toast.show('バックアップを作成中...', 'info', 0);
         
         try {
             let result;
-            if (settings.directoryHandle && window.showDirectoryPicker) {
-                // フォルダ選択済みの場合は高度なバックアップ
-                result = await SupabaseAPI.downloadBackupWithFolder();
+            
+            if (backupFormat === 'csv') {
+                // CSV形式バックアップ
+                const csvBackup = await SupabaseAPI.createCSVBackup();
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `jigyosya-csv-backup-${timestamp}.json`;
+                
+                const blob = new Blob([JSON.stringify(csvBackup, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                toast.update(loadingToast, `CSV形式バックアップが完了しました`, 'success');
             } else {
-                // 通常のダウンロードフォルダバックアップ
-                result = await SupabaseAPI.downloadBackup();
+                // JSON形式バックアップ（従来通り）
+                if (settings.directoryHandle && window.showDirectoryPicker) {
+                    // フォルダ選択済みの場合は高度なバックアップ
+                    result = await SupabaseAPI.downloadBackupWithFolder();
+                } else {
+                    // 通常のダウンロードフォルダバックアップ
+                    result = await SupabaseAPI.downloadBackup();
+                }
+                
+                const method = settings.method === 'weekly-rotation' ? '週次ローテーション' : 'シンプル';
+                toast.update(loadingToast, `JSON形式バックアップが完了しました (${method})`, 'success');
             }
             
-            const method = settings.method === 'weekly-rotation' ? '週次ローテーション' : 'シンプル';
-            toast.update(loadingToast, `バックアップが正常に完了しました (${method})`, 'success');
             updateBackupHistory();
         } catch (error) {
             console.error('Manual backup error:', error);
@@ -2289,15 +2312,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileContent = await readFileAsText(file);
             const backupData = JSON.parse(fileContent);
             
-            // データ復元実行
-            const results = await SupabaseAPI.restoreFromBackup(backupData);
+            let results;
+            let format = 'JSON';
             
-            let message = '復元完了:\n';
+            // バックアップ形式を判定して適切な復元方法を選択
+            if (backupData.format === 'csv' && backupData.files) {
+                // CSV形式バックアップの復元
+                format = 'CSV';
+                results = await SupabaseAPI.restoreFromCSVBackup(backupData);
+            } else if (backupData.tables) {
+                // 従来のJSON形式バックアップの復元
+                results = await SupabaseAPI.restoreFromBackup(backupData);
+            } else {
+                throw new Error('無効なバックアップファイル形式です');
+            }
+            
+            let message = `${format}形式で復元完了:\n`;
             Object.entries(results).forEach(([table, result]) => {
                 message += `${table}: ${result.restored}件\n`;
             });
             
-            toast.update(loadingToast, 'データが正常に復元されました', 'success');
+            toast.update(loadingToast, `データが正常に復元されました（${format}形式）`, 'success');
             alert(message);
             
             // ページをリロードして最新データを表示

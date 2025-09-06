@@ -342,6 +342,13 @@
                 <div class="backup-section">
                     <h3>💾 手動バックアップ</h3>
                     <div class="backup-setting-item">
+                        <label for="backup-format">バックアップ形式:</label>
+                        <select id="backup-format">
+                            <option value="json">JSON形式（推奨・高速復元）</option>
+                            <option value="csv">CSV形式（安全・互換性重視）</option>
+                        </select>
+                    </div>
+                    <div class="backup-setting-item">
                         <button id="manual-backup-button" class="backup-action-button">
                             今すぐバックアップを実行
                         </button>
