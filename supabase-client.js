@@ -1404,47 +1404,57 @@ export class SupabaseAPI {
             }
 
             // 外部キー制約を考慮した順序でテーブルを処理
-            const tableOrder = ['staffs', 'clients', 'monthly_tasks', 'editing_sessions', 'settings', 'default_tasks', 'app_links'];
+            // 削除は逆順、挿入は正順で実行する
+            const insertOrder = ['staffs', 'default_tasks', 'settings', 'clients', 'monthly_tasks', 'editing_sessions', 'app_links'];
+            const deleteOrder = [...insertOrder].reverse(); // 逆順
             const allTables = Object.keys(backupData.tables);
             
-            // 順序指定されたテーブル + その他のテーブル
+            // まず既存データを安全な順序で削除
+            console.log('既存データの削除を開始...');
+            for (const tableName of deleteOrder) {
+                if (allTables.includes(tableName)) {
+                    console.log(`削除中: ${tableName}`);
+                    
+                    if (tableName === 'staffs') {
+                        // staffsテーブルの場合、先にclientsテーブルのstaff_idをnullに設定
+                        const { error: updateError } = await supabase
+                            .from('clients')
+                            .update({ staff_id: null })
+                            .not('staff_id', 'is', null);
+                        
+                        if (updateError) {
+                            console.warn('clients.staff_id null更新エラー:', updateError);
+                        }
+                    }
+                    
+                    // 既存データ削除
+                    const { error: deleteError } = await supabase
+                        .from(tableName)
+                        .delete()
+                        .neq('id', -1);
+                    
+                    if (deleteError && deleteError.code !== 'PGRST116') {
+                        console.warn(`${tableName} 削除エラー:`, deleteError);
+                    }
+                }
+            }
+            
+            // 順序指定されたテーブル + その他のテーブル（挿入用）
             const orderedTables = [
-                ...tableOrder.filter(table => allTables.includes(table)),
-                ...allTables.filter(table => !tableOrder.includes(table))
+                ...insertOrder.filter(table => allTables.includes(table)),
+                ...allTables.filter(table => !insertOrder.includes(table))
             ];
             
             const results = {};
 
+            console.log('データの挿入を開始...');
             for (const tableName of orderedTables) {
                 console.log(`復元中: ${tableName}`);
                 const tableData = backupData.tables[tableName];
                 
                 if (Array.isArray(tableData) && tableData.length > 0) {
                     try {
-                        // Step 1: 既存データを削除（外部キー制約の逆順）
-                        if (tableName === 'staffs') {
-                            // staffsテーブルの場合、先にclientsテーブルのstaff_idをnullに設定
-                            const { error: updateError } = await supabase
-                                .from('clients')
-                                .update({ staff_id: null })
-                                .not('staff_id', 'is', null);
-                            
-                            if (updateError) {
-                                console.warn('clients.staff_id null更新エラー:', updateError);
-                            }
-                        }
-                        
-                        // 既存データ削除 (truncate 代替)
-                        const { error: deleteError } = await supabase
-                            .from(tableName)
-                            .delete()
-                            .gt('id', 0); // id > 0 の全レコード削除
-                        
-                        if (deleteError && deleteError.code !== 'PGRST116') {
-                            console.warn(`${tableName} 削除エラー:`, deleteError);
-                        }
-
-                        // Step 2: 新しいデータを挿入（IDも含む）
+                        // 新しいデータを挿入（IDも含む）
                         // バッチ挿入（Supabaseは1000件制限）
                         const batchSize = 100;
                         let insertedCount = 0;
@@ -1452,30 +1462,28 @@ export class SupabaseAPI {
                         for (let i = 0; i < tableData.length; i += batchSize) {
                             const batch = tableData.slice(i, i + batchSize);
                             
-                            const { data, error: insertError } = await supabase
+                            // upsert方式でIDを保持して確実に復元
+                            const { data: upsertData, error: upsertError } = await supabase
                                 .from(tableName)
-                                .insert(batch);
+                                .upsert(batch, { 
+                                    onConflict: 'id',
+                                    ignoreDuplicates: false 
+                                });
                             
-                            if (insertError) {
-                                // 重複キーエラーの場合は upsert を試行
-                                if (insertError.code === '23505') {
-                                    console.log(`${tableName}: 重複キーエラー、upsert方式で再試行`);
-                                    
-                                    const { data: upsertData, error: upsertError } = await supabase
-                                        .from(tableName)
-                                        .upsert(batch, { onConflict: 'id' });
-                                    
-                                    if (upsertError) {
-                                        throw new Error(`${tableName} の upsert に失敗: ${upsertError.message}`);
-                                    }
-                                    
-                                    insertedCount += batch.length;
-                                } else {
+                            if (upsertError) {
+                                console.error(`${tableName} upsertエラー:`, upsertError);
+                                // フォールバック: 通常のinsertを試行
+                                const { data: insertData, error: insertError } = await supabase
+                                    .from(tableName)
+                                    .insert(batch);
+                                
+                                if (insertError) {
                                     throw new Error(`${tableName} の復元に失敗: ${insertError.message}`);
                                 }
-                            } else {
-                                insertedCount += batch.length;
                             }
+                            
+                            insertedCount += batch.length;
+                            console.log(`${tableName}: ${insertedCount}/${tableData.length} 件処理完了`);
                         }
                         
                         results[tableName] = { restored: insertedCount };
