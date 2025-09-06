@@ -1,0 +1,1885 @@
+{
+  "timestamp": "2025-09-06T03-42-43-271Z",
+  "version": "1.0",
+  "database": "jigyosya-management",
+  "tables": {
+    "clients": [
+      {
+        "id": 21,
+        "name": "株式会社東京テクノロジー",
+        "fiscal_month": 3,
+        "staff_id": 29,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:53:23.907363",
+        "updated_at": "2025-09-03T02:53:23.907363"
+      },
+      {
+        "id": 34,
+        "name": "株式会社ライトニングボルト",
+        "fiscal_month": 8,
+        "staff_id": 27,
+        "accounting_method": "自計",
+        "status": "inactive",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 999,
+        "name": "サンプル会社A",
+        "fiscal_month": 2,
+        "staff_id": 23,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "データ受領",
+            "仕訳チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-04T10:48:07.383236",
+        "updated_at": "2025-09-04T10:48:07.383236"
+      },
+      {
+        "id": 39,
+        "name": "有限会社レッドドラゴン",
+        "fiscal_month": 1,
+        "staff_id": 24,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ],
+          "2026": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 40,
+        "name": "株式会社ホワイトタイガー",
+        "fiscal_month": 2,
+        "staff_id": 27,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 82,
+        "name": "株式会社ポップカルチャー",
+        "fiscal_month": 8,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "inactive",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 42,
+        "name": "合同会社ブラックダイヤモンド",
+        "fiscal_month": 4,
+        "staff_id": 25,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 45,
+        "name": "株式会社パープルクラウド",
+        "fiscal_month": 7,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 46,
+        "name": "合同会社オレンジムーン",
+        "fiscal_month": 8,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 44,
+        "name": "有限会社イエローサン",
+        "fiscal_month": 6,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 43,
+        "name": "株式会社グリーンフォレスト",
+        "fiscal_month": 5,
+        "staff_id": 28,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 62,
+        "name": "株式会社プレミアムクオリティ",
+        "fiscal_month": 12,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 47,
+        "name": "株式会社ピンクフラワー",
+        "fiscal_month": 9,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 48,
+        "name": "有限会社ターコイズウェーブ",
+        "fiscal_month": 10,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 49,
+        "name": "株式会社ミッドナイトスター",
+        "fiscal_month": 11,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 53,
+        "name": "有限会社イブニングブリーズ",
+        "fiscal_month": 3,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 54,
+        "name": "株式会社ノーザンライト",
+        "fiscal_month": 4,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 56,
+        "name": "株式会社イースタンリバー",
+        "fiscal_month": 6,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 60,
+        "name": "株式会社インペリアルタワー",
+        "fiscal_month": 10,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 64,
+        "name": "株式会社アドバンステクノロジー",
+        "fiscal_month": 2,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 66,
+        "name": "株式会社イノベーティブデザイン",
+        "fiscal_month": 4,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 58,
+        "name": "株式会社セントラルパーク",
+        "fiscal_month": 8,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 70,
+        "name": "株式会社グローバルネットワーク",
+        "fiscal_month": 8,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 72,
+        "name": "株式会社ワールドワイドサービス",
+        "fiscal_month": 10,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 74,
+        "name": "株式会社ハーモニーミュージック",
+        "fiscal_month": 12,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 76,
+        "name": "株式会社リズムビート",
+        "fiscal_month": 1,
+        "staff_id": 27,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 78,
+        "name": "株式会社シンフォニーオーケストラ",
+        "fiscal_month": 4,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 80,
+        "name": "株式会社ロックアンドロール",
+        "fiscal_month": 6,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 86,
+        "name": "株式会社クラフトワークショップ",
+        "fiscal_month": 12,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 88,
+        "name": "株式会社ペインティングマスター",
+        "fiscal_month": 2,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 90,
+        "name": "株式会社ムービープロダクション",
+        "fiscal_month": 4,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 92,
+        "name": "株式会社ゲームクリエイター",
+        "fiscal_month": 6,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 94,
+        "name": "株式会社ウェブデザイナー",
+        "fiscal_month": 8,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 96,
+        "name": "株式会社クラウドコンピューティング",
+        "fiscal_month": 10,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 98,
+        "name": "株式会社アーティフィシャルインテリジェンス",
+        "fiscal_month": 12,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 102,
+        "name": "株式会社スペーステクノロジー",
+        "fiscal_month": 4,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 106,
+        "name": "株式会社デザートアドベンチャー",
+        "fiscal_month": 8,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 68,
+        "name": "株式会社ダイナミックエンジニアリング",
+        "fiscal_month": 6,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 95,
+        "name": "合同会社モバイルアプリ",
+        "fiscal_month": 9,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 57,
+        "name": "有限会社ウェスタンマウンテン",
+        "fiscal_month": 7,
+        "staff_id": 24,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ],
+          "2026": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 97,
+        "name": "有限会社データアナリティクス",
+        "fiscal_month": 11,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 50,
+        "name": "合同会社サンセットヒル",
+        "fiscal_month": 12,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 52,
+        "name": "株式会社モーニングデュー",
+        "fiscal_month": 2,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 55,
+        "name": "合同会社サザンウィンド",
+        "fiscal_month": 5,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 65,
+        "name": "有限会社プログレッシブソリューション",
+        "fiscal_month": 3,
+        "staff_id": 29,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 67,
+        "name": "合同会社クリエイティブワークス",
+        "fiscal_month": 5,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 75,
+        "name": "合同会社メロディーサウンド",
+        "fiscal_month": 1,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 77,
+        "name": "有限会社コーラスボイス",
+        "fiscal_month": 3,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 84,
+        "name": "株式会社アートギャラリー",
+        "fiscal_month": 10,
+        "staff_id": 25,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 85,
+        "name": "有限会社デザインスタジオ",
+        "fiscal_month": 11,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 105,
+        "name": "有限会社フォレストガーディアン",
+        "fiscal_month": 7,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 87,
+        "name": "合同会社スカルプチャーハウス",
+        "fiscal_month": 1,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 104,
+        "name": "株式会社マウンテンエクスプローラー",
+        "fiscal_month": 6,
+        "staff_id": 23,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 1002,
+        "name": "富士重工(株)",
+        "fiscal_month": 3,
+        "staff_id": 24,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "データ受領",
+            "仕訳チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-04T10:57:20.851998",
+        "updated_at": "2025-09-04T10:57:20.851998"
+      },
+      {
+        "id": 93,
+        "name": "有限会社ソフトウェアディベロッパー",
+        "fiscal_month": 7,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 89,
+        "name": "有限会社フォトグラフィープロ",
+        "fiscal_month": 3,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 91,
+        "name": "合同会社アニメーションスタジオ",
+        "fiscal_month": 5,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 59,
+        "name": "合同会社ロイヤルガーデン",
+        "fiscal_month": 9,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 61,
+        "name": "有限会社エレガントスタイル",
+        "fiscal_month": 11,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 63,
+        "name": "合同会社エクセレントサービス",
+        "fiscal_month": 1,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 71,
+        "name": "合同会社インターナショナルトレード",
+        "fiscal_month": 9,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 73,
+        "name": "有限会社ユニバーサルコミュニケーション",
+        "fiscal_month": 11,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 79,
+        "name": "合同会社ジャズスピリット",
+        "fiscal_month": 5,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 83,
+        "name": "合同会社フォークトラディション",
+        "fiscal_month": 9,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 100,
+        "name": "株式会社バイオテクノロジー",
+        "fiscal_month": 2,
+        "staff_id": 27,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ],
+          "2026": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 33,
+        "name": "合同会社エコフレンドリー",
+        "fiscal_month": 7,
+        "staff_id": 23,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 30,
+        "name": "株式会社クリスタルブリッジ",
+        "fiscal_month": 4,
+        "staff_id": 25,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 31,
+        "name": "有限会社オーシャンビュー",
+        "fiscal_month": 5,
+        "staff_id": 28,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 32,
+        "name": "株式会社スカイラインコーポレーション",
+        "fiscal_month": 6,
+        "staff_id": 23,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 22,
+        "name": "有限会社さくらソフトウェア",
+        "fiscal_month": 12,
+        "staff_id": 27,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "データ受領",
+            "仕訳チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:53:23.907363",
+        "updated_at": "2025-09-03T02:53:23.907363"
+      },
+      {
+        "id": 23,
+        "name": "合同会社グリーンエナジー",
+        "fiscal_month": 9,
+        "staff_id": 26,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {},
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:53:23.907363",
+        "updated_at": "2025-09-03T02:53:23.907363"
+      },
+      {
+        "id": 24,
+        "name": "株式会社ユニバーサルデザイン",
+        "fiscal_month": 10,
+        "staff_id": 25,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 25,
+        "name": "有限会社フューチャーシステム",
+        "fiscal_month": 11,
+        "staff_id": 28,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 26,
+        "name": "株式会社アクアマリン",
+        "fiscal_month": 12,
+        "staff_id": 23,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 29,
+        "name": "合同会社デジタルイノベーション",
+        "fiscal_month": 3,
+        "staff_id": 26,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:54:14.242264",
+        "updated_at": "2025-09-03T02:54:14.242264"
+      },
+      {
+        "id": 35,
+        "name": "有限会社サンライズインダストリー",
+        "fiscal_month": 9,
+        "staff_id": 26,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 36,
+        "name": "株式会社ブルーオーシャン",
+        "fiscal_month": 10,
+        "staff_id": 25,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 37,
+        "name": "合同会社ゴールデンゲート",
+        "fiscal_month": 11,
+        "staff_id": 28,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 38,
+        "name": "株式会社シルバーリンク",
+        "fiscal_month": 12,
+        "staff_id": 23,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 99,
+        "name": "合同会社ロボティクス",
+        "fiscal_month": 1,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 69,
+        "name": "有限会社フレキシブルシステムズ",
+        "fiscal_month": 7,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 101,
+        "name": "有限会社ナノテクノロジー",
+        "fiscal_month": 3,
+        "staff_id": 26,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 1001,
+        "name": "サンプル工業㈱",
+        "fiscal_month": 6,
+        "staff_id": 28,
+        "accounting_method": "自計",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "データ受領",
+            "仕訳チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-04T02:22:59.022655",
+        "updated_at": "2025-09-04T02:22:59.022655"
+      },
+      {
+        "id": 103,
+        "name": "合同会社オーシャンリサーチ",
+        "fiscal_month": 5,
+        "staff_id": 28,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [
+          "2025"
+        ],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      },
+      {
+        "id": 81,
+        "name": "有限会社クラシックエレガンス",
+        "fiscal_month": 7,
+        "staff_id": 24,
+        "accounting_method": "記帳代行",
+        "status": "active",
+        "custom_tasks_by_year": {
+          "2025": [
+            "資料受付",
+            "仕訳入力",
+            "担当チェック",
+            "不明投げかけ",
+            "月次完了"
+          ]
+        },
+        "finalized_years": [],
+        "created_at": "2025-09-03T02:59:43.180191",
+        "updated_at": "2025-09-03T02:59:43.180191"
+      }
+    ],
+    "staffs": [
+      {
+        "id": 23,
+        "name": "吉冨",
+        "email": "takaoyaji14@gmail.com",
+        "role": "admin",
+        "created_at": "2025-09-03T02:49:36.785008",
+        "updated_at": "2025-09-03T02:49:36.785008"
+      },
+      {
+        "id": 24,
+        "name": "平井",
+        "email": "takayoshi01161983@gmail.com",
+        "role": "staff",
+        "created_at": "2025-09-03T02:49:36.787111",
+        "updated_at": "2025-09-03T02:49:36.787111"
+      },
+      {
+        "id": 26,
+        "name": "梅本",
+        "email": "zeirishimori9877@gmail.com",
+        "role": "staff",
+        "created_at": "2025-09-03T02:49:36.793124",
+        "updated_at": "2025-09-03T02:49:36.793124"
+      },
+      {
+        "id": 27,
+        "name": "児玉",
+        "email": "zeirishimori9876@gmail.com",
+        "role": "staff",
+        "created_at": "2025-09-03T02:49:36.80579",
+        "updated_at": "2025-09-03T02:49:36.80579"
+      },
+      {
+        "id": 28,
+        "name": "重冨",
+        "email": "zeirishimori9875@gmail.com",
+        "role": "staff",
+        "created_at": "2025-09-03T02:49:36.807404",
+        "updated_at": "2025-09-03T02:49:36.807404"
+      },
+      {
+        "id": 29,
+        "name": "松永",
+        "email": "zeirishimori9874@gmail.com",
+        "role": "staff",
+        "created_at": "2025-09-03T02:49:36.808856",
+        "updated_at": "2025-09-03T02:49:36.808856"
+      },
+      {
+        "id": 25,
+        "name": "富村",
+        "email": "zeirishimori9878@gmail.com",
+        "role": "admin",
+        "created_at": "2025-09-03T02:49:36.789658",
+        "updated_at": "2025-09-03T02:49:36.789658"
+      }
+    ],
+    "monthly_tasks": [],
+    "settings": [
+      {
+        "key": "yellow_threshold",
+        "value": 5,
+        "created_at": "2025-09-03T02:53:24.10411",
+        "updated_at": "2025-09-03T02:53:24.10411"
+      },
+      {
+        "key": "red_threshold",
+        "value": 8,
+        "created_at": "2025-09-03T02:53:24.10411",
+        "updated_at": "2025-09-03T02:53:24.10411"
+      },
+      {
+        "key": "red_color",
+        "value": "#ffcdd2",
+        "created_at": "2025-09-03T02:53:24.10411",
+        "updated_at": "2025-09-03T02:53:24.10411"
+      },
+      {
+        "key": "yellow_color",
+        "value": "#ffff99",
+        "created_at": "2025-09-03T02:53:24.10411",
+        "updated_at": "2025-09-03T02:53:24.10411"
+      },
+      {
+        "key": "hide_inactive_clients",
+        "value": true,
+        "created_at": "2025-09-03T02:53:24.10411",
+        "updated_at": "2025-09-03T02:53:24.10411"
+      },
+      {
+        "key": "font_family",
+        "value": "Helvetica",
+        "created_at": "2025-09-03T02:53:24.10411",
+        "updated_at": "2025-09-03T02:53:24.10411"
+      }
+    ],
+    "default_tasks": [
+      {
+        "id": 11,
+        "task_name": "記帳代行デフォルト",
+        "accounting_method": "記帳代行",
+        "tasks": "[\"資料受付\",\"仕訳入力\",\"担当チェック\",\"不明投げかけ\",\"月次完了\"]",
+        "display_order": 1,
+        "is_active": true,
+        "created_at": "2025-09-03T02:53:23.999785",
+        "updated_at": "2025-09-03T02:53:23.999785"
+      },
+      {
+        "id": 12,
+        "task_name": "自計デフォルト",
+        "accounting_method": "自計",
+        "tasks": "[\"データ受領\",\"仕訳チェック\",\"不明投げかけ\",\"月次完了\"]",
+        "display_order": 2,
+        "is_active": true,
+        "created_at": "2025-09-03T02:53:23.999785",
+        "updated_at": "2025-09-03T02:53:23.999785"
+      }
+    ],
+    "app_links": [
+      {
+        "id": 3,
+        "name": "★記帳依頼",
+        "url": "https://docs.google.com/spreadsheets/d/1VqSRXbqpsSICdGlCZQ-OKf_3W4WOKJHxopIo5Mpzh5c/edit?gid=174844163#gid=174844163",
+        "display_order": 0,
+        "created_at": "2025-09-04T14:54:39.99298+00:00"
+      },
+      {
+        "id": 4,
+        "name": "😊Stock",
+        "url": "https://www.stock-app.jp/teams/c60616/dashboard/429274/stocks/19936837/edit",
+        "display_order": 1,
+        "created_at": "2025-09-05T12:02:31.774958+00:00"
+      }
+    ]
+  }
+}

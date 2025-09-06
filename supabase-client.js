@@ -1265,8 +1265,8 @@ export class SupabaseAPI {
                 tables: {}
             };
 
-            // 全テーブルからデータを取得
-            const tables = ['clients', 'staffs', 'monthly_tasks', 'settings', 'default_tasks', 'app_links'];
+            // 全テーブルからデータを取得 (編集セッション含む)
+            const tables = ['clients', 'staffs', 'monthly_tasks', 'editing_sessions', 'settings', 'default_tasks', 'app_links'];
             
             for (const tableName of tables) {
                 console.log(`バックアップ中: ${tableName}`);
@@ -1404,7 +1404,7 @@ export class SupabaseAPI {
             }
 
             // 外部キー制約を考慮した順序でテーブルを処理
-            const tableOrder = ['staffs', 'clients', 'monthly_tasks', 'settings', 'default_tasks', 'app_links'];
+            const tableOrder = ['staffs', 'clients', 'monthly_tasks', 'editing_sessions', 'settings', 'default_tasks', 'app_links'];
             const allTables = Object.keys(backupData.tables);
             
             // 順序指定されたテーブル + その他のテーブル
@@ -1434,11 +1434,11 @@ export class SupabaseAPI {
                             }
                         }
                         
-                        // 既存データ削除
+                        // 既存データ削除 (truncate 代替)
                         const { error: deleteError } = await supabase
                             .from(tableName)
                             .delete()
-                            .gte('id', 0); // より確実な全削除
+                            .gt('id', 0); // id > 0 の全レコード削除
                         
                         if (deleteError && deleteError.code !== 'PGRST116') {
                             console.warn(`${tableName} 削除エラー:`, deleteError);
