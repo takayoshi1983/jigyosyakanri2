@@ -1630,6 +1630,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     function initResponsiveDetailsTable() {
         let resizeTimeout;
         
+        // ローカルストレージから設定を読み込み
+        function getStoredDetailsTableMode() {
+            return localStorage.getItem('detailsTableDisplayMode') || 'fit';
+        }
+        
+        // ローカルストレージに設定を保存
+        function setStoredDetailsTableMode(mode) {
+            localStorage.setItem('detailsTableDisplayMode', mode);
+        }
+        
         function adjustDetailsTableLayout() {
             const detailsWrapper = document.querySelector('.details-table-wrapper');
             const detailsTable = document.querySelector('.details-table');
@@ -1637,9 +1647,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (!detailsWrapper || !detailsTable) return;
             
+            // 保存された設定を確認
+            const savedMode = getStoredDetailsTableMode();
+            if (savedMode === 'scroll') {
+                // スクロールモードが保存されている場合はスキップ
+                return;
+            }
+            
             const containerWidth = detailsWrapper.offsetWidth;
             
-            // 横スクロールを無効化してフィット表示
+            // フィットモードの場合のみ横スクロールを無効化
             detailsWrapper.style.overflowX = 'hidden';
             
             // ウィンドウ幅に基づくフォントサイズ調整
@@ -1712,24 +1729,84 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (!detailsWrapper || !detailsTable) return;
             
-            const isScrollMode = detailsWrapper.style.overflowX === 'auto';
+            const currentMode = getStoredDetailsTableMode();
+            let newMode, newModeText;
             
-            if (isScrollMode) {
-                // フィット表示モードに切り替え
-                detailsWrapper.style.overflowX = 'hidden';
-                adjustDetailsTableLayout();
-            } else {
-                // スクロールモードに切り替え
+            if (currentMode === 'fit') {
+                // フィットモード→スクロールモードに切り替え
                 detailsWrapper.style.overflowX = 'auto';
                 detailsTable.style.fontSize = '13px';
                 if (notesTable) notesTable.style.fontSize = '12px';
                 
                 // 元の幅に戻す
-                const allCells = detailsTable.querySelectorAll('th, td');
-                allCells.forEach(cell => {
+                const allDetailsCells = detailsTable.querySelectorAll('th, td');
+                allDetailsCells.forEach(cell => {
                     cell.style.width = '';
                     cell.style.minWidth = '';
+                    cell.style.maxWidth = '';
                 });
+                
+                if (notesTable) {
+                    const allNotesCells = notesTable.querySelectorAll('th, td');
+                    allNotesCells.forEach(cell => {
+                        cell.style.width = '';
+                        cell.style.minWidth = '';
+                        cell.style.maxWidth = '';
+                    });
+                }
+                
+                newMode = 'scroll';
+                newModeText = 'スクロールモード';
+            } else {
+                // スクロールモード→フィットモードに切り替え
+                detailsWrapper.style.overflowX = 'hidden';
+                adjustDetailsTableLayout();
+                newMode = 'fit';
+                newModeText = 'フィットモード';
+            }
+            
+            // 設定をローカルストレージに保存
+            setStoredDetailsTableMode(newMode);
+            
+            // ボタンテキストを更新
+            updateDetailsToggleButtonText(newMode);
+            
+            return newModeText;
+        }
+        
+        // 保存された設定に基づいて初期モードを適用
+        function applyStoredDetailsTableMode() {
+            const savedMode = getStoredDetailsTableMode();
+            const detailsWrapper = document.querySelector('.details-table-wrapper');
+            const detailsTable = document.querySelector('.details-table');
+            const notesTable = document.getElementById('notes-table');
+            
+            if (!detailsWrapper || !detailsTable) return;
+            
+            if (savedMode === 'scroll') {
+                // スクロールモードを適用
+                detailsWrapper.style.overflowX = 'auto';
+                detailsTable.style.fontSize = '13px';
+                if (notesTable) notesTable.style.fontSize = '12px';
+                
+                const allDetailsCells = detailsTable.querySelectorAll('th, td');
+                allDetailsCells.forEach(cell => {
+                    cell.style.width = '';
+                    cell.style.minWidth = '';
+                    cell.style.maxWidth = '';
+                });
+                
+                if (notesTable) {
+                    const allNotesCells = notesTable.querySelectorAll('th, td');
+                    allNotesCells.forEach(cell => {
+                        cell.style.width = '';
+                        cell.style.minWidth = '';
+                        cell.style.maxWidth = '';
+                    });
+                }
+            } else {
+                // フィットモードを適用（デフォルト）
+                adjustDetailsTableLayout();
             }
         }
         
@@ -1739,11 +1816,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             resizeTimeout = setTimeout(adjustDetailsTableLayout, 150);
         });
         
-        // 初期調整
-        setTimeout(adjustDetailsTableLayout, 1000);
+        // 初期調整と保存された設定の適用
+        setTimeout(() => {
+            applyStoredDetailsTableMode();
+            adjustDetailsTableLayout();
+        }, 1000);
         
         // 切り替えボタンを管理メニューに追加
         addDetailsTableModeToggle(toggleDetailsScrollMode);
+    }
+    
+    // 詳細画面ボタンテキストを更新する関数
+    function updateDetailsToggleButtonText(mode) {
+        const toggleButton = document.querySelector('#details-table-mode-toggle-btn');
+        if (!toggleButton) return;
+        
+        if (mode === 'fit') {
+            toggleButton.innerHTML = '📏 フィットモード <small>(→スクロール)</small>';
+        } else {
+            toggleButton.innerHTML = '📏 スクロールモード <small>(→フィット)</small>';
+        }
     }
     
     function addDetailsTableModeToggle(toggleFunction) {
@@ -1751,23 +1843,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!accordionContent) return;
         
         const toggleButton = document.createElement('button');
-        toggleButton.textContent = '📏 テーブル表示モード切替';
+        toggleButton.id = 'details-table-mode-toggle-btn';
         toggleButton.className = 'btn';
         toggleButton.style.cssText = 'width: 100%; margin: 5px 0; text-align: center; background: linear-gradient(135deg, #4CAF50, #45a049); color: white;';
         
+        // 初期ボタンテキスト設定
+        const savedMode = localStorage.getItem('detailsTableDisplayMode') || 'fit';
+        updateDetailsToggleButtonText(savedMode);
+        
         toggleButton.addEventListener('click', (e) => {
             e.preventDefault();
-            toggleFunction();
-            
-            // 現在のモードを表示
-            const detailsWrapper = document.querySelector('.details-table-wrapper');
-            const mode = detailsWrapper && detailsWrapper.style.overflowX === 'auto' ? 'スクロールモード' : 'フィット表示モード';
+            const newModeText = toggleFunction();
             
             // トースト通知で状態を表示
             if (window.showToast) {
-                window.showToast(`詳細テーブル: ${mode}に切り替えました`, 'info', 2000);
+                window.showToast(`詳細テーブル: ${newModeText}に切り替えました`, 'info', 2000);
             } else if (toast && toast.info) {
-                toast.info(`詳細テーブル: ${mode}に切り替えました`);
+                toast.info(`詳細テーブル: ${newModeText}に切り替えました`);
             }
         });
         

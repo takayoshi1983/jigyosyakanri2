@@ -2412,17 +2412,34 @@ document.addEventListener('DOMContentLoaded', () => {
     function initResponsiveTable() {
         let resizeTimeout;
         
+        // ローカルストレージから設定を読み込み
+        function getStoredTableMode() {
+            return localStorage.getItem('tableDisplayMode') || 'fit';
+        }
+        
+        // ローカルストレージに設定を保存
+        function setStoredTableMode(mode) {
+            localStorage.setItem('tableDisplayMode', mode);
+        }
+        
         function adjustTableLayout() {
             const tableContainer = document.querySelector('.table-container');
             const clientsTable = document.getElementById('clients-table');
             
             if (!tableContainer || !clientsTable) return;
             
+            // 保存された設定を確認
+            const savedMode = getStoredTableMode();
+            if (savedMode === 'scroll') {
+                // スクロールモードが保存されている場合はスキップ
+                return;
+            }
+            
             // コンテナ幅を取得
             const containerWidth = tableContainer.offsetWidth;
             const zoomLevel = window.devicePixelRatio || 1;
             
-            // 横スクロール無効化
+            // フィットモードの場合のみ横スクロール無効化
             tableContainer.style.overflowX = 'hidden';
             
             // ウィンドウ幅に基づく動的調整
@@ -2472,14 +2489,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!tableContainer || !clientsTable) return;
             
-            const isScrollMode = tableContainer.style.overflowX === 'auto';
+            const currentMode = getStoredTableMode();
+            let newMode, newModeText;
             
-            if (isScrollMode) {
-                // レスポンシブモードに切り替え
-                tableContainer.style.overflowX = 'hidden';
-                adjustTableLayout();
-            } else {
-                // スクロールモードに切り替え
+            if (currentMode === 'fit') {
+                // フィットモード→スクロールモードに切り替え
                 tableContainer.style.overflowX = 'auto';
                 clientsTable.style.fontSize = '14px';
                 // 元の幅に戻す
@@ -2489,6 +2503,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     th.style.minWidth = '';
                     th.style.maxWidth = '';
                 });
+                newMode = 'scroll';
+                newModeText = 'スクロールモード';
+            } else {
+                // スクロールモード→フィットモードに切り替え
+                tableContainer.style.overflowX = 'hidden';
+                adjustTableLayout();
+                newMode = 'fit';
+                newModeText = 'フィットモード';
+            }
+            
+            // 設定をローカルストレージに保存
+            setStoredTableMode(newMode);
+            
+            // ボタンテキストを更新
+            updateToggleButtonText(newMode);
+            
+            return newModeText;
+        }
+        
+        // 保存された設定に基づいて初期モードを適用
+        function applyStoredTableMode() {
+            const savedMode = getStoredTableMode();
+            const tableContainer = document.querySelector('.table-container');
+            const clientsTable = document.getElementById('clients-table');
+            
+            if (!tableContainer || !clientsTable) return;
+            
+            if (savedMode === 'scroll') {
+                // スクロールモードを適用
+                tableContainer.style.overflowX = 'auto';
+                clientsTable.style.fontSize = '14px';
+                const ths = clientsTable.querySelectorAll('th');
+                ths.forEach(th => {
+                    th.style.width = '';
+                    th.style.minWidth = '';
+                    th.style.maxWidth = '';
+                });
+            } else {
+                // フィットモードを適用（デフォルト）
+                adjustTableLayout();
             }
         }
         
@@ -2504,11 +2558,26 @@ document.addEventListener('DOMContentLoaded', () => {
             resizeTimeout = setTimeout(adjustTableLayout, 150);
         });
         
-        // 初期調整
-        setTimeout(adjustTableLayout, 500);
+        // 初期調整と保存された設定の適用
+        setTimeout(() => {
+            applyStoredTableMode();
+            adjustTableLayout();
+        }, 500);
         
         // 切り替えボタンをアコーディオンメニューに追加
         addTableModeToggle(toggleScrollMode);
+    }
+    
+    // ボタンテキストを更新する関数
+    function updateToggleButtonText(mode) {
+        const toggleButton = document.querySelector('#table-mode-toggle-btn');
+        if (!toggleButton) return;
+        
+        if (mode === 'fit') {
+            toggleButton.innerHTML = '📏 フィットモード <small>(→スクロール)</small>';
+        } else {
+            toggleButton.innerHTML = '📏 スクロールモード <small>(→フィット)</small>';
+        }
     }
     
     function addTableModeToggle(toggleFunction) {
@@ -2516,21 +2585,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!accordionContent) return;
         
         const toggleButton = document.createElement('button');
-        toggleButton.textContent = '📏 テーブル表示モード切替';
+        toggleButton.id = 'table-mode-toggle-btn';
         toggleButton.className = 'btn';
         toggleButton.style.cssText = 'width: 100%; margin: 5px 0; text-align: center;';
         
+        // 初期ボタンテキスト設定
+        const savedMode = localStorage.getItem('tableDisplayMode') || 'fit';
+        updateToggleButtonText(savedMode);
+        
         toggleButton.addEventListener('click', (e) => {
             e.preventDefault();
-            toggleFunction();
-            
-            // 現在のモードを表示
-            const tableContainer = document.querySelector('.table-container');
-            const mode = tableContainer.style.overflowX === 'auto' ? 'スクロールモード' : 'フィット表示モード';
+            const newModeText = toggleFunction();
             
             // トースト通知で状態を表示
             if (window.showToast) {
-                window.showToast(`${mode}に切り替えました`, 'info', 2000);
+                window.showToast(`${newModeText}に切り替えました`, 'info', 2000);
             }
         });
         
