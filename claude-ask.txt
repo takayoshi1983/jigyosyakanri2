@@ -1,19 +1,35 @@
-自動バックアップが有効です
-supabase-client.js:1754 次回自動バックアップ: 2025/9/7 3:00:00
-index.js:1304 Loading personal settings: {fontFamily: '', hideInactiveClients: false, enableConfettiEffect: false}
-index.js:1320 Final personal settings: {fontFamily: '', hideInactiveClients: false, enableConfettiEffect: false}
-supabase-client.js:1272 バックアップ中: clients
-supabase-client.js:1279 clients: 80 件
-supabase-client.js:1272 バックアップ中: staffs
-supabase-client.js:1279 staffs: 7 件
-supabase-client.js:1272 バックアップ中: monthly_tasks
-supabase-client.js:1279 monthly_tasks: 24 件
-supabase-client.js:1272 バックアップ中: editing_sessions
-supabase-client.js:1279 editing_sessions: 0 件
-supabase-client.js:1272 バックアップ中: settings
-supabase-client.js:1279 settings: 6 件
-supabase-client.js:1272 バックアップ中: default_tasks
-supabase-client.js:1279 default_tasks: 2 件
-supabase-client.js:1272 バックアップ中: app_links
-supabase-client.js:1279 app_links: 2 件
-supabase-client.js:1282 バックアップ作成完了: {timestamp: '2025-09-06T05-49-41-899Z', version: '1.0', database: 'jigyosya-management', tables: {…}}
+
+index.js:1 
+ DELETE https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/settings?id=neq.-1 400 (Bad Request)
+supabase-client.js:1686 CSV復元中: staffs
+index.js:1 
+ POST https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/staffs?on_conflict=id&colu…22name%22%2C%22email%22%2C%22role%22%2C%22created_at%22%2C%22updated_at%22 403 (Forbidden)
+supabase-client.js:1742 staffs CSV復元エラー: 
+{code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "staffs"'}
+supabase-client.js:1749 staffs: 0 件CSV復元完了
+supabase-client.js:1686 CSV復元中: default_tasks
+index.js:1 
+ POST https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/default_tasks?on_conflict=…22display_order%22%2C%22is_active%22%2C%22created_at%22%2C%22updated_at%22 403 (Forbidden)
+supabase-client.js:1742 default_tasks CSV復元エラー: 
+{code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "default_tasks"'}
+supabase-client.js:1749 default_tasks: 0 件CSV復元完了
+supabase-client.js:1686 CSV復元中: settings
+index.js:1 
+ POST https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/settings?on_conflict=key&columns=%22key%22%2C%22value%22%2C%22created_at%22%2C%22updated_at%22 403 (Forbidden)
+supabase-client.js:1742 settings CSV復元エラー: 
+{code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "settings"'}
+supabase-client.js:1749 settings: 0 件CSV復元完了
+supabase-client.js:1686 CSV復元中: clients
+index.js:1 
+ POST https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/clients?on_conflict=id&col…s_by_year%22%2C%22finalized_years%22%2C%22created_at%22%2C%22updated_at%22 403 (Forbidden)
+supabase-client.js:1742 clients CSV復元エラー: 
+{code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "clients"'}
+supabase-client.js:1749 clients: 0 件CSV復元完了
+supabase-client.js:1686 CSV復元中: monthly_tasks
+index.js:1 
+ POST https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/monthly_tasks?on_conflict=…2C%22created_at%22%2C%22updated_at%22%2C%22task_memos%22%2C%22completed%22 403 (Forbidden)
+supabase-client.js:1742 monthly_tasks CSV復元エラー: 
+{code: '42501', details: null, hint: null, message: 'new row violates row-level security policy for table "monthly_tasks"'}
+restoreFromCSVBackup	@	supabase-client.js:1742
+await in restoreFromCSVBackup		
+(anonymous)	@	index.js:2325
