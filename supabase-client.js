@@ -1289,7 +1289,21 @@ export class SupabaseAPI {
 
     static async downloadBackup() {
         try {
+            const settings = this.getBackupSettings();
             const backupData = await this.createFullBackup();
+            
+            let fileName;
+            
+            if (settings.method === 'weekly-rotation') {
+                // 週次ローテーション方式
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const today = new Date().getDay();
+                const dayName = dayNames[today];
+                fileName = `${dayName}/jigyosya-backup-${dayName}.json`;
+            } else {
+                // シンプル上書き方式
+                fileName = `jigyosya-backup-${backupData.timestamp}.json`;
+            }
             
             // JSONファイルとしてダウンロード
             const blob = new Blob([JSON.stringify(backupData, null, 2)], { 
@@ -1299,7 +1313,7 @@ export class SupabaseAPI {
             
             const a = document.createElement('a');
             a.href = url;
-            a.download = `jigyosya-backup-${backupData.timestamp}.json`;
+            a.download = fileName.replace('/', '-'); // ブラウザ制限でフォルダパス使用不可のため
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1315,6 +1329,71 @@ export class SupabaseAPI {
         }
     }
 
+    // File System Access API を使用した高度なバックアップ
+    static async downloadBackupWithFolder() {
+        try {
+            // File System Access API対応チェック
+            if (!window.showDirectoryPicker) {
+                // フォールバック：通常のダウンロード
+                return await this.downloadBackup();
+            }
+
+            const settings = this.getBackupSettings();
+            const backupData = await this.createFullBackup();
+            
+            // フォルダハンドルを取得（設定済みの場合）
+            let directoryHandle = settings.directoryHandle;
+            
+            if (!directoryHandle) {
+                throw new Error('バックアップフォルダが選択されていません');
+            }
+
+            let fileName;
+            let subFolder = null;
+
+            if (settings.method === 'weekly-rotation') {
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const today = new Date().getDay();
+                const dayName = dayNames[today];
+                subFolder = dayName;
+                fileName = `jigyosya-backup-${dayName}.json`;
+            } else {
+                fileName = `jigyosya-backup-${backupData.timestamp}.json`;
+            }
+
+            // サブフォルダの作成（週次ローテーションの場合）
+            let targetHandle = directoryHandle;
+            if (subFolder) {
+                try {
+                    targetHandle = await directoryHandle.getDirectoryHandle(subFolder, { create: true });
+                } catch (error) {
+                    console.warn('サブフォルダ作成失敗、親フォルダに保存:', error);
+                    fileName = `${subFolder}-${fileName}`; // フォルダ名をファイル名に含める
+                }
+            }
+
+            // ファイルハンドルを取得してファイルを書き込み
+            const fileHandle = await targetHandle.getFileHandle(fileName, { create: true });
+            const writable = await fileHandle.createWritable();
+            
+            await writable.write(JSON.stringify(backupData, null, 2));
+            await writable.close();
+
+            // LocalStorageに履歴を保存
+            localStorage.setItem('lastBackupDate', new Date().toISOString());
+            
+            console.log(`バックアップ保存完了: ${subFolder ? `${subFolder}/` : ''}${fileName}`);
+            return backupData;
+
+        } catch (error) {
+            console.error('フォルダバックアップエラー:', error);
+            
+            // エラー時はフォールバック
+            console.log('フォールバック: 通常のダウンロードを実行');
+            return await this.downloadBackup();
+        }
+    }
+
     // データ復元機能
     static async restoreFromBackup(backupData) {
         try {
@@ -1324,36 +1403,89 @@ export class SupabaseAPI {
                 throw new Error('無効なバックアップファイルです');
             }
 
-            // 各テーブルのデータを復元
-            const tables = Object.keys(backupData.tables);
+            // 外部キー制約を考慮した順序でテーブルを処理
+            const tableOrder = ['staffs', 'clients', 'monthly_tasks', 'settings', 'default_tasks', 'app_links'];
+            const allTables = Object.keys(backupData.tables);
+            
+            // 順序指定されたテーブル + その他のテーブル
+            const orderedTables = [
+                ...tableOrder.filter(table => allTables.includes(table)),
+                ...allTables.filter(table => !tableOrder.includes(table))
+            ];
+            
             const results = {};
 
-            for (const tableName of tables) {
+            for (const tableName of orderedTables) {
                 console.log(`復元中: ${tableName}`);
                 const tableData = backupData.tables[tableName];
                 
                 if (Array.isArray(tableData) && tableData.length > 0) {
-                    // 既存データを削除
-                    const { error: deleteError } = await supabase
-                        .from(tableName)
-                        .delete()
-                        .neq('id', 0); // すべて削除
-                    
-                    if (deleteError) {
-                        console.warn(`${tableName} 削除エラー:`, deleteError);
-                    }
+                    try {
+                        // Step 1: 既存データを削除（外部キー制約の逆順）
+                        if (tableName === 'staffs') {
+                            // staffsテーブルの場合、先にclientsテーブルのstaff_idをnullに設定
+                            const { error: updateError } = await supabase
+                                .from('clients')
+                                .update({ staff_id: null })
+                                .not('staff_id', 'is', null);
+                            
+                            if (updateError) {
+                                console.warn('clients.staff_id null更新エラー:', updateError);
+                            }
+                        }
+                        
+                        // 既存データ削除
+                        const { error: deleteError } = await supabase
+                            .from(tableName)
+                            .delete()
+                            .gte('id', 0); // より確実な全削除
+                        
+                        if (deleteError && deleteError.code !== 'PGRST116') {
+                            console.warn(`${tableName} 削除エラー:`, deleteError);
+                        }
 
-                    // 新しいデータを挿入
-                    const { data, error: insertError } = await supabase
-                        .from(tableName)
-                        .insert(tableData);
-                    
-                    if (insertError) {
-                        throw new Error(`${tableName} の復元に失敗: ${insertError.message}`);
+                        // Step 2: 新しいデータを挿入（IDも含む）
+                        // バッチ挿入（Supabaseは1000件制限）
+                        const batchSize = 100;
+                        let insertedCount = 0;
+                        
+                        for (let i = 0; i < tableData.length; i += batchSize) {
+                            const batch = tableData.slice(i, i + batchSize);
+                            
+                            const { data, error: insertError } = await supabase
+                                .from(tableName)
+                                .insert(batch);
+                            
+                            if (insertError) {
+                                // 重複キーエラーの場合は upsert を試行
+                                if (insertError.code === '23505') {
+                                    console.log(`${tableName}: 重複キーエラー、upsert方式で再試行`);
+                                    
+                                    const { data: upsertData, error: upsertError } = await supabase
+                                        .from(tableName)
+                                        .upsert(batch, { onConflict: 'id' });
+                                    
+                                    if (upsertError) {
+                                        throw new Error(`${tableName} の upsert に失敗: ${upsertError.message}`);
+                                    }
+                                    
+                                    insertedCount += batch.length;
+                                } else {
+                                    throw new Error(`${tableName} の復元に失敗: ${insertError.message}`);
+                                }
+                            } else {
+                                insertedCount += batch.length;
+                            }
+                        }
+                        
+                        results[tableName] = { restored: insertedCount };
+                        console.log(`${tableName}: ${insertedCount} 件復元完了`);
+                        
+                    } catch (error) {
+                        console.error(`${tableName} 復元エラー:`, error);
+                        results[tableName] = { restored: 0, error: error.message };
+                        // エラーが発生しても他のテーブル処理は継続
                     }
-                    
-                    results[tableName] = { restored: tableData.length };
-                    console.log(`${tableName}: ${tableData.length} 件復元完了`);
                 } else {
                     results[tableName] = { restored: 0 };
                     console.log(`${tableName}: データなし`);
@@ -1383,7 +1515,10 @@ export class SupabaseAPI {
             enabled: false,
             frequency: 'daily',
             time: '03:00',
-            path: 'downloads'
+            method: 'weekly-rotation',
+            path: 'downloads',
+            directoryHandle: null,
+            selectedPath: ''
         };
         
         const stored = localStorage.getItem('backupSettings');

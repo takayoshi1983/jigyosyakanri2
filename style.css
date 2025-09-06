@@ -54,13 +54,14 @@ h1, h2 {
 
 /* テーブル固定ヘッダー用コンテナ */
 .table-container {
-    max-height: calc(100vh - 300px);
+    max-height: calc(100vh - 200px);
     overflow-y: auto;
     overflow-x: auto;
     border: 1px solid #ddd;
     border-radius: 6px;
     background-color: #fff;
     position: relative;
+    margin-bottom: 20px;
 }
 
 /* モバイルでのテーブル固定ヘッダー調整 */
@@ -172,7 +173,7 @@ th {
     font-weight: bold;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 50;
     border-bottom: 2px solid #ddd;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }

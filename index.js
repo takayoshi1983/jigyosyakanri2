@@ -2183,7 +2183,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const autoBackupEnabledCheckbox = document.getElementById('auto-backup-enabled');
     const backupFrequencySelect = document.getElementById('backup-frequency');
     const backupTimeSelect = document.getElementById('backup-time');
-    const backupPathSelect = document.getElementById('backup-path');
+    const backupMethodSelect = document.getElementById('backup-method');
+    const selectBackupFolderButton = document.getElementById('select-backup-folder-button');
+    const selectedPathDisplay = document.getElementById('selected-path-display');
     const manualBackupButton = document.getElementById('manual-backup-button');
     const restoreBackupButton = document.getElementById('restore-backup-button');
     const restoreFileInput = document.getElementById('restore-file-input');
@@ -2208,12 +2210,51 @@ document.addEventListener('DOMContentLoaded', () => {
         backupModal.style.display = 'none';
     });
 
+    // Backup folder selection
+    selectBackupFolderButton.addEventListener('click', async () => {
+        try {
+            if (!window.showDirectoryPicker) {
+                toast.show('このブラウザはフォルダ選択に対応していません', 'error');
+                return;
+            }
+
+            const directoryHandle = await window.showDirectoryPicker();
+            
+            // 設定を一時保存（実際の保存は設定保存時）
+            window.tempBackupSettings = {
+                ...SupabaseAPI.getBackupSettings(),
+                directoryHandle: directoryHandle,
+                selectedPath: directoryHandle.name
+            };
+            
+            selectedPathDisplay.innerHTML = `<small>選択済み: ${directoryHandle.name}</small>`;
+            toast.show('バックアップフォルダを選択しました', 'success');
+            
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Folder selection error:', error);
+                toast.show(`フォルダ選択エラー: ${error.message}`, 'error');
+            }
+        }
+    });
+
     // Manual backup
     manualBackupButton.addEventListener('click', async () => {
+        const settings = SupabaseAPI.getBackupSettings();
         const loadingToast = toast.show('バックアップを作成中...', 'info', 0);
+        
         try {
-            await SupabaseAPI.downloadBackup();
-            toast.update(loadingToast, 'バックアップが正常にダウンロードされました', 'success');
+            let result;
+            if (settings.directoryHandle && window.showDirectoryPicker) {
+                // フォルダ選択済みの場合は高度なバックアップ
+                result = await SupabaseAPI.downloadBackupWithFolder();
+            } else {
+                // 通常のダウンロードフォルダバックアップ
+                result = await SupabaseAPI.downloadBackup();
+            }
+            
+            const method = settings.method === 'weekly-rotation' ? '週次ローテーション' : 'シンプル';
+            toast.update(loadingToast, `バックアップが正常に完了しました (${method})`, 'success');
             updateBackupHistory();
         } catch (error) {
             console.error('Manual backup error:', error);
@@ -2275,14 +2316,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save backup settings
     saveBackupSettingsButton.addEventListener('click', () => {
-        const settings = {
+        const baseSettings = {
             enabled: autoBackupEnabledCheckbox.checked,
             frequency: backupFrequencySelect.value,
             time: backupTimeSelect.value,
-            path: backupPathSelect.value
+            method: backupMethodSelect.value
         };
         
+        // 一時保存されたフォルダ設定があれば統合
+        const settings = window.tempBackupSettings ? 
+            { ...baseSettings, ...window.tempBackupSettings } : 
+            baseSettings;
+        
         SupabaseAPI.saveBackupSettings(settings);
+        
+        // 一時設定をクリア
+        delete window.tempBackupSettings;
         
         toast.show('バックアップ設定を保存しました', 'success');
         backupModal.style.display = 'none';
@@ -2296,7 +2345,14 @@ document.addEventListener('DOMContentLoaded', () => {
         autoBackupEnabledCheckbox.checked = settings.enabled;
         backupFrequencySelect.value = settings.frequency;
         backupTimeSelect.value = settings.time;
-        backupPathSelect.value = settings.path;
+        backupMethodSelect.value = settings.method || 'weekly-rotation';
+        
+        // フォルダ選択状態を表示
+        if (settings.selectedPath) {
+            selectedPathDisplay.innerHTML = `<small>選択済み: ${settings.selectedPath}</small>`;
+        } else {
+            selectedPathDisplay.innerHTML = `<small>未選択（ダウンロードフォルダを使用）</small>`;
+        }
     }
 
     function updateBackupHistory() {

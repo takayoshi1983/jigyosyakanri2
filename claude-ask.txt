@@ -1,13 +1,11 @@
-今後行い事の優先順位ですが
-  1.管理者が俯瞰的に全体の進捗状況、担当者の進捗状況及び成績をまとめるページの作成(あとでアイデアを提供します）
-  2.メイン画面のテーブルをタイトルで固定する（スクロール時も見えるように）
-  3.DBのバックアップ機能（毎日）。ローカルストレージの指定したパスへ.
-  4.悲観ロックが動作していないので修復
-  5.通知機能の実装(あとでアイデアを提供します）
-　6.速度の改善。不要なコード、ファイルの削除
-　7.ファイル添付機能の実装（PDF,エクセル等）（あとでアイデアを提供）
-　8.翌期以降にタスクを再適用
-　9.倍率調整（スマホの場合は縮小する）
-　10.詳細ページのURL行に貼ったURLを開けるようにする（URL形式で貼り付けた場合、クリックで飛べるならそれで解決）
-　11.AIを実装する（報告書の作成等）、n8nとの連携が良いか？模索中
-　12.タスクを後から全事業所にまとめて追加・削除できる機能（最後から何番目のタスクに追加・削除など指定）
+jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/staffs?id=neq.0:1  Failed to load resource: the server responded with a status of 409 ()Understand this error
+supabase-client.js:1343 staffs 削除エラー: Objectcode: "23503"details: "Key is still referenced from table \"clients\"."hint: nullmessage: "update or delete on table \"staffs\" violates foreign key constraint \"clients_staff_id_fkey\" on table \"clients\""[[Prototype]]: Object
+restoreFromBackup @ supabase-client.js:1343Understand this warning
+jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/staffs?columns=%22id%22%2C%22name%22%2C%22email%22%2C%22role%22%2C%22created_at%22%2C%22updated_at%22:1  Failed to load resource: the server responded with a status of 409 ()Understand this error
+supabase-client.js:1366 データ復元エラー: Error: staffs の復元に失敗: duplicate key value violates unique constraint "staffs_pkey"
+    at SupabaseAPI.restoreFromBackup (supabase-client.js:1352:31)
+    at async HTMLInputElement.<anonymous> (index.js:2252:29)
+restoreFromBackup @ supabase-client.js:1366Understand this error
+index.js:2268 Restore error: Error: staffs の復元に失敗: duplicate key value violates unique constraint "staffs_pkey"
+    at SupabaseAPI.restoreFromBackup (supabase-client.js:1352:31)
+    at async HTMLInputElement.<anonymous> (index.js:2252:29)
