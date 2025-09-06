@@ -1033,34 +1033,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                 monthlyTasksToUpdate[month].tasks[task] = cb.checked;
             });
 
-            // メモデータの保存（task_memosカラムが存在する場合のみ）
+            // メモデータの保存ロジックを修正
             const memoInputs = detailsTableBody.querySelectorAll('.checkbox-memo-input');
-            if (memoInputs.length > 0) {
-                // まずtask_memosフィールドが使用可能かテスト保存
-                try {
-                    memoInputs.forEach(memoInput => {
-                        const month = memoInput.dataset.month;
-                        const task = memoInput.dataset.task;
-                        const memoValue = memoInput.value.trim();
-                        
-                        if (!monthlyTasksToUpdate[month]) monthlyTasksToUpdate[month] = { tasks: {} };
-                        
-                        // メモが入力されている場合のみtask_memosフィールドを追加
-                        if (memoValue) {
-                            if (!monthlyTasksToUpdate[month].task_memos) monthlyTasksToUpdate[month].task_memos = {};
-                            monthlyTasksToUpdate[month].task_memos[task] = memoValue;
-                        }
-                    });
-                } catch (error) {
-                    console.warn('Memo saving skipped - task_memos field may not exist:', error);
+            memoInputs.forEach(memoInput => {
+                const month = memoInput.dataset.month;
+                const task = memoInput.dataset.task;
+                const memoValue = memoInput.value; // trim() しないで生の値を扱う
+
+                // 月のオブジェクトがなければ初期化
+                if (!monthlyTasksToUpdate[month]) {
+                    monthlyTasksToUpdate[month] = { tasks: {}, task_memos: {} };
+                } else if (!monthlyTasksToUpdate[month].task_memos) {
+                    monthlyTasksToUpdate[month].task_memos = {};
                 }
-            }
+                
+                // メモの値を常にセットする（空の場合も上書きのため）
+                monthlyTasksToUpdate[month].task_memos[task] = memoValue;
+            });
 
             notesTableBody.querySelectorAll('input, textarea').forEach(input => {
                 const month = input.dataset.month;
                 const field = input.dataset.field;
                 if (!monthlyTasksToUpdate[month]) monthlyTasksToUpdate[month] = {};
                 monthlyTasksToUpdate[month][field] = input.value;
+            });
+
+            // upsert前に、空のメモをクリーンアップする
+            Object.values(monthlyTasksToUpdate).forEach(monthData => {
+                if (monthData.task_memos) {
+                    for (const task in monthData.task_memos) {
+                        if (monthData.task_memos[task] === null || monthData.task_memos[task].trim() === '') {
+                            delete monthData.task_memos[task];
+                        }
+                    }
+                }
             });
 
             // 各月のタスク完了状態を判定し、`completed`フラグを設定
