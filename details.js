@@ -1660,28 +1660,49 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         function adjustDetailsColumnWidths(mode) {
             const detailsTable = document.querySelector('.details-table');
+            const notesTable = document.getElementById('notes-table');
             if (!detailsTable) return;
             
-            // 最初の列（項目名）と各月の列幅を調整
-            const firstColWidth = mode === 'compact' ? '15%' : mode === 'medium' ? '18%' : '20%';
-            const monthColWidth = mode === 'compact' ? '7%' : mode === 'medium' ? '6.8%' : '6.6%';
+            // 固定幅で統一（CSSと連動）
+            const firstColWidth = mode === 'compact' ? '80px' : mode === 'medium' ? '100px' : '120px';
+            const monthColWidth = mode === 'compact' ? '60px' : mode === 'medium' ? '80px' : '100px';
             
-            // 項目名列の幅を設定
-            const firstCells = detailsTable.querySelectorAll('td:first-child, th:first-child');
-            firstCells.forEach(cell => {
+            // タスクテーブルの項目名列の幅を設定
+            const detailsFirstCells = detailsTable.querySelectorAll('td:first-child, th:first-child');
+            detailsFirstCells.forEach(cell => {
                 cell.style.width = firstColWidth;
-                cell.style.minWidth = mode === 'compact' ? '80px' : '100px';
+                cell.style.minWidth = firstColWidth;
+                cell.style.maxWidth = firstColWidth;
             });
             
-            // 月次列の幅を設定
-            const monthCells = detailsTable.querySelectorAll('th.month-header, td:not(:first-child)');
-            monthCells.forEach(cell => {
+            // タスクテーブルの月次列の幅を設定
+            const detailsMonthCells = detailsTable.querySelectorAll('th.month-header, td:not(:first-child)');
+            detailsMonthCells.forEach(cell => {
                 if (!cell.classList.contains('sticky-col')) {
                     cell.style.width = monthColWidth;
-                    cell.style.minWidth = mode === 'compact' ? '40px' : '50px';
+                    cell.style.minWidth = monthColWidth;
+                    cell.style.maxWidth = monthColWidth;
                     cell.style.textAlign = 'center';
                 }
             });
+            
+            // URL・メモテーブルも同じ幅に統一
+            if (notesTable) {
+                const notesFirstCells = notesTable.querySelectorAll('td:first-child, th:first-child');
+                notesFirstCells.forEach(cell => {
+                    cell.style.width = firstColWidth;
+                    cell.style.minWidth = firstColWidth;
+                    cell.style.maxWidth = firstColWidth;
+                });
+                
+                const notesMonthCells = notesTable.querySelectorAll('th:not(:first-child), td:not(:first-child)');
+                notesMonthCells.forEach(cell => {
+                    cell.style.width = monthColWidth;
+                    cell.style.minWidth = monthColWidth;
+                    cell.style.maxWidth = monthColWidth;
+                    cell.style.textAlign = 'center';
+                });
+            }
         }
         
         function toggleDetailsScrollMode() {

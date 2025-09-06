@@ -877,6 +877,70 @@ th[data-sort-key].active-sort {
     font-weight: bold;
     background-color: #eef2f5; /* Match header color for consistency */
 }
+
+/* 詳細画面の2つのテーブルの列幅統一 */
+.details-table th:first-child,
+.details-table td:first-child,
+#notes-table th:first-child,
+#notes-table td:first-child {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+}
+
+/* 年月列の幅も統一（2024年4月などの文字列に対応） */
+.details-table th.month-header,
+.details-table td:not(:first-child),
+#notes-table th:not(:first-child),
+#notes-table td:not(:first-child) {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    text-align: center;
+}
+
+/* レスポンシブ対応：狭い画面での調整 */
+@media screen and (max-width: 1200px) {
+    .details-table th:first-child,
+    .details-table td:first-child,
+    #notes-table th:first-child,
+    #notes-table td:first-child {
+        width: 100px !important;
+        min-width: 100px !important;
+        max-width: 100px !important;
+    }
+    
+    .details-table th.month-header,
+    .details-table td:not(:first-child),
+    #notes-table th:not(:first-child),
+    #notes-table td:not(:first-child) {
+        width: 80px !important;
+        min-width: 80px !important;
+        max-width: 80px !important;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .details-table th:first-child,
+    .details-table td:first-child,
+    #notes-table th:first-child,
+    #notes-table td:first-child {
+        width: 80px !important;
+        min-width: 80px !important;
+        max-width: 80px !important;
+        font-size: 10px;
+    }
+    
+    .details-table th.month-header,
+    .details-table td:not(:first-child),
+    #notes-table th:not(:first-child),
+    #notes-table td:not(:first-child) {
+        width: 60px !important;
+        min-width: 60px !important;
+        max-width: 60px !important;
+        font-size: 9px;
+    }
+}
 /*チェックボックスを押した際に色が変化する*/
 .task-completed {
     background-color: #75b3e652; /* 薄いグレー */
