@@ -321,7 +321,12 @@ tr:hover {
     table-layout: auto; /* 自動列幅調整に変更 */
     font-size: clamp(11px, 1.4vw, 13px); /* レスポンシブフォントサイズ */
     position: relative; /* z-indexを適用するために必要 */
-    z-index: 10; /* アコーディオンより上に表示 */
+    z-index: 15; /* URL・メモテーブルと同じ高さに */
+}
+
+#notes-table {
+    position: relative; /* z-indexを適用するために必要 */
+    z-index: 15; /* タスクテーブルと同じ高さに */
 }
 
 #notes-table td {
@@ -1808,11 +1813,27 @@ button:active {
     flex-direction: column;
     gap: 10px;
     margin-bottom: 20px;
-    max-height: 300px;
+    max-height: 450px; /* フィットモードボタンが見えるように高さを拡張 */
     overflow-y: auto;
     padding: 5px;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
+}
+
+/* 詳細画面専用のデータ管理アコーディオン */
+#data-management-accordion {
+    z-index: 20 !important; /* テーブルより上に表示 */
+    position: relative;
+}
+
+#data-management-accordion .accordion-content {
+    max-height: 500px !important; /* 詳細画面は更に高く設定 */
+    min-height: 200px; /* 最小高さも確保 */
+    overflow-y: auto;
+    padding: 15px;
+    z-index: 21 !important; /* コンテンツも確実に表示 */
+    position: relative;
+    background-color: white; /* 背景色を確実に設定 */
 }
 
 .url-item {
