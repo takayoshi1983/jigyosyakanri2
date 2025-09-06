@@ -87,6 +87,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- Utility Functions ---
+    function isValidUrl(string) {
+        // http:// または https:// で始まらない場合は無効とする
+        if (!string.startsWith('http://') && !string.startsWith('https://')) {
+            return false;
+        }
+        try {
+            new URL(string);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function updateUrlInputStyle(input) {
+        const button = input.nextElementSibling;
+        if (isValidUrl(input.value)) {
+            input.classList.add('url-like');
+            button.style.display = 'inline-block';
+        } else {
+            input.classList.remove('url-like');
+            button.style.display = 'none';
+        }
+    }
+
     function showStatus(message, type = 'info') {
         if (!connectionStatus || !statusText) return;
         connectionStatus.className = type;
@@ -923,7 +947,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         monthsToDisplay.forEach(month => {
             const monthData = allMonthData[month.key];
-            urlRowHtml += `<td><input type="text" data-month="${month.key}" data-field="url" value="${monthData?.url || ''}" placeholder=""></td>`;
+            const urlValue = monthData?.url || '';
+            urlRowHtml += `<td>
+                <input type="text" data-month="${month.key}" data-field="url" value="${urlValue}" placeholder="">
+                <button type="button" class="url-jump-button" title="URLを開く">🚀</button>
+            </td>`;
             memoRowHtml += `<td><textarea data-month="${month.key}" data-field="memo" placeholder="">${monthData?.memo || ''}</textarea></td>`;
         });
 
@@ -976,9 +1004,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function addNotesEventListeners() {
-        notesTableBody.querySelectorAll('input, textarea').forEach(input => {
-            input.addEventListener('input', () => setUnsavedChanges(true));
+        notesTableBody.addEventListener('input', (e) => {
+            setUnsavedChanges(true);
+            // URL入力欄の場合、スタイルを更新
+            if (e.target.dataset.field === 'url') {
+                updateUrlInputStyle(e.target);
+            }
         });
+
+        notesTableBody.addEventListener('click', (e) => {
+            // ジャンプボタンのクリック処理
+            if (e.target.classList.contains('url-jump-button')) {
+                e.preventDefault();
+                const input = e.target.previousElementSibling;
+                const url = input.value;
+                if (isValidUrl(url)) {
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                }
+            }
+        });
+
+        // 初期表示のために全URL入力をチェック
+        notesTableBody.querySelectorAll('input[data-field="url"]').forEach(updateUrlInputStyle);
     }
 
     function updateProgressDisplay() {

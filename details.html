@@ -301,6 +301,33 @@
                 opacity: 0;
             }
         }
+
+        /* === URLリンク化機能のスタイル === */
+        #notes-table td {
+            position: relative; /* ボタンを配置するため */
+        }
+        #notes-table input[data-field="url"].url-like {
+            color: #007bff;
+            text-decoration: underline;
+            text-decoration-color: #007bff;
+        }
+        .url-jump-button {
+            display: none; /* 初期状態では非表示 */
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1.5rem; /* アイコンサイズを大きく */
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+        .url-jump-button:hover {
+            transform: translateY(-50%) scale(1.2);
+        }
     </style>
 </head>
 <body class="details-page">
