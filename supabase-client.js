@@ -1495,13 +1495,23 @@ export class SupabaseAPI {
                             // upsert方式でIDを保持して確実に復元
                             console.log(`${tableName} upsert実行: ${batch.length} 件 (${insertedCount + 1}-${insertedCount + batch.length})`);
                             
+                            let upsertOptions = { ignoreDuplicates: false };
+                            let selectColumns = '*';
+                            
+                            // テーブルごとのスキーマに応じた処理
+                            const tableSchemas = {
+                                'settings': { conflict: 'key', select: 'key' },
+                                // 他のテーブルはidカラムあり（デフォルト）
+                            };
+                            
+                            const schema = tableSchemas[tableName] || { conflict: 'id', select: 'id' };
+                            upsertOptions.onConflict = schema.conflict;
+                            selectColumns = schema.select;
+                            
                             const { data: upsertData, error: upsertError } = await supabase
                                 .from(tableName)
-                                .upsert(batch, { 
-                                    onConflict: 'id',
-                                    ignoreDuplicates: false 
-                                })
-                                .select('id');
+                                .upsert(batch, upsertOptions)
+                                .select(selectColumns);
                             
                             if (upsertError) {
                                 console.error(`${tableName} upsertエラー詳細:`, {
@@ -1522,7 +1532,7 @@ export class SupabaseAPI {
                                 const { data: insertData, error: insertError } = await supabase
                                     .from(tableName)
                                     .insert(batch)
-                                    .select('id');
+                                    .select(selectColumns);
                                 
                                 if (insertError) {
                                     console.error(`${tableName} insertエラー:`, insertError);
@@ -1708,9 +1718,17 @@ export class SupabaseAPI {
                     
                     for (let i = 0; i < rows.length; i += batchSize) {
                         const batch = rows.slice(i, i + batchSize);
+                        
+                        // テーブルごとのスキーマに応じたupsert設定
+                        const tableSchemas = {
+                            'settings': { conflict: 'key' },
+                            // 他のテーブルはidカラムあり（デフォルト）
+                        };
+                        const conflictColumn = tableSchemas[tableName]?.conflict || 'id';
+                        
                         const { error } = await supabase
                             .from(tableName)
-                            .upsert(batch, { onConflict: 'id', ignoreDuplicates: false });
+                            .upsert(batch, { onConflict: conflictColumn, ignoreDuplicates: false });
                         
                         if (error) {
                             console.error(`${tableName} CSV復元エラー:`, error);
