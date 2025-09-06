@@ -103,25 +103,27 @@
             </div>
         </div>
 
-        <table id="clients-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>事業所名</th>
-                    <th>決算月</th>
-                    <th>未入力期間</th>
-                    <th>月次進捗</th>
-                    <th>最終更新</th>
-                    <th>担当者</th>
-                    <th>経理方式</th>
-                    <th>進捗ステータス</th>
-                    <th>編集</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- クライアントデータがここに動的に挿入されます -->
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table id="clients-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>事業所名</th>
+                        <th>決算月</th>
+                        <th>未入力期間</th>
+                        <th>月次進捗</th>
+                        <th>最終更新</th>
+                        <th>担当者</th>
+                        <th>経理方式</th>
+                        <th>進捗ステータス</th>
+                        <th>編集</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- クライアントデータがここに動的に挿入されます -->
+                </tbody>
+            </table>
+        </div>
 
         <!-- モバイル用カードコンテナ -->
         <div id="mobile-cards-container" class="mobile-cards-container">
@@ -245,6 +247,9 @@
                             <button id="import-csv-button-modal" class="settings-button admin-only">📁 CSVインポート</button>
                         </div>
                         <div class="setting-item button-setting">
+                            <button id="backup-settings-button-modal" class="settings-button admin-only">💾 バックアップ設定</button>
+                        </div>
+                        <div class="setting-item button-setting">
                             <button id="reset-database-button-modal" class="settings-button admin-only danger-button">⚠️ データベース初期化</button>
                         </div>
                     </div>
@@ -278,6 +283,95 @@
             <div class="modal-actions">
                 <button id="save-url-settings-button" class="save-button">保存</button>
                 <button id="cancel-url-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Management Modal -->
+    <div id="backup-management-modal" class="modal">
+        <div class="modal-content backup-modal-content">
+            <span class="close-button">&times;</span>
+            <h2>📦 バックアップ管理</h2>
+            
+            <div class="backup-container">
+                <!-- 自動バックアップ設定 -->
+                <div class="backup-section">
+                    <h3>🔄 自動バックアップ設定</h3>
+                    <div class="backup-setting-item">
+                        <label for="auto-backup-enabled">
+                            <input type="checkbox" id="auto-backup-enabled">
+                            自動バックアップを有効にする
+                        </label>
+                    </div>
+                    <div class="backup-setting-item">
+                        <label for="backup-frequency">実行頻度:</label>
+                        <select id="backup-frequency">
+                            <option value="daily">毎日</option>
+                            <option value="weekly">毎週</option>
+                            <option value="monthly">毎月</option>
+                        </select>
+                        <label for="backup-time">実行時刻:</label>
+                        <select id="backup-time">
+                            <option value="00:00">00:00</option>
+                            <option value="01:00">01:00</option>
+                            <option value="02:00">02:00</option>
+                            <option value="03:00" selected>03:00</option>
+                            <option value="04:00">04:00</option>
+                            <option value="05:00">05:00</option>
+                        </select>
+                    </div>
+                    <div class="backup-setting-item">
+                        <label for="backup-path">保存先:</label>
+                        <select id="backup-path">
+                            <option value="downloads">ダウンロードフォルダ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 手動バックアップ -->
+                <div class="backup-section">
+                    <h3>💾 手動バックアップ</h3>
+                    <div class="backup-setting-item">
+                        <button id="manual-backup-button" class="backup-action-button">
+                            今すぐバックアップを実行
+                        </button>
+                        <small>現在のデータを即座にダウンロードします</small>
+                    </div>
+                </div>
+
+                <!-- データ復元 -->
+                <div class="backup-section">
+                    <h3>📥 データ復元</h3>
+                    <div class="backup-setting-item">
+                        <button id="restore-backup-button" class="backup-action-button restore-button">
+                            バックアップファイルから復元
+                        </button>
+                        <small>⚠️ 現在のデータは全て置き換えられます</small>
+                        <input type="file" id="restore-file-input" accept=".json" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- バックアップ履歴 -->
+                <div class="backup-section">
+                    <h3>📋 バックアップ履歴</h3>
+                    <div class="backup-history">
+                        <div id="backup-history-list">
+                            <div class="history-item">
+                                <span class="history-date">最終バックアップ: </span>
+                                <span id="last-backup-date">未実行</span>
+                            </div>
+                            <div class="history-item">
+                                <span class="history-date">次回予定: </span>
+                                <span id="next-backup-date">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="save-backup-settings-button" class="save-button">設定を保存</button>
+                <button id="cancel-backup-settings-button" class="cancel-button">キャンセル</button>
             </div>
         </div>
     </div>
@@ -421,6 +515,124 @@
             pointer-events: none;
             user-select: none;
             transition: filter 0.2s ease-in-out;
+        }
+
+        /* バックアップ管理モーダルスタイル */
+        .backup-modal-content {
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .backup-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .backup-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #fafafa;
+        }
+
+        .backup-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .backup-setting-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .backup-setting-item label {
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .backup-setting-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .backup-setting-item select {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .backup-action-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .backup-action-button:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .backup-action-button.restore-button {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .backup-action-button.restore-button:hover {
+            background: linear-gradient(135deg, #f57c00, #ef6c00);
+        }
+
+        .backup-setting-item small {
+            color: #666;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .backup-history {
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .history-date {
+            font-weight: 500;
+        }
+
+        /* モバイル対応 */
+        @media screen and (max-width: 480px) {
+            .backup-modal-content {
+                max-width: 95%;
+                margin: 10px;
+            }
+            
+            .backup-setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .backup-action-button {
+                width: 100%;
+            }
         }
     </style>
 

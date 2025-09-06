@@ -52,6 +52,35 @@ h1, h2 {
     margin-bottom: 20px;
 }
 
+/* テーブル固定ヘッダー用コンテナ */
+.table-container {
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    position: relative;
+}
+
+/* モバイルでのテーブル固定ヘッダー調整 */
+@media screen and (max-width: 480px) {
+    .table-container {
+        max-height: calc(100vh - 200px);
+        border-radius: 4px;
+    }
+    
+    th {
+        font-size: 12px;
+        padding: 8px 4px;
+    }
+    
+    td {
+        font-size: 12px;
+        padding: 8px 4px;
+    }
+}
+
 /* Navigation */
 .nav-links {
     margin-bottom: 20px;
@@ -143,7 +172,9 @@ th {
     font-weight: bold;
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100;
+    border-bottom: 2px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 tr:nth-child(even) {

@@ -1253,9 +1253,200 @@ export class SupabaseAPI {
             )
             .subscribe();
     }
+
+    // データベースバックアップ機能
+    static async createFullBackup() {
+        try {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const backupData = {
+                timestamp,
+                version: '1.0',
+                database: 'jigyosya-management',
+                tables: {}
+            };
+
+            // 全テーブルからデータを取得
+            const tables = ['clients', 'staffs', 'monthly_tasks', 'settings', 'default_tasks', 'app_links'];
+            
+            for (const tableName of tables) {
+                console.log(`バックアップ中: ${tableName}`);
+                const { data, error } = await supabase
+                    .from(tableName)
+                    .select('*');
+                
+                if (error) throw error;
+                backupData.tables[tableName] = data || [];
+                console.log(`${tableName}: ${data?.length || 0} 件`);
+            }
+
+            console.log('バックアップ作成完了:', backupData);
+            return backupData;
+        } catch (error) {
+            console.error('バックアップ作成エラー:', error);
+            throw error;
+        }
+    }
+
+    static async downloadBackup() {
+        try {
+            const backupData = await this.createFullBackup();
+            
+            // JSONファイルとしてダウンロード
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { 
+                type: 'application/json;charset=utf-8' 
+            });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `jigyosya-backup-${backupData.timestamp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // LocalStorageに履歴を保存
+            localStorage.setItem('lastBackupDate', new Date().toISOString());
+            
+            return backupData;
+        } catch (error) {
+            console.error('バックアップダウンロードエラー:', error);
+            throw error;
+        }
+    }
+
+    // データ復元機能
+    static async restoreFromBackup(backupData) {
+        try {
+            console.log('データ復元を開始:', backupData);
+            
+            if (!backupData.tables) {
+                throw new Error('無効なバックアップファイルです');
+            }
+
+            // 各テーブルのデータを復元
+            const tables = Object.keys(backupData.tables);
+            const results = {};
+
+            for (const tableName of tables) {
+                console.log(`復元中: ${tableName}`);
+                const tableData = backupData.tables[tableName];
+                
+                if (Array.isArray(tableData) && tableData.length > 0) {
+                    // 既存データを削除
+                    const { error: deleteError } = await supabase
+                        .from(tableName)
+                        .delete()
+                        .neq('id', 0); // すべて削除
+                    
+                    if (deleteError) {
+                        console.warn(`${tableName} 削除エラー:`, deleteError);
+                    }
+
+                    // 新しいデータを挿入
+                    const { data, error: insertError } = await supabase
+                        .from(tableName)
+                        .insert(tableData);
+                    
+                    if (insertError) {
+                        throw new Error(`${tableName} の復元に失敗: ${insertError.message}`);
+                    }
+                    
+                    results[tableName] = { restored: tableData.length };
+                    console.log(`${tableName}: ${tableData.length} 件復元完了`);
+                } else {
+                    results[tableName] = { restored: 0 };
+                    console.log(`${tableName}: データなし`);
+                }
+            }
+
+            console.log('データ復元完了:', results);
+            return results;
+        } catch (error) {
+            console.error('データ復元エラー:', error);
+            throw error;
+        }
+    }
+
+    // 自動バックアップ管理
+    static initAutoBackup() {
+        const settings = this.getBackupSettings();
+        
+        if (settings.enabled) {
+            console.log('自動バックアップが有効です');
+            this.scheduleNextBackup(settings);
+        }
+    }
+
+    static getBackupSettings() {
+        const defaultSettings = {
+            enabled: false,
+            frequency: 'daily',
+            time: '03:00',
+            path: 'downloads'
+        };
+        
+        const stored = localStorage.getItem('backupSettings');
+        return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
+    }
+
+    static saveBackupSettings(settings) {
+        localStorage.setItem('backupSettings', JSON.stringify(settings));
+        console.log('バックアップ設定を保存:', settings);
+        
+        if (settings.enabled) {
+            this.scheduleNextBackup(settings);
+        }
+    }
+
+    static scheduleNextBackup(settings) {
+        // 次回バックアップ予定時刻を計算
+        const now = new Date();
+        const [hours, minutes] = settings.time.split(':').map(Number);
+        const nextBackup = new Date(now);
+        nextBackup.setHours(hours, minutes, 0, 0);
+
+        // 既に時刻を過ぎている場合は翌日に設定
+        if (nextBackup <= now) {
+            nextBackup.setDate(nextBackup.getDate() + 1);
+        }
+
+        const timeUntilBackup = nextBackup.getTime() - now.getTime();
+        
+        console.log(`次回自動バックアップ: ${nextBackup.toLocaleString()}`);
+        
+        // 既存のタイマーをクリア
+        if (this.backupTimer) {
+            clearTimeout(this.backupTimer);
+        }
+
+        // 新しいタイマーを設定
+        this.backupTimer = setTimeout(() => {
+            this.executeAutoBackup(settings);
+        }, timeUntilBackup);
+
+        // 次回予定をLocalStorageに保存
+        localStorage.setItem('nextBackupDate', nextBackup.toISOString());
+    }
+
+    static async executeAutoBackup(settings) {
+        try {
+            console.log('自動バックアップを実行中...');
+            await this.downloadBackup();
+            console.log('自動バックアップが完了しました');
+            
+            // 次回のバックアップをスケジュール
+            this.scheduleNextBackup(settings);
+        } catch (error) {
+            console.error('自動バックアップに失敗しました:', error);
+            // エラーが発生してもスケジュールは継続
+            setTimeout(() => {
+                this.scheduleNextBackup(settings);
+            }, 60000); // 1分後に再スケジュール
+        }
+    }
 }
 
-// エラーハンドリング用ヘルパー
 export const handleSupabaseError = (error) => {
     console.error('Supabase error:', error);
     

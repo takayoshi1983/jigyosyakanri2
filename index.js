@@ -2174,6 +2174,171 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ===== BACKUP MANAGEMENT FUNCTIONALITY =====
+    
+    // Backup Management Modal elements
+    const backupModal = document.getElementById('backup-management-modal');
+    const backupSettingsButton = document.getElementById('backup-settings-button-modal');
+    const closeBackupModalButton = backupModal.querySelector('.close-button');
+    const autoBackupEnabledCheckbox = document.getElementById('auto-backup-enabled');
+    const backupFrequencySelect = document.getElementById('backup-frequency');
+    const backupTimeSelect = document.getElementById('backup-time');
+    const backupPathSelect = document.getElementById('backup-path');
+    const manualBackupButton = document.getElementById('manual-backup-button');
+    const restoreBackupButton = document.getElementById('restore-backup-button');
+    const restoreFileInput = document.getElementById('restore-file-input');
+    const saveBackupSettingsButton = document.getElementById('save-backup-settings-button');
+    const cancelBackupSettingsButton = document.getElementById('cancel-backup-settings-button');
+    const lastBackupDateSpan = document.getElementById('last-backup-date');
+    const nextBackupDateSpan = document.getElementById('next-backup-date');
+
+    // Open backup management modal
+    backupSettingsButton.addEventListener('click', () => {
+        loadBackupSettings();
+        backupModal.style.display = 'block';
+        updateBackupHistory();
+    });
+
+    // Close backup management modal
+    closeBackupModalButton.addEventListener('click', () => {
+        backupModal.style.display = 'none';
+    });
+
+    cancelBackupSettingsButton.addEventListener('click', () => {
+        backupModal.style.display = 'none';
+    });
+
+    // Manual backup
+    manualBackupButton.addEventListener('click', async () => {
+        const loadingToast = toast.show('バックアップを作成中...', 'info', 0);
+        try {
+            await SupabaseAPI.downloadBackup();
+            toast.update(loadingToast, 'バックアップが正常にダウンロードされました', 'success');
+            updateBackupHistory();
+        } catch (error) {
+            console.error('Manual backup error:', error);
+            toast.update(loadingToast, `バックアップエラー: ${handleSupabaseError(error)}`, 'error');
+        }
+    });
+
+    // Restore backup
+    restoreBackupButton.addEventListener('click', () => {
+        restoreFileInput.click();
+    });
+
+    restoreFileInput.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // ファイル形式確認
+        if (!file.name.endsWith('.json')) {
+            toast.show('JSONファイルを選択してください', 'error');
+            return;
+        }
+
+        // 確認ダイアログ
+        if (!confirm('現在のデータは全て置き換えられます。\n復元を実行しますか？')) {
+            return;
+        }
+
+        const loadingToast = toast.show('データを復元中...', 'info', 0);
+        
+        try {
+            // ファイルを読み込み
+            const fileContent = await readFileAsText(file);
+            const backupData = JSON.parse(fileContent);
+            
+            // データ復元実行
+            const results = await SupabaseAPI.restoreFromBackup(backupData);
+            
+            let message = '復元完了:\n';
+            Object.entries(results).forEach(([table, result]) => {
+                message += `${table}: ${result.restored}件\n`;
+            });
+            
+            toast.update(loadingToast, 'データが正常に復元されました', 'success');
+            alert(message);
+            
+            // ページをリロードして最新データを表示
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+            
+        } catch (error) {
+            console.error('Restore error:', error);
+            toast.update(loadingToast, `復元エラー: ${error.message}`, 'error');
+        }
+        
+        // ファイル選択をクリア
+        restoreFileInput.value = '';
+    });
+
+    // Save backup settings
+    saveBackupSettingsButton.addEventListener('click', () => {
+        const settings = {
+            enabled: autoBackupEnabledCheckbox.checked,
+            frequency: backupFrequencySelect.value,
+            time: backupTimeSelect.value,
+            path: backupPathSelect.value
+        };
+        
+        SupabaseAPI.saveBackupSettings(settings);
+        
+        toast.show('バックアップ設定を保存しました', 'success');
+        backupModal.style.display = 'none';
+        updateBackupHistory();
+    });
+
+    // Helper functions for backup management
+    function loadBackupSettings() {
+        const settings = SupabaseAPI.getBackupSettings();
+        
+        autoBackupEnabledCheckbox.checked = settings.enabled;
+        backupFrequencySelect.value = settings.frequency;
+        backupTimeSelect.value = settings.time;
+        backupPathSelect.value = settings.path;
+    }
+
+    function updateBackupHistory() {
+        // 最終バックアップ日時
+        const lastBackup = localStorage.getItem('lastBackupDate');
+        if (lastBackup) {
+            const date = new Date(lastBackup);
+            lastBackupDateSpan.textContent = date.toLocaleString('ja-JP');
+        } else {
+            lastBackupDateSpan.textContent = '未実行';
+        }
+
+        // 次回予定
+        const nextBackup = localStorage.getItem('nextBackupDate');
+        if (nextBackup) {
+            const date = new Date(nextBackup);
+            nextBackupDateSpan.textContent = date.toLocaleString('ja-JP');
+        } else {
+            nextBackupDateSpan.textContent = '-';
+        }
+    }
+
+    function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file, 'utf-8');
+        });
+    }
+
+    // Initialize backup system
+    function initializeBackupSystem() {
+        // 自動バックアップの初期化
+        SupabaseAPI.initAutoBackup();
+    }
+
     // Initialize the application
     initializeApp();
+    
+    // Initialize backup system after app initialization
+    setTimeout(() => {
+        initializeBackupSystem();
+    }, 1000);
 });

@@ -1,27 +1,13 @@
-
-﻿
-details.js:8 📱 Screen Orientation API supported - using CSS rotation prompt only
-details.js:12 Current orientation: 
-Object
-details.js:572 🎉 達成エフェクト実行: 1番目のエフェクト
-details.js:572 🎉 達成エフェクト実行: 2番目のエフェクト
-details.js:572 🎉 達成エフェクト実行: 5番目のエフェクト
-details.js:572 🎉 達成エフェクト実行: 7番目のエフェクト
-details.js:572 🎉 達成エフェクト実行: 4番目のエフェクト
-
-
-Loading personal settings: {fontFamily: 'Arial', hideInactiveClients: true, enableConfettiEffect: false}
-index.js:1320 Final personal settings: {fontFamily: 'Arial', hideInactiveClients: true, enableConfettiEffect: false}
-index.js:1608 Setting up table headers...
-index.js:1609 clientsTableHeadRow: <tr>​…​</tr>​
-index.js:1613 Found headers: 10
-index.js:1617 Header already has sort icon: IDドラッグして幅を調整
-index.js:1617 Header already has sort icon: 事業所名ドラッグして幅を調整
-index.js:1617 Header already has sort icon: 決算月ドラッグして幅を調整
-index.js:1617 Header already has sort icon: 未入力期間ドラッグして幅を調整
-index.js:1617 Header already has sort icon: 月次進捗ドラッグして幅を調整
-index.js:1617 Header already has sort icon: 最終更新ドラッグして幅を調整
-index.js:1617 Header already has sort icon: 担当者ドラッグして幅を調整
-index.js:1617 Header already has sort icon: 経理方式ドラッグして幅を調整
-index.js:1617 Header already has sort icon: 進捗ステータスドラッグして幅を調整
-index.js:1625 Header 9: "編集" -> cleanText: "編集" -> sortKey: "undefined"
+今後行い事の優先順位ですが
+  1.管理者が俯瞰的に全体の進捗状況、担当者の進捗状況及び成績をまとめるページの作成(あとでアイデアを提供します）
+  2.メイン画面のテーブルをタイトルで固定する（スクロール時も見えるように）
+  3.DBのバックアップ機能（毎日）。ローカルストレージの指定したパスへ.
+  4.悲観ロックが動作していないので修復
+  5.通知機能の実装(あとでアイデアを提供します）
+　6.速度の改善。不要なコード、ファイルの削除
+　7.ファイル添付機能の実装（PDF,エクセル等）（あとでアイデアを提供）
+　8.翌期以降にタスクを再適用
+　9.倍率調整（スマホの場合は縮小する）
+　10.詳細ページのURL行に貼ったURLを開けるようにする（URL形式で貼り付けた場合、クリックで飛べるならそれで解決）
+　11.AIを実装する（報告書の作成等）、n8nとの連携が良いか？模索中
+　12.タスクを後から全事業所にまとめて追加・削除できる機能（最後から何番目のタスクに追加・削除など指定）
