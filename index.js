@@ -2587,7 +2587,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleButton = document.createElement('button');
         toggleButton.id = 'table-mode-toggle-btn';
         toggleButton.className = 'btn';
-        toggleButton.style.cssText = 'width: 100%; margin: 5px 0; text-align: center;';
+        toggleButton.style.cssText = `
+            width: 100% !important; 
+            margin: 5px 0; 
+            text-align: center;
+            padding: 10px 15px !important;
+            min-height: 40px !important;
+            background: linear-gradient(135deg, #2196F3, #1976D2) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 6px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            box-sizing: border-box !important;
+            display: block !important;
+            visibility: visible !important;
+        `;
         
         // 初期ボタンテキスト設定
         const savedMode = localStorage.getItem('tableDisplayMode') || 'fit';

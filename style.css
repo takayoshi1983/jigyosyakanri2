@@ -245,6 +245,8 @@ tr:hover {
 .details-table-wrapper {
     overflow-x: auto; /* Enable horizontal scrolling */
     width: 100%;
+    position: relative; /* z-indexを適用するために必要 */
+    z-index: 15; /* テーブルより上に設定 */
 }
 
 /* レスポンシブテーブル幅調整システム */
@@ -318,6 +320,8 @@ tr:hover {
     min-width: 100%; /* 詳細テーブルもレスポンシブに */
     table-layout: auto; /* 自動列幅調整に変更 */
     font-size: clamp(11px, 1.4vw, 13px); /* レスポンシブフォントサイズ */
+    position: relative; /* z-indexを適用するために必要 */
+    z-index: 10; /* アコーディオンより上に表示 */
 }
 
 #notes-table td {
@@ -1021,7 +1025,7 @@ button:active {
 /* Management Accordion on Index Page */
 .accordion-container {
     position: absolute; /* Changed from fixed to absolute */
-    z-index: 1000;
+    z-index: 5; /* テーブルより下に設定 */
     border: 1px solid #ddd;
     border-radius: 6px;
     overflow: hidden;
