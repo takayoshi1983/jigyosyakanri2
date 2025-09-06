@@ -317,9 +317,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Save Handler ---
     async function saveDataHandler() {
+        let saveToast; // tryの外で宣言し、catchブロックからアクセスできるようにする
         try {
             showLoading();
-            const saveToast = toast.loading('保存中...');
+            saveToast = toast.loading('保存中...');
 
             // Validate form data
             const formData = {
@@ -357,7 +358,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 }
                 
-                showNotification('新規顧客が作成されました', 'success');
                 toast.update(saveToast, '新規顧客作成完了', 'success');
                 
                 // Redirect to main page
@@ -373,15 +373,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Update display
                 populateFormFields(currentClient);
                 
-                showNotification('顧客情報が更新されました', 'success');
                 toast.update(saveToast, '更新完了', 'success');
             }
 
         } catch (error) {
             console.error('Error saving data:', error);
-            toast.hide(saveToast);
-            toast.error('保存エラー: ' + handleSupabaseError(error));
-            showNotification('保存でエラーが発生しました', 'error');
+            const errorMessage = handleSupabaseError(error);
+            if (saveToast) {
+                toast.update(saveToast, `保存エラー: ${errorMessage}`, 'error');
+            } else {
+                toast.error(`保存エラー: ${errorMessage}`);
+            }
         } finally {
             hideLoading();
         }
