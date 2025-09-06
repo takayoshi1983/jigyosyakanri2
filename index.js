@@ -2607,7 +2607,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 初期ボタンテキスト設定
         const savedMode = localStorage.getItem('tableDisplayMode') || 'fit';
-        updateToggleButtonText(savedMode);
+        // ボタンが作成されてから確実にテキストを設定
+        setTimeout(() => {
+            updateToggleButtonText(savedMode);
+        }, 100);
         
         toggleButton.addEventListener('click', (e) => {
             e.preventDefault();
@@ -2619,12 +2622,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // バックアップ設定ボタンの後に追加
-        const backupButton = accordionContent.querySelector('button[onclick*="backup"]');
-        if (backupButton) {
-            backupButton.parentNode.insertBefore(toggleButton, backupButton.nextSibling);
+        // 列幅リセットボタンの後に追加
+        const columnResetButton = accordionContent.querySelector('button[onclick*="resetColumnWidths"]');
+        if (columnResetButton) {
+            columnResetButton.parentNode.insertBefore(toggleButton, columnResetButton.nextSibling);
         } else {
-            accordionContent.appendChild(toggleButton);
+            // 代替：バックアップ設定ボタンの後に追加
+            const backupButton = accordionContent.querySelector('button[onclick*="backup"]');
+            if (backupButton) {
+                backupButton.parentNode.insertBefore(toggleButton, backupButton.nextSibling);
+            } else {
+                accordionContent.appendChild(toggleButton);
+            }
         }
     }
     

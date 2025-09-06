@@ -1865,7 +1865,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // 初期ボタンテキスト設定
         const savedMode = localStorage.getItem('detailsTableDisplayMode') || 'fit';
-        updateDetailsToggleButtonText(savedMode);
+        // ボタンが作成されてから確実にテキストを設定
+        setTimeout(() => {
+            updateDetailsToggleButtonText(savedMode);
+        }, 100);
         
         toggleButton.addEventListener('click', (e) => {
             e.preventDefault();
