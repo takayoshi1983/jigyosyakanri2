@@ -200,7 +200,7 @@ export class SupabaseAPI {
     static async getMonthlyTasks(clientId = null, month = null) {
         try {
             let query = supabase.from('monthly_tasks').select('*');
-            
+
             // パラメータが指定された場合のみフィルタリング
             if (clientId !== null && month !== null) {
                 query = query.eq('client_id', clientId).eq('month', month);
@@ -211,15 +211,37 @@ export class SupabaseAPI {
                 }
                 return data;
             } else {
-                // 全件取得（analytics用）- RLS問題回避のため並べ替え追加
-                const { data, error } = await query
-                    .order('month', { ascending: false })
-                    .order('id', { ascending: true });
-                if (error) {
-                    console.error('Error fetching all monthly tasks:', error);
-                    return [];
+                // 全件取得（analytics用）- ページネーションで確実に全件取得
+                let allData = [];
+                let from = 0;
+                const batchSize = 1000;
+
+                while (true) {
+                    const { data, error } = await supabase
+                        .from('monthly_tasks')
+                        .select('*')
+                        .order('month', { ascending: false })
+                        .order('id', { ascending: true })
+                        .range(from, from + batchSize - 1);
+
+                    if (error) {
+                        console.error('Error fetching monthly tasks batch:', error);
+                        throw error;
+                    }
+
+                    if (!data || data.length === 0) break;
+
+                    allData = allData.concat(data);
+                    console.log(`月次タスクデータ取得中: ${allData.length}件`);
+
+                    // 取得件数がバッチサイズより少ない場合は最後のバッチ
+                    if (data.length < batchSize) break;
+
+                    from += batchSize;
                 }
-                return data || [];
+
+                console.log(`月次タスクデータ取得完了: 総計${allData.length}件`);
+                return allData;
             }
         } catch (err) {
             console.error(`Error fetching monthly tasks:`, err);
@@ -242,18 +264,36 @@ export class SupabaseAPI {
 
     // 全クライアントの月次タスクを一括取得（パフォーマンス最適化）
     static async getAllMonthlyTasksForAllClients() {
-        const { data, error } = await supabase
-            .from('monthly_tasks')
-            .select('*')
-            .order('month', { ascending: false }) // 新しい月から
-            .order('completed', { ascending: false }) // 完了済みを先に（index.js用）
-            .order('id', { ascending: true }); // RLS問題回避のためidでソート
+        let allData = [];
+        let from = 0;
+        const batchSize = 1000;
 
-        if (error) {
-            console.error('Error fetching all monthly tasks for all clients:', error);
-            throw error;
+        while (true) {
+            const { data, error } = await supabase
+                .from('monthly_tasks')
+                .select('*')
+                .order('month', { ascending: false }) // 新しい月から
+                .order('completed', { ascending: false }) // 完了済みを先に（index.js用）
+                .order('id', { ascending: true }) // RLS問題回避のためidでソート
+                .range(from, from + batchSize - 1);
+
+            if (error) {
+                console.error('Error fetching monthly tasks batch for all clients:', error);
+                throw error;
+            }
+
+            if (!data || data.length === 0) break;
+
+            allData = allData.concat(data);
+
+            // 取得件数がバッチサイズより少ない場合は最後のバッチ
+            if (data.length < batchSize) break;
+
+            from += batchSize;
         }
-        return data;
+
+        console.log(`全クライアント月次タスクデータ取得完了: 総計${allData.length}件`);
+        return allData;
     }
     
     static async createMonthlyTask(taskData) {
@@ -2644,15 +2684,33 @@ export class SupabaseAPI {
     // 期間指定で月次タスクを取得
     static async getMonthlyTasksByPeriod(startPeriod, endPeriod) {
         try {
-            const { data, error } = await supabase
-                .from('monthly_tasks')
-                .select('*')
-                .gte('month', startPeriod)
-                .lte('month', endPeriod)
-                .order('month', { ascending: true });
+            let allData = [];
+            let from = 0;
+            const batchSize = 1000;
 
-            if (error) throw error;
-            return data || [];
+            while (true) {
+                const { data, error } = await supabase
+                    .from('monthly_tasks')
+                    .select('*')
+                    .gte('month', startPeriod)
+                    .lte('month', endPeriod)
+                    .order('month', { ascending: true })
+                    .range(from, from + batchSize - 1);
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) break;
+
+                allData = allData.concat(data);
+
+                // 取得件数がバッチサイズより少ない場合は最後のバッチ
+                if (data.length < batchSize) break;
+
+                from += batchSize;
+            }
+
+            console.log(`期間指定月次タスクデータ取得完了 (${startPeriod}～${endPeriod}): 総計${allData.length}件`);
+            return allData;
 
         } catch (error) {
             console.error('期間指定月次タスク取得エラー:', error);
