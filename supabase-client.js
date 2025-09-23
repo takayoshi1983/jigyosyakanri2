@@ -233,6 +233,9 @@ export class SupabaseAPI {
                     const { data, error } = await supabase
                         .from('monthly_tasks')
                         .select('*')
+                        .order('client_id', { ascending: true })
+                        .order('month', { ascending: false })
+                        .order('completed', { ascending: false })
                         .order('id', { ascending: true })
                         .range(from, from + batchSize - 1);
 
@@ -1556,11 +1559,22 @@ export class SupabaseAPI {
                     const batchSize = 1000;
 
                     while (true) {
-                        const { data, error } = await supabase
+                        let query = supabase
                             .from(tableName)
-                            .select('*')
-                            .order('id', { ascending: true })
-                            .range(from, from + batchSize - 1);
+                            .select('*');
+
+                        // monthly_tasksテーブルの場合は複数ソート
+                        if (tableName === 'monthly_tasks') {
+                            query = query
+                                .order('client_id', { ascending: true })
+                                .order('month', { ascending: false })
+                                .order('completed', { ascending: false })
+                                .order('id', { ascending: true });
+                        } else {
+                            query = query.order('id', { ascending: true });
+                        }
+
+                        const { data, error } = await query.range(from, from + batchSize - 1);
 
                         if (error) {
                             console.error(`${tableName} バックアップ取得エラー:`, error);
@@ -2741,7 +2755,10 @@ export class SupabaseAPI {
                     .select('*')
                     .gte('month', startPeriod)
                     .lte('month', endPeriod)
+                    .order('client_id', { ascending: true })
                     .order('month', { ascending: true })
+                    .order('completed', { ascending: false })
+                    .order('id', { ascending: true })
                     .range(from, from + batchSize - 1);
 
                 if (error) throw error;
