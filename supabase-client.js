@@ -212,6 +212,18 @@ export class SupabaseAPI {
                 return data;
             } else {
                 // 全件取得（analytics用）- ページネーションで確実に全件取得
+
+                // まず総件数を確認
+                const { count, error: countError } = await supabase
+                    .from('monthly_tasks')
+                    .select('*', { count: 'exact', head: true });
+
+                if (countError) {
+                    console.error('件数取得エラー:', countError);
+                } else {
+                    console.log(`📊 総データ件数: ${count}件`);
+                }
+
                 let allData = [];
                 let from = 0;
                 const batchSize = 1000;
@@ -221,7 +233,6 @@ export class SupabaseAPI {
                     const { data, error } = await supabase
                         .from('monthly_tasks')
                         .select('*')
-                        .order('month', { ascending: false })
                         .order('id', { ascending: true })
                         .range(from, from + batchSize - 1);
 
