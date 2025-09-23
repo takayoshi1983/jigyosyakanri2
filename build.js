@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 // 環境変数を取得
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://ocfljsoxxgmnzqlquchx.supabase.co';
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZmxqc294eGdtbnpxbHF1Y2h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxNTQ3ODYsImV4cCI6MjA3MjczMDc4Nn0.-7ehWfqboDccUKpk83Ys50l25sGsFXwG_12U0T33IJ0';
+const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://jhjexgkzzbzxhhlezaoa.supabase.co';
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoamV4Z2t6emJ6eGhobGV6YW9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDUyMzAsImV4cCI6MjA3MjIyMTIzMH0.So1WcCBUEV-mMQu6_k-xRdNn3XDLwGxcCzDT3L402EQ';
 
 // config.js のテンプレート
 const configContent = `// 環境設定ファイル - Vercel環境変数対応（ビルド時生成）
