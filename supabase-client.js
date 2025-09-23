@@ -1768,6 +1768,7 @@ export class SupabaseAPI {
                 const tableData = backupData.tables[tableName];
                 
                 if (Array.isArray(tableData) && tableData.length > 0) {
+                    console.log(`📊 ${tableName} 復元開始: ${tableData.length}件のデータ`);
                     try {
                         // 新しいデータを挿入（IDも含む）
                         // バッチ挿入（Supabaseは1000件制限）
@@ -1776,7 +1777,8 @@ export class SupabaseAPI {
                         
                         for (let i = 0; i < tableData.length; i += batchSize) {
                             const batch = tableData.slice(i, i + batchSize);
-                            
+                            console.log(`📊 ${tableName} バッチ${Math.floor(i/batchSize) + 1}: ${i}〜${i + batch.length - 1} (${batch.length}件)`);
+
                             // upsert方式でIDを保持して確実に復元
                             
                             let upsertOptions = { ignoreDuplicates: false };
@@ -1802,7 +1804,9 @@ export class SupabaseAPI {
                                     code: upsertError.code,
                                     message: upsertError.message,
                                     details: upsertError.details,
-                                    hint: upsertError.hint
+                                    hint: upsertError.hint,
+                                    batchIndex: Math.floor(i/batchSize) + 1,
+                                    batchSize: batch.length
                                 });
                                 
                                 // RLS(Row Level Security)エラーの場合は特別な処理
@@ -1826,12 +1830,15 @@ export class SupabaseAPI {
                             }
                             
                             insertedCount += batch.length;
-                            
+                            console.log(`📊 ${tableName} バッチ完了: 累計${insertedCount}件`);
+
                             // レート制限対策の待機
                             if (i + batchSize < tableData.length) {
                                 await new Promise(resolve => setTimeout(resolve, 200));
                             }
                         }
+
+                        console.log(`📊 ${tableName} 復元完了: ${insertedCount}件 / ${tableData.length}件`);
                         
                         // clientsテーブル復元後、staff_idの整合性を再確認
                         if (tableName === 'clients') {
