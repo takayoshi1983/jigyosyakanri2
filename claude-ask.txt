@@ -1,24 +1,60 @@
-● Update(supabase-client.js)
-  ⎿  Updated supabase-client.js with 1 addition and 1 removal
-       212                } else {
-       213                    // 全件取得（analytics用）- RLS問題回避のため並べ替え追加
-       214                    const { data, error } = await query
-       215 +                      .order('client_id', { ascending: true })
-       216                        .order('month', { ascending: false })
-       217 -                      .order('completed', { ascending: false })
-       217                        .order('id', { ascending: true });
-       218                    if (error) {
-       219                        console.error('Error fetching all monthly tasks:', error);
-
-● Update(supabase-client.js)
-  ⎿  Updated supabase-client.js with 2 additions and 1 removal
-       245            const { data, error } = await supabase
-       246                .from('monthly_tasks')
-       247                .select('*')
-       248 +              .order('client_id', { ascending: true }) // クライアント順
-       249                .order('month', { ascending: false }) // 新しい月から
-       250 -              .order('completed', { ascending: false }) // 完了済みを先に
-       250 +              .order('completed', { ascending: false }) // 完了済みを先に（index.js用）
-       251                .order('id', { ascending: true }); // RLS問題回避のためidでソート
-       252    
-       253            if (error) {
+📊 staffs 復元完了: 10件 / 10件
+supabase-client.js:1806 📊 default_tasks 復元開始: 2件のデータ
+supabase-client.js:1815 📊 default_tasks バッチ1: 0〜1 (2件)
+supabase-client.js:1868 📊 default_tasks バッチ完了: 累計2件
+supabase-client.js:1876 📊 default_tasks 復元完了: 2件 / 2件
+supabase-client.js:1806 📊 clients 復元開始: 90件のデータ
+supabase-client.js:1815 📊 clients バッチ1: 0〜89 (90件)
+supabase-client.js:1868 📊 clients バッチ完了: 累計90件
+supabase-client.js:1876 📊 clients 復元完了: 90件 / 90件
+supabase-client.js:1806 📊 monthly_tasks 復元開始: 1152件のデータ
+supabase-client.js:1815 📊 monthly_tasks バッチ1: 0〜99 (100件)
+supabase-client.js:1868 📊 monthly_tasks バッチ完了: 累計100件
+supabase-client.js:1815 📊 monthly_tasks バッチ2: 100〜199 (100件)
+supabase-client.js:1868 📊 monthly_tasks バッチ完了: 累計200件
+supabase-client.js:1815 📊 monthly_tasks バッチ3: 200〜299 (100件)
+supabase-client.js:1868 📊 monthly_tasks バッチ完了: 累計300件
+supabase-client.js:1815 📊 monthly_tasks バッチ4: 300〜399 (100件)
+index.js:1  POST https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/monthly_tasks?on_conflict=id&columns=%22id%22%2C%22client_id%22%2C%22month%22%2C%22tasks%22%2C%22status%22%2C%22url%22%2C%22memo%22%2C%22created_at%22%2C%22updated_at%22%2C%22task_memos%22%2C%22completed%22&select=id 409 (Conflict)
+(anonymous) @ index.js:1
+(anonymous) @ index.js:1
+i @ index.js:1
+Promise.then
+u @ index.js:1
+(anonymous) @ index.js:1
+I @ index.js:1
+(anonymous) @ index.js:1
+then @ wrapper.mjs:1
+setTimeout
+(anonymous) @ supabase-client.js:1872
+restoreFromBackup @ supabase-client.js:1872
+await in restoreFromBackup
+(anonymous) @ index.js:2653Understand this error
+supabase-client.js:1838 monthly_tasks upsertエラー詳細: {code: '23505', message: 'duplicate key value violates unique constraint "monthly_tasks_client_id_month_key"', details: null, hint: null, batchIndex: 4, …}
+restoreFromBackup @ supabase-client.js:1838
+await in restoreFromBackup
+(anonymous) @ index.js:2653Understand this error
+index.js:1  POST https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/monthly_tasks?columns=%22id%22%2C%22client_id%22%2C%22month%22%2C%22tasks%22%2C%22status%22%2C%22url%22%2C%22memo%22%2C%22created_at%22%2C%22updated_at%22%2C%22task_memos%22%2C%22completed%22&select=id 409 (Conflict)
+(anonymous) @ index.js:1
+(anonymous) @ index.js:1
+i @ index.js:1
+Promise.then
+u @ index.js:1
+(anonymous) @ index.js:1
+I @ index.js:1
+(anonymous) @ index.js:1
+then @ wrapper.mjs:1Understand this error
+supabase-client.js:1860 monthly_tasks insertエラー: {code: '23505', details: null, hint: null, message: 'duplicate key value violates unique constraint "monthly_tasks_pkey"'}
+restoreFromBackup @ supabase-client.js:1860
+await in restoreFromBackup
+(anonymous) @ index.js:2653Understand this error
+supabase-client.js:1900 monthly_tasks 復元エラー: Error: monthly_tasks の復元に失敗: duplicate key value violates unique constraint "monthly_tasks_pkey"
+    at SupabaseAPI.restoreFromBackup (supabase-client.js:1861:43)
+    at async HTMLInputElement.<anonymous> (index.js:2653:27)
+restoreFromBackup @ supabase-client.js:1900
+await in restoreFromBackup
+(anonymous) @ index.js:2653Understand this error
+supabase-client.js:1806 📊 app_links 復元開始: 2件のデータ
+supabase-client.js:1815 📊 app_links バッチ1: 0〜1 (2件)
+supabase-client.js:1868 📊 app_links バッチ完了: 累計2件
+supabase-client.js:1876 📊 app_links 復元完了: 2件 / 2件

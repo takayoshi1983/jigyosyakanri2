@@ -1822,6 +1822,7 @@ export class SupabaseAPI {
                             // テーブルごとのスキーマに応じた処理
                             const tableSchemas = {
                                 'settings': { conflict: 'key', select: 'key' },
+                                'monthly_tasks': { conflict: 'client_id,month', select: 'id' },
                                 // 他のテーブルはidカラムあり（デフォルト）
                             };
                             
@@ -1849,6 +1850,13 @@ export class SupabaseAPI {
                                     console.warn(`${tableName}: RLS制限によりupsertスキップ`);
                                     continue;
                                 }
+
+                                // 重複エラーの場合は警告して継続（削除スキップ時のデータ保護）
+                                if (upsertError.code === '23505') {
+                                    console.warn(`${tableName}: 重複データをスキップ（既存データ保護）`);
+                                    insertedCount += batch.length; // カウントは継続
+                                    continue;
+                                }
                                 
                                 // フォールバック: 通常のinsertを試行
                                 const { data: insertData, error: insertError } = await supabase
@@ -1858,13 +1866,21 @@ export class SupabaseAPI {
                                 
                                 if (insertError) {
                                     console.error(`${tableName} insertエラー:`, insertError);
+
+                                    // 挿入でも重複エラーの場合は警告して継続
+                                    if (insertError.code === '23505') {
+                                        console.warn(`${tableName}: insert重複データをスキップ（既存データ保護）`);
+                                        insertedCount += batch.length; // カウントは継続
+                                        continue;
+                                    }
+
                                     throw new Error(`${tableName} の復元に失敗: ${insertError.message}`);
                                 }
                                 
                             } else {
+                                // upsert成功の場合のカウント
+                                insertedCount += batch.length;
                             }
-                            
-                            insertedCount += batch.length;
                             console.log(`📊 ${tableName} バッチ完了: 累計${insertedCount}件`);
 
                             // レート制限対策の待機
