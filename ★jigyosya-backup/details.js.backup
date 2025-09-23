@@ -84,10 +84,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Screen Orientation API サポートチェック
     if (screen.orientation && typeof screen.orientation.lock === 'function') {
+        console.log('📱 Screen Orientation API supported - using CSS rotation prompt only');
         
         // API は利用可能だが、デバイスでロックが失敗する場合が多いため
         // CSS による横画面推奨メッセージに依存する方針に変更
+        console.log('Current orientation:', {
+            type: screen.orientation.type,
+            angle: screen.orientation.angle,
+            width: window.innerWidth,
+            height: window.innerWidth
+        });
     } else {
+        console.log('📱 Screen Orientation API not supported - using CSS rotation prompt');
     }
     // --- DOM Element Selectors ---
     const clientInfoArea = document.getElementById('client-info-area');
@@ -102,14 +110,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loadingIndicator = document.getElementById('loading-indicator');
     const connectionStatus = document.getElementById('connection-status');
     const statusText = document.getElementById('status-text');
-
-    // --- Additional Cached Elements for Performance ---
-    const generalMemoFieldField = document.getElementById('general-memo');
-    const detailsTable = document.querySelector('#details-table');
-    const notesTable = document.getElementById('notes-table');
-    const detailsWrapper = document.querySelector('.details-table-wrapper');
-    const analyticsButton = document.getElementById('analytics-button');
-    const memoSection = document.querySelector('.memo-section');
 
     // --- Task Edit Modal Elements ---
     const taskEditModal = document.getElementById('task-edit-modal');
@@ -136,15 +136,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let hasUnsavedChanges = false;
     let isEditingMode = true;
 
-    // --- Cached DOM Collections for Performance ---
-    let cachedCheckboxes = null;
-    let cachedMemoInputs = null;
-    let cachedMemoTextareas = null;
-    let cachedUrlInputs = null;
-
     // --- Local Storage Helper Functions ---
     function loadPersonalSettings() {
         const savedSettings = JSON.parse(localStorage.getItem('personalSettings') || '{}');
+        console.log('[Details] Loading personal settings:', savedSettings);
         
         // デフォルト値
         const defaults = {
@@ -156,14 +151,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 既存の古い設定を移行（一度だけ）
         if (savedSettings.enableConfettiEffect === undefined && localStorage.getItem('enableConfettiEffect') !== null) {
             savedSettings.enableConfettiEffect = localStorage.getItem('enableConfettiEffect') === 'true';
+            console.log('[Details] Migrated old confetti setting:', savedSettings.enableConfettiEffect);
         }
         
         const mergedSettings = { ...defaults, ...savedSettings };
+        console.log('[Details] Final personal settings:', mergedSettings);
         return mergedSettings;
     }
 
     function getConfettiEffectSetting() {
         const personalSettings = loadPersonalSettings();
+        console.log('[Details] Confetti effect setting:', personalSettings.enableConfettiEffect);
         return personalSettings.enableConfettiEffect;
     }
 
@@ -345,10 +343,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateFinalizeButtonState() {
         const finalizeYearButton = document.getElementById('finalize-year-button');
         if (!finalizeYearButton) {
+            console.log('finalize-year-button not found, skipping update');
             return;
         }
         
         if (!clientDetails) {
+            console.log('clientDetails not available, skipping update');
             return;
         }
         
@@ -716,9 +716,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             this.elementPool = new Map();
             this.activeElements = new Set();
             
-            // リサイズイベントでモバイル最適化（passive最適化）
+            // リサイズイベントでモバイル最適化
             this.handleResize = this.debounce(this.optimizeForViewport.bind(this), 250);
-            window.addEventListener('resize', this.handleResize, { passive: true });
+            window.addEventListener('resize', this.handleResize);
             
             // 初期化時にビューポート最適化
             this.optimizeForViewport();
@@ -744,6 +744,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const randomIndex = Math.floor(Math.random() * this.effects.length);
             this.effects[randomIndex]();
+            console.log(`🎉 モダン達成エフェクト実行: ${randomIndex + 1}番目`);
             return randomIndex;
         }
 
@@ -1085,15 +1086,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         notesTableBody.innerHTML = urlRowHtml + memoRowHtml;
-        updateDOMCache(); // キャッシュを更新
         addNotesEventListeners();
-
+        
         // 月次メモ欄にURL自動リンク化を適用
         setTimeout(() => {
-            if (!cachedMemoTextareas) {
-                cachedMemoTextareas = notesTableBody.querySelectorAll('textarea[data-field="memo"]');
-            }
-            cachedMemoTextareas.forEach(textarea => {
+            const memoTextareas = document.querySelectorAll('#notes-table textarea[data-field="memo"]');
+            memoTextareas.forEach(textarea => {
                 if (!textarea.parentNode.querySelector('.linked-text-display')) {
                     createLinkedTextDisplay(textarea);
                 }
@@ -1101,46 +1099,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 100);
     }
 
-    // --- DOM Cache Update Function ---
-    function updateDOMCache() {
-        // DOM変更後にキャッシュを無効化・更新
-        cachedCheckboxes = null;
-        cachedMemoInputs = null;
-        cachedMemoTextareas = null;
-        cachedUrlInputs = null;
-    }
-
-    function getCachedCheckboxes() {
-        if (!cachedCheckboxes) {
-            cachedCheckboxes = detailsTableBody.querySelectorAll('input[type="checkbox"]');
-        }
-        return cachedCheckboxes;
-    }
-
-    function getCachedMemoInputs() {
-        if (!cachedMemoInputs) {
-            cachedMemoInputs = detailsTableBody.querySelectorAll('.checkbox-memo-input');
-        }
-        return cachedMemoInputs;
-    }
-
-    function getCachedMemoTextareas() {
-        if (!cachedMemoTextareas) {
-            cachedMemoTextareas = notesTableBody.querySelectorAll('textarea[data-field="memo"]');
-        }
-        return cachedMemoTextareas;
-    }
-
-    function getCachedUrlInputs() {
-        if (!cachedUrlInputs) {
-            cachedUrlInputs = notesTableBody.querySelectorAll('input[data-field="url"]');
-        }
-        return cachedUrlInputs;
-    }
-
     // --- Event Listeners ---
     function addCheckboxEventListeners() {
-        getCachedCheckboxes().forEach(checkbox => {
+        detailsTableBody.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', (e) => {
                 setUnsavedChanges(true);
                 updateProgressDisplay();
@@ -1164,15 +1125,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // メモ入力欄のイベントリスナーを追加
-        getCachedMemoInputs().forEach(memoInput => {
+        detailsTableBody.querySelectorAll('.checkbox-memo-input').forEach(memoInput => {
             memoInput.addEventListener('input', (e) => {
                 setUnsavedChanges(true);
             });
         });
 
         // 全体メモ欄の変更検知を追加
-        if (generalMemoFieldField) {
-            generalMemoFieldField.addEventListener('input', (e) => {
+        const generalMemoField = document.getElementById('general-memo');
+        if (generalMemoField) {
+            generalMemoField.addEventListener('input', (e) => {
                 setUnsavedChanges(true);
             });
         }
@@ -1211,7 +1173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         // 初期表示のために全URL入力をチェック
-        getCachedUrlInputs().forEach(updateUrlInputStyle);
+        notesTableBody.querySelectorAll('input[data-field="url"]').forEach(updateUrlInputStyle);
     }
 
     function updateProgressDisplay() {
@@ -1259,7 +1221,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const monthlyTasksToUpdate = {};
 
-            getCachedCheckboxes().forEach(cb => {
+            detailsTableBody.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                 const month = cb.dataset.month;
                 const task = cb.dataset.task;
                 if (!monthlyTasksToUpdate[month]) monthlyTasksToUpdate[month] = { tasks: {} };
@@ -1267,7 +1229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             // メモデータの保存ロジックを修正
-            const memoInputs = getCachedMemoInputs();
+            const memoInputs = detailsTableBody.querySelectorAll('.checkbox-memo-input');
             memoInputs.forEach(memoInput => {
                 const month = memoInput.dataset.month;
                 const task = memoInput.dataset.task;
@@ -1284,7 +1246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 monthlyTasksToUpdate[month].task_memos[task] = memoValue;
             });
 
-            [...getCachedUrlInputs(), ...getCachedMemoTextareas()].forEach(input => {
+            notesTableBody.querySelectorAll('input, textarea').forEach(input => {
                 const month = input.dataset.month;
                 const field = input.dataset.field;
                 if (!monthlyTasksToUpdate[month]) monthlyTasksToUpdate[month] = {};
@@ -1340,20 +1302,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 全体メモ保存処理
     async function saveOverallMemo() {
-        if (generalMemoFieldField && clientId) {
-            const memoValue = generalMemoFieldField.value.trim();
+        const generalMemoField = document.getElementById('general-memo');
+        if (generalMemoField && clientId) {
+            const memoValue = generalMemoField.value.trim();
             await SupabaseAPI.updateClient(clientId, { 
                 overall_memo: memoValue,
                 updated_at: getJapanTime()
             });
+            console.log('[Details] Overall memo saved:', memoValue);
         }
     }
 
     // 全体メモ読み込み処理
     function loadOverallMemo() {
-        if (generalMemoFieldField && clientDetails) {
+        const generalMemoField = document.getElementById('general-memo');
+        if (generalMemoField && clientDetails) {
             const memoValue = clientDetails.overall_memo || '';
-            generalMemoFieldField.value = memoValue;
+            generalMemoField.value = memoValue;
+            console.log('[Details] Overall memo loaded:', memoValue);
         }
     }
 
@@ -1494,7 +1460,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const state = {};
         
         // 全てのチェックボックスの状態を収集
-        const checkboxes = getCachedCheckboxes();
+        const checkboxes = document.querySelectorAll('#details-table input[type="checkbox"]');
         checkboxes.forEach(checkbox => {
             const month = checkbox.dataset.month;
             const task = checkbox.dataset.task;
@@ -1504,7 +1470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         
         // 全てのメモの内容を収集
-        const memoInputs = getCachedMemoInputs();
+        const memoInputs = document.querySelectorAll('.checkbox-memo-input');
         memoInputs.forEach(memoInput => {
             const month = memoInput.dataset.month;
             const task = memoInput.dataset.task;
@@ -1513,6 +1479,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             state[month].memos[task] = memoInput.value || '';
         });
         
+        console.log('Frontend state collected:', state);
         return state;
     }
 
@@ -2217,13 +2184,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // URL自動リンク化初期化
     function initializeAutoLinkify() {
         // 全体メモ欄
-        if (generalMemoFieldField) {
-            createLinkedTextDisplay(generalMemoFieldField);
+        const generalMemo = document.getElementById('general-memo');
+        if (generalMemo) {
+            createLinkedTextDisplay(generalMemo);
         }
 
         // 月次メモ欄（動的に生成されるため、定期的にチェック）
         setTimeout(() => {
-            const memoTextareas = getCachedMemoTextareas();
+            const memoTextareas = document.querySelectorAll('#notes-table textarea[data-field="memo"]');
             memoTextareas.forEach(textarea => {
                 if (!textarea.parentNode.querySelector('.linked-text-display')) {
                     createLinkedTextDisplay(textarea);
@@ -2248,6 +2216,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         function adjustDetailsTableLayout() {
+            const detailsWrapper = document.querySelector('.details-table-wrapper');
+            const detailsTable = document.querySelector('.details-table');
+            const notesTable = document.getElementById('notes-table');
             
             if (!detailsWrapper || !detailsTable) return;
             
@@ -2281,6 +2252,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         function adjustDetailsColumnWidths(mode) {
+            const detailsTable = document.querySelector('.details-table');
+            const notesTable = document.getElementById('notes-table');
             if (!detailsTable) return;
             
             // 固定幅で統一（CSSと連動）
@@ -2326,6 +2299,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         function toggleDetailsScrollMode() {
+            const detailsWrapper = document.querySelector('.details-table-wrapper');
+            const detailsTable = document.querySelector('.details-table');
+            const notesTable = document.getElementById('notes-table');
             
             if (!detailsWrapper || !detailsTable) return;
             
@@ -2378,6 +2354,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 保存された設定に基づいて初期モードを適用
         function applyStoredDetailsTableMode() {
             const savedMode = getStoredDetailsTableMode();
+            const detailsWrapper = document.querySelector('.details-table-wrapper');
+            const detailsTable = document.querySelector('.details-table');
+            const notesTable = document.getElementById('notes-table');
             
             if (!detailsWrapper || !detailsTable) return;
             
@@ -2409,14 +2388,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        // ウィンドウリサイズイベント（passive最適化）
+        // ウィンドウリサイズイベント
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 adjustDetailsTableLayout();
                 adjustMemoWidth(); // リサイズ時にメモ幅も調整
             }, 150);
-        }, { passive: true });
+        });
         
         // 初期調整と保存された設定の適用
         setTimeout(() => {
@@ -2428,7 +2407,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 詳細画面ボタンテキストを更新する関数
     function updateDetailsToggleButtonText(mode) {
-        const toggleButton = detailsTable.querySelector('#details-table-mode-toggle-btn');
+        const toggleButton = document.querySelector('#details-table-mode-toggle-btn');
         if (!toggleButton) return;
         
         if (mode === 'fit') {
@@ -2440,6 +2419,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 全体メモの幅をテーブル幅に合わせる関数
     function adjustMemoWidth() {
+        const detailsTable = document.querySelector('#details-table');
         const memoSection = document.querySelector('.memo-section');
         const memoTextarea = document.querySelector('#general-memo');
         
@@ -2525,7 +2505,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const rotateMessage = document.querySelector('.rotate-message');
             if (rotateMessage) {
                 rotateMessage.remove();
+                console.log('PC環境のため横向きメッセージを削除しました');
             } else {
+                console.log('横向きメッセージ要素が見つかりません');
             }
         }
     }

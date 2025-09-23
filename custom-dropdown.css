@@ -12,7 +12,7 @@
     display: flex;
     align-items: center;
     justify-content: center; /* Horizontally center the text */
-    padding: 8px 30px 8px 12px; /* Adjust padding for arrow */
+    padding: 17px 30px 8px 12px; /* Adjust padding for arrow */
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #fff;
@@ -50,7 +50,7 @@
 
 
 .custom-options {
-    position: absolute;
+    position: sticky; /* Changed from absolute to sticky */
     top: 100%; /* Position below the trigger */
     left: 0;
     right: 0;
@@ -58,8 +58,8 @@
     border-top: none;
     border-radius: 0 0 4px 4px;
     background-color: #fff;
-    z-index: 1000; /* Ensure it's above sticky headers and other content */
-    max-height: 200px; /* Scrollable if many options */
+    z-index: 1000; /* sticky-header-areaより確実に上に表示 */
+    max-height: 400px; /* Scrollable if many options */
     overflow-y: auto;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: none; /* Hidden by default */

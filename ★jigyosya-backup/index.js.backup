@@ -40,7 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasksKityoContainer = document.getElementById('tasks-kityo');
     const tasksJikeiContainer = document.getElementById('tasks-jikei');
 
-    // URL Settings Button (moved to management accordion)
+    // Other Apps Accordion elements
+    const otherAppsAccordion = document.getElementById('other-apps-accordion');
+    const otherAppsAccordionHeader = otherAppsAccordion.querySelector('.accordion-header');
+    const otherAppsAccordionContent = otherAppsAccordion.querySelector('.accordion-content');
     const urlSettingsButton = document.getElementById('url-settings-button');
 
     // Basic Settings Modal elements
@@ -144,7 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Table Column Width Management ---
-    // Removed resetColumnWidths function as it's no longer needed
+    function resetColumnWidths() {
+        if (window.tableResizer) {
+            window.tableResizer.resetColumnWidths();
+        } else {
+            toast.warning('テーブルリサイザーが初期化されていません');
+        }
+    }
 
     // --- Authentication Functions ---
     function showAuthStatus(message, type = 'info') {
@@ -164,14 +173,16 @@ document.addEventListener('DOMContentLoaded', () => {
     async function signInWithGoogle() {
         try {
             showAuthStatus('Googleでログイン中...', 'warning');
-
+            console.log('Starting Google sign in...');
+            
             const { data, error } = await SupabaseAPI.signInWithGoogle();
-
+            
             if (error) {
                 console.error('Sign in error:', error);
                 showAuthStatus('❌ ログインエラー: ' + error.message, 'error');
                 return false;
             } else {
+                console.log('Sign in success:', data);
                 showAuthStatus('✅ ログイン成功！リダイレクト中...', 'success');
                 return true;
             }
@@ -244,12 +255,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkAuthState() {
         try {
-            const user = await SupabaseAPI.getCurrentUserWithRouting();
-
+            console.log('Checking authentication state...');
+            const user = await SupabaseAPI.getCurrentUser();
+            
             if (user) {
+                console.log('User authenticated:', user.email);
                 updateUserDisplay(user);
                 return true;
             } else {
+                console.log('User not authenticated - showing auth modal');
                 authModal.style.display = 'flex';
                 return false;
             }
@@ -279,6 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for auth state changes
         if (SupabaseAPI.supabase && SupabaseAPI.supabase.auth) {
             SupabaseAPI.supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log('Auth state changed:', event, session?.user?.email);
+                
                 if (event === 'SIGNED_IN' && session?.user) {
                     updateUserDisplay(session.user);
                     // Initialize app when user signs in
@@ -293,6 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initial Setup ---
     async function initializeApp() {
+        console.log('[Main] Starting application initialization...');
+        
         // Add auth event listeners first
         addAuthEventListeners();
         
@@ -301,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Only initialize app if authenticated
         if (!isAuthenticated) {
+            console.log('[Main] User not authenticated, showing auth modal');
             authModal.style.display = 'flex';
             hideStatus();
             return;
@@ -312,9 +331,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize app when authenticated
     async function initializeAuthenticatedApp() {
         if (isInitialized) {
+            console.log('Initialization already in progress or completed, skipping.');
             return;
         }
         isInitialized = true;
+        console.log('Starting authenticated app initialization...');
 
         try {
             const authCheckToast = toast.loading('ユーザー権限を確認中...');
@@ -361,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Disable admin buttons if user is not an admin
             if (userRole !== 'admin') {
+                console.log(`User role is '${userRole}'. Disabling admin buttons.`);
                 const manageStaffButton = document.getElementById('manage-staff-button');
                 // resetDatabaseButton は基本設定モーダル内に移動済み
                 
@@ -616,13 +638,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Staff modal - with debugging
+        console.log('Setting up staff modal event listeners...');
         const manageStaffBtn = document.getElementById('manage-staff-button');
+        console.log('manageStaffBtn found:', manageStaffBtn);
         if (manageStaffBtn) {
+            console.log('Adding click listener to manage-staff-button');
             manageStaffBtn.addEventListener('click', (e) => {
+                console.log('manage-staff-button clicked!', e);
                 e.preventDefault();
                 e.stopPropagation();
                 openStaffEditModal();
             });
+            console.log('Event listener added successfully');
         } else {
             console.error('manage-staff-button not found in DOM');
         }
@@ -669,15 +696,36 @@ document.addEventListener('DOMContentLoaded', () => {
         // Accordion (Management)
         accordionHeader.addEventListener('click', toggleAccordion);
 
-        // Other Apps Accordion removed - functionality moved to analytics.html
+        // Accordion (Other Apps)
+        otherAppsAccordionHeader.addEventListener('click', () => {
+            const isExpanded = otherAppsAccordionContent.style.display === 'block';
+            otherAppsAccordionContent.style.display = isExpanded ? 'none' : 'block';
+            
+            const icon = otherAppsAccordionHeader.querySelector('.accordion-icon');
+            if (icon) {
+                icon.textContent = isExpanded ? '▼' : '▲';
+            }
+
+            // Add/remove global click listener for this accordion
+            if (!isExpanded) { // If accordion is now expanded
+                document.addEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, otherAppsAccordion, otherAppsAccordionContent, otherAppsAccordionHeader));
+            } else { // If accordion is now collapsed
+                document.removeEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, otherAppsAccordion, otherAppsAccordionContent, otherAppsAccordionHeader));
+            }
+        });
 
         // URL設定ボタンのイベントリスナー - with debugging
+        console.log('Setting up URL settings button event listener...');
+        console.log('urlSettingsButton found:', urlSettingsButton);
         if (urlSettingsButton) {
+            console.log('Adding click listener to url-settings-button');
             urlSettingsButton.addEventListener('click', (e) => {
+                console.log('url-settings-button clicked!', e);
                 e.preventDefault();
                 e.stopPropagation();
                 openUrlSettingsModal();
             });
+            console.log('URL settings event listener added successfully');
         } else {
             console.error('url-settings-button not found in DOM');
         }
@@ -696,8 +744,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Table header sorting
+        console.log('Adding sort event listener to:', clientsTableHeadRow);
         if (clientsTableHeadRow) {
             clientsTableHeadRow.addEventListener('click', handleSort);
+            console.log('Sort event listener added successfully');
         } else {
             console.error('clientsTableHeadRow not found!');
         }
@@ -706,15 +756,20 @@ document.addEventListener('DOMContentLoaded', () => {
         clientsTableBody.addEventListener('click', handleClientClick);
 
         // Add client button - with debugging
+        console.log('Setting up add client button event listener...');
         const addClientBtn = document.getElementById('add-client-button');
+        console.log('addClientBtn found:', addClientBtn);
         if (addClientBtn) {
+            console.log('Adding click listener to add-client-button');
             addClientBtn.addEventListener('click', (e) => {
+                console.log('add-client-button clicked!', e);
                 e.preventDefault();
                 e.stopPropagation();
                 // 新規作成画面でもスタッフデータをキャッシュ
                 sessionStorage.setItem('cached_staffs_data', JSON.stringify(staffs));
                 window.location.href = 'edit.html';
             });
+            console.log('Add client event listener added successfully');
         } else {
             console.error('add-client-button not found in DOM');
         }
@@ -747,46 +802,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('import-csv-button-modal').addEventListener('click', () => {
             document.getElementById('csv-file-input').click();
         });
-        document.getElementById('reset-database-button-modal').addEventListener('click', openDatabaseResetModal);
+        document.getElementById('reset-database-button-modal').addEventListener('click', resetDatabase);
         document.getElementById('default-tasks-settings-button-modal').addEventListener('click', () => {
             closeBasicSettingsModal();
             openDefaultTasksModal();
         });
+        document.getElementById('reset-column-widths-button').addEventListener('click', resetColumnWidths);
 
         // 管理者レポートボタンを追加（管理者権限の場合のみ）
         addAdminReportButton();
-
-        // データベース初期化モーダルのイベントリスナー
-        const appNameInput = document.getElementById('app-name-input');
-        const confirmResetButton = document.getElementById('confirm-reset-button');
-        const cancelResetButton = document.getElementById('cancel-reset-button');
-
-        if (appNameInput) {
-            appNameInput.addEventListener('input', validateAppName);
-            appNameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !confirmResetButton.disabled) {
-                    resetDatabase();
-                }
-            });
-        }
-
-        if (confirmResetButton) {
-            confirmResetButton.addEventListener('click', resetDatabase);
-        }
-
-        if (cancelResetButton) {
-            cancelResetButton.addEventListener('click', closeDatabaseResetModal);
-        }
-
-        // モーダル外クリックで閉じる
-        const databaseResetModal = document.getElementById('database-reset-modal');
-        if (databaseResetModal) {
-            databaseResetModal.addEventListener('click', (e) => {
-                if (e.target === databaseResetModal) {
-                    closeDatabaseResetModal();
-                }
-            });
-        }
     }
 
     // --- Client Management ---
@@ -849,6 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 custom_tasks_by_year: customTasksByYear
             });
 
+            console.log('Initial tasks set up for client:', client.name, 'Method:', accountingMethod, 'Tasks:', defaultTaskList);
         } catch (error) {
             console.error('Error setting up initial tasks for client:', client.id, error);
         }
@@ -1071,8 +1096,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderAppLinksButtons() {
-        // Other Apps functionality moved to analytics.html
-        return;
+        const container = otherAppsAccordionContent.querySelector('.accordion-buttons-container');
+        if (!container) return;
+
+        // Clear existing buttons except the settings button
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+        }
+
+        // Add a separator if there are links
+        if (appLinks.length > 0) {
+            const separator = document.createElement('hr');
+            separator.style.margin = '8px 0';
+            container.appendChild(separator);
+        }
+
+        appLinks.forEach(link => {
+            const button = document.createElement('button');
+            button.className = 'accordion-button app-link-button'; // Apply new style
+            button.textContent = link.name;
+            button.addEventListener('click', () => {
+                window.open(link.url, '_blank', 'noopener,noreferrer');
+            });
+            container.appendChild(button);
+        });
     }
 
     // 編集画面に遷移（データキャッシュ付き）
@@ -1104,6 +1151,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Staff Management ---
     function openStaffEditModal() {
         try {
+            console.log('Opening staff edit modal...');
+            console.log('staffEditModal element:', staffEditModal);
             
             // キャッシュされたstaffsデータを使用（DB問い合わせ不要）
             originalStaffsState = JSON.parse(JSON.stringify(staffs));
@@ -1113,6 +1162,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (staffEditModal) {
                 staffEditModal.style.display = 'block';
+                console.log('Modal display set to block');
+                console.log('Modal computed style:', window.getComputedStyle(staffEditModal));
             } else {
                 console.error('staffEditModal element not found!');
             }
@@ -1304,6 +1355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const toDelete = originalStaffsState.filter(o => !currentEditingStaffs.some(c => c.id === o.id));
 
+            console.log('Staff operations:', { toDelete, toUpdate, toCreate });
 
             // --- Execute DB Operations ---
             const operations = [];
@@ -1427,6 +1479,7 @@ document.addEventListener('DOMContentLoaded', () => {
             URL.revokeObjectURL(link.href);
             
             toast.update(exportToast, `CSV抽出完了: ${filename}`, 'success');
+            console.log(`Staff CSV exported: ${filename}, ${staffs.length} records`);
             
         } catch (error) {
             console.error('Staff CSV export error:', error);
@@ -1531,7 +1584,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 個別設定のローカルストレージ管理 ---
     function loadPersonalSettings() {
         const savedSettings = JSON.parse(localStorage.getItem('personalSettings') || '{}');
-
+        console.log('Loading personal settings:', savedSettings);
+        
         // デフォルト値
         const defaults = {
             fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
@@ -1542,14 +1596,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // 既存の古い設定を移行（一度だけ）
         if (savedSettings.enableConfettiEffect === undefined && localStorage.getItem('enableConfettiEffect') !== null) {
             savedSettings.enableConfettiEffect = localStorage.getItem('enableConfettiEffect') === 'true';
+            console.log('Migrated old confetti setting:', savedSettings.enableConfettiEffect);
         }
         
         const mergedSettings = { ...defaults, ...savedSettings };
+        console.log('Final personal settings:', mergedSettings);
         return mergedSettings;
     }
 
     function savePersonalSettings(settings) {
+        console.log('Saving personal settings:', settings);
         localStorage.setItem('personalSettings', JSON.stringify(settings));
+        console.log('Saved to localStorage:', localStorage.getItem('personalSettings'));
     }
 
     function applyPersonalSettings(settings) {
@@ -1704,6 +1762,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function updateDefaultTask(accountingMethod, tasks) {
         try {
             await SupabaseAPI.upsertDefaultTasks(accountingMethod, tasks);
+            console.log('Updated default tasks for', accountingMethod, ':', tasks);
         } catch (error) {
             console.error('Error updating default tasks:', error);
             throw error;
@@ -1856,12 +1915,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Setup Functions ---
     function setupTableHeaders() {
+        console.log('Setting up table headers...');
+        console.log('clientsTableHeadRow:', clientsTableHeadRow);
         if (!clientsTableHeadRow) return;
 
         const headers = clientsTableHeadRow.querySelectorAll('th');
+        console.log('Found headers:', headers.length);
         headers.forEach((header, index) => {
             // 既にアイコンが追加されている場合は何もしない
             if (header.querySelector('.sort-icon')) {
+                console.log('Header already has sort icon:', header.textContent.trim());
                 return;
             }
 
@@ -1869,6 +1932,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 「ドラッグして幅を調整」のテキストを除去して判定
             const cleanHeaderText = headerText.replace(/ドラッグして幅を調整$/, '');
             const sortKey = headerMap[cleanHeaderText] || headerMap[headerText];
+            console.log(`Header ${index}: "${headerText}" -> cleanText: "${cleanHeaderText}" -> sortKey: "${sortKey}"`);
             
             if (sortKey) {
                 header.style.cursor = 'pointer';
@@ -1879,26 +1943,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5-5 5 5H7z"/><path d="M7 14l5 5 5-5H7z"/></svg>';
                 icon.style.cssText = 'margin-left: 8px; opacity: 0.4; transition: opacity 0.2s; vertical-align: middle;';
                 header.appendChild(icon);
+                console.log('Added sort icon to:', headerText);
             } else {
                 // ソートできない列（「編集」など）は通常のカーソルのままにする
                 header.style.cursor = 'default';
+                console.log(`Header "${cleanHeaderText}" is not sortable, skipping sort icon`);
             }
         });
     }
 
     function handleSort(e) {
+        console.log('Sort clicked:', e.target);
         const header = e.target.closest('th');
+        console.log('Header found:', header);
         if (!header) return;
 
         const sortKey = header.getAttribute('data-sort-key');
+        console.log('Sort key:', sortKey);
         if (!sortKey) return;
 
+        console.log('Current sort:', currentSortKey, currentSortDirection);
         if (currentSortKey === sortKey) {
             currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
         } else {
             currentSortKey = sortKey;
             currentSortDirection = 'asc';
         }
+        console.log('New sort:', currentSortKey, currentSortDirection);
 
         // 無限ループ防止フラグ
         window.isRenderingClients = true;
@@ -2200,59 +2271,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
     
-    // --- Database Reset Modal Functions ---
-    function openDatabaseResetModal() {
-        const modal = document.getElementById('database-reset-modal');
-        const input = document.getElementById('app-name-input');
-        const confirmButton = document.getElementById('confirm-reset-button');
-        const status = document.getElementById('verification-status');
-
-        // リセット処理
-        input.value = '';
-        input.className = '';
-        confirmButton.disabled = true;
-        status.textContent = '';
-        status.className = 'verification-status';
-
-        modal.style.display = 'flex';
-        input.focus();
-    }
-
-    function closeDatabaseResetModal() {
-        const modal = document.getElementById('database-reset-modal');
-        modal.style.display = 'none';
-    }
-
-    function validateAppName() {
-        const input = document.getElementById('app-name-input');
-        const confirmButton = document.getElementById('confirm-reset-button');
-        const status = document.getElementById('verification-status');
-        const expectedName = '事業者管理アプリ';
-
-        if (input.value === expectedName) {
-            input.classList.remove('invalid');
-            input.classList.add('valid');
-            confirmButton.disabled = false;
-            status.textContent = '✓ 正しく入力されました';
-            status.className = 'verification-status valid';
-        } else if (input.value.length > 0) {
-            input.classList.remove('valid');
-            input.classList.add('invalid');
-            confirmButton.disabled = true;
-            status.textContent = '✗ アプリ名が正しくありません';
-            status.className = 'verification-status invalid';
-        } else {
-            input.className = '';
-            confirmButton.disabled = true;
-            status.textContent = '';
-            status.className = 'verification-status';
-        }
-    }
-
     // --- Database Reset Function ---
     async function resetDatabase() {
-        // モーダルを閉じる
-        closeDatabaseResetModal();
+        const firstConfirm = confirm('⚠️ 危険な操作です ⚠️\n\nこの操作により以下が実行されます：\n• 全てのクライアントデータが削除されます\n• 全ての月次タスクデータが削除されます\n• サンプルデータで初期化されます\n\nこの操作は元に戻せません。続行しますか？');
+        
+        if (!firstConfirm) return;
+        
+        const secondConfirm = confirm('本当に実行しますか？\n\n全てのデータが失われます。\n「はい」をクリックすると実行されます。');
+        
+        if (!secondConfirm) return;
         
         try {
             const resetToast = toast.loading('データベースを初期化中... この処理には時間がかかります');
@@ -2282,13 +2309,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Accordion --- (常に開いた状態に固定のためコメントアウト)
+    // --- Accordion ---
     function toggleAccordion() {
-        // アコーディオンを常に開いた状態に維持するため、機能をコメントアウト
-        /*
         const isExpanded = accordionContent.style.display === 'block';
         accordionContent.style.display = isExpanded ? 'none' : 'block';
-
+        
         const icon = accordionHeader.querySelector('.accordion-icon');
         if (icon) {
             icon.textContent = isExpanded ? '▼' : '▲';
@@ -2300,8 +2325,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { // If accordion is now collapsed
             document.removeEventListener('click', closeAccordionOnClickOutside);
         }
-        */
-        return;
     }
 
     function closeAccordionOnClickOutside(event) {
@@ -2317,10 +2340,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Other Apps Accordion function removed - functionality moved to analytics.html
+    function closeOtherAppsAccordionOnClickOutside(event, accordionContainer, accordionContent, accordionHeader) {
+        // Check if the clicked element is inside the accordion header or content
+        if (!accordionContainer.contains(event.target)) {
+            // If not, close the accordion
+            accordionContent.style.display = 'none';
+            const icon = accordionHeader.querySelector('.accordion-icon');
+            if (icon) {
+                icon.textContent = '▼'; // Reset icon to closed state
+            }
+            document.removeEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, accordionContainer, accordionContent, accordionHeader)); // Remove listener
+        }
+    }
 
     // --- URL Settings Modal Functions ---
     function openUrlSettingsModal() {
+        console.log('Opening URL settings modal...');
+        console.log('urlSettingsModal element:', urlSettingsModal);
         
         originalAppLinksState = JSON.parse(JSON.stringify(appLinks));
         currentEditingAppLinks = JSON.parse(JSON.stringify(appLinks));
@@ -2328,6 +2364,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (urlSettingsModal) {
             urlSettingsModal.style.display = 'block';
+            console.log('URL modal display set to block');
+            console.log('URL modal computed style:', window.getComputedStyle(urlSettingsModal));
         } else {
             console.error('urlSettingsModal element not found!');
         }
@@ -2790,30 +2828,253 @@ document.addEventListener('DOMContentLoaded', () => {
             settings.time = time;
             settings.method = 'cloud';
             SupabaseAPI.saveBackupSettings(settings);
+            console.log('✅ 自動バックアップが有効化されました');
         },
         disable: () => {
             const settings = SupabaseAPI.getBackupSettings();
             settings.enabled = false;
             SupabaseAPI.saveBackupSettings(settings);
+            console.log('❌ 自動バックアップが無効化されました');
         }
     };
 
-    // 基本的なレスポンシブテーブル機能
-    function initBasicResponsiveTable() {
-        const tableContainer = document.querySelector('.table-container');
-        const clientsTable = document.getElementById('clients-table');
-
-        if (!tableContainer || !clientsTable) return;
-
-        // 基本的なレスポンシブ設定
-        tableContainer.style.overflowX = 'auto';
-
-        // フォントサイズをユーザー設定に合わせる
-        const userFontSize = getCurrentFontSize() / 100;
-        clientsTable.style.fontSize = `${14 * userFontSize}px`;
+    // レスポンシブテーブル幅調整機能
+    function initResponsiveTable() {
+        let resizeTimeout;
+        
+        // ローカルストレージから設定を読み込み
+        function getStoredTableMode() {
+            return localStorage.getItem('tableDisplayMode') || 'fit';
+        }
+        
+        // ローカルストレージに設定を保存
+        function setStoredTableMode(mode) {
+            localStorage.setItem('tableDisplayMode', mode);
+        }
+        
+        function adjustTableLayout() {
+            const tableContainer = document.querySelector('.table-container');
+            const clientsTable = document.getElementById('clients-table');
+            
+            if (!tableContainer || !clientsTable) return;
+            
+            // 保存された設定を確認
+            const savedMode = getStoredTableMode();
+            if (savedMode === 'scroll') {
+                // スクロールモードが保存されている場合はスキップ
+                return;
+            }
+            
+            // コンテナ幅を取得
+            const containerWidth = tableContainer.offsetWidth;
+            const zoomLevel = window.devicePixelRatio || 1;
+            
+            // フィットモードの場合のみ横スクロール無効化
+            tableContainer.style.overflowX = 'hidden';
+            
+            // ウィンドウ幅に基づく動的調整（ユーザー設定を考慮）
+            const userFontSize = getCurrentFontSize() / 100;
+            if (containerWidth < 800) {
+                // 狭い画面では最小限の列幅
+                clientsTable.style.fontSize = `${11 * userFontSize}px`;
+                adjustColumnWidths(containerWidth, 'compact');
+            } else if (containerWidth < 1200) {
+                // 中程度の画面では適度な列幅
+                clientsTable.style.fontSize = `${12 * userFontSize}px`;
+                adjustColumnWidths(containerWidth, 'medium');
+            } else {
+                // 広い画面では標準の列幅
+                clientsTable.style.fontSize = `${14 * userFontSize}px`;
+                adjustColumnWidths(containerWidth, 'standard');
+            }
+        }
+        
+        function adjustColumnWidths(containerWidth, mode) {
+            const table = document.getElementById('clients-table');
+            if (!table) return;
+            
+            const ths = table.querySelectorAll('th');
+            const totalCols = ths.length;
+            
+            // モード別の列幅配分（%）
+            const widthDistribution = {
+                compact: [8, 35, 12, 15, 10, 8, 7, 5],    // 狭い画面
+                medium: [6, 30, 12, 18, 12, 10, 8, 4],     // 中程度
+                standard: [5, 28, 12, 20, 15, 10, 8, 2]    // 広い画面
+            };
+            
+            const widths = widthDistribution[mode] || widthDistribution.standard;
+            
+            ths.forEach((th, index) => {
+                if (widths[index]) {
+                    th.style.width = `${widths[index]}%`;
+                    th.style.minWidth = mode === 'compact' ? '30px' : '50px';
+                    th.style.maxWidth = 'none';
+                }
+            });
+        }
+        
+        function toggleScrollMode() {
+            const tableContainer = document.querySelector('.table-container');
+            const clientsTable = document.getElementById('clients-table');
+            
+            if (!tableContainer || !clientsTable) return;
+            
+            const currentMode = getStoredTableMode();
+            let newMode, newModeText;
+            
+            if (currentMode === 'fit') {
+                // フィットモード→スクロールモードに切り替え
+                tableContainer.style.overflowX = 'auto';
+                const userFontSize = getCurrentFontSize() / 100;
+                clientsTable.style.fontSize = `${14 * userFontSize}px`;
+                // 元の幅に戻す
+                const ths = clientsTable.querySelectorAll('th');
+                ths.forEach(th => {
+                    th.style.width = '';
+                    th.style.minWidth = '';
+                    th.style.maxWidth = '';
+                });
+                newMode = 'scroll';
+                newModeText = 'スクロールモード';
+            } else {
+                // スクロールモード→フィットモードに切り替え
+                tableContainer.style.overflowX = 'hidden';
+                adjustTableLayout();
+                newMode = 'fit';
+                newModeText = 'フィットモード';
+            }
+            
+            // 設定をローカルストレージに保存
+            setStoredTableMode(newMode);
+            
+            // ボタンテキストを更新
+            updateToggleButtonText(newMode);
+            
+            return newModeText;
+        }
+        
+        // 保存された設定に基づいて初期モードを適用
+        function applyStoredTableMode() {
+            const savedMode = getStoredTableMode();
+            const tableContainer = document.querySelector('.table-container');
+            const clientsTable = document.getElementById('clients-table');
+            
+            if (!tableContainer || !clientsTable) return;
+            
+            if (savedMode === 'scroll') {
+                // スクロールモードを適用
+                tableContainer.style.overflowX = 'auto';
+                const userFontSize = getCurrentFontSize() / 100;
+                clientsTable.style.fontSize = `${14 * userFontSize}px`;
+                const ths = clientsTable.querySelectorAll('th');
+                ths.forEach(th => {
+                    th.style.width = '';
+                    th.style.minWidth = '';
+                    th.style.maxWidth = '';
+                });
+            } else {
+                // フィットモードを適用（デフォルト）
+                adjustTableLayout();
+            }
+        }
+        
+        // ウィンドウリサイズイベント
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(adjustTableLayout, 150);
+        });
+        
+        // ズーム変更検出
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(adjustTableLayout, 150);
+        });
+        
+        // 初期調整と保存された設定の適用
+        setTimeout(() => {
+            applyStoredTableMode();
+            adjustTableLayout();
+        }, 500);
+        
+        // 切り替えボタンをアコーディオンメニューに追加
+        addTableModeToggle(toggleScrollMode);
     }
     
-    // テーブルモード切り替え機能は削除されました
+    // ボタンテキストを更新する関数
+    function updateToggleButtonText(mode) {
+        const toggleButton = document.querySelector('#table-mode-toggle-btn');
+        if (!toggleButton) return;
+        
+        if (mode === 'fit') {
+            toggleButton.innerHTML = '📏 フィットモード <small>(→スクロール)</small>';
+        } else {
+            toggleButton.innerHTML = '📏 スクロールモード <small>(→フィット)</small>';
+        }
+    }
+    
+    function addTableModeToggle(toggleFunction) {
+        const accordionContent = document.querySelector('#management-accordion .accordion-content');
+        if (!accordionContent) return;
+        
+        const toggleButton = document.createElement('button');
+        toggleButton.id = 'table-mode-toggle-btn';
+        toggleButton.className = 'btn';
+        toggleButton.style.cssText = `
+            width: 100% !important; 
+            margin: 5px 0; 
+            text-align: center;
+            padding: 10px 15px !important;
+            min-height: 40px !important;
+            background: linear-gradient(135deg, #0face0c0, #0d42a5c7) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 6px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            box-sizing: border-box !important;
+            display: block !important;
+            visibility: visible !important;
+        `;
+        
+        // 初期ボタンテキスト設定
+        const savedMode = localStorage.getItem('tableDisplayMode') || 'fit';
+        // ボタンが作成されてから確実にテキストを設定
+        setTimeout(() => {
+            updateToggleButtonText(savedMode);
+        }, 100);
+        
+        toggleButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            const newModeText = toggleFunction();
+            
+            // トースト通知で状態を表示
+            if (window.showToast) {
+                window.showToast(`${newModeText}に切り替えました`, 'info', 2000);
+            }
+        });
+        
+        // ユーザー情報セクションの前に挿入
+        const userInfoSection = accordionContent.querySelector('.user-info-section');
+        if (userInfoSection) {
+            userInfoSection.parentNode.insertBefore(toggleButton, userInfoSection);
+        } else {
+            // Fallback if user-info-section is not found (shouldn't happen based on current HTML)
+            // Original fallback logic
+            const columnResetButton = accordionContent.querySelector('#reset-column-widths-button');
+            if (columnResetButton) {
+                columnResetButton.parentNode.insertBefore(toggleButton, columnResetButton.nextSibling);
+            } else {
+                const backupButton = accordionContent.querySelector('button[onclick*="backup"]');
+                if (backupButton) {
+                    backupButton.parentNode.insertBefore(toggleButton, backupButton.nextSibling);
+                } else {
+                    accordionContent.appendChild(toggleButton);
+                }
+            }
+        }
+    }
 
     // 管理者レポート表示ボタンを追加
     function addAdminReportButton() {
@@ -2866,12 +3127,14 @@ document.addEventListener('DOMContentLoaded', () => {
         async function showBackupSelectionModal() {
             try {
                 // Supabase Storageから利用可能なバックアップファイルを取得
+                console.log('🔍 バックアップファイル取得開始...');
                 
                 // まずweeklyフォルダの曜日フォルダ一覧を取得
                 const { data: dayFolders, error: listError } = await supabase.storage
                     .from('backups')
                     .list('weekly', { limit: 100 });
 
+                console.log('📁 weeklyフォルダの曜日フォルダ:', dayFolders);
                 if (listError) {
                     console.error('バックアップファイル一覧取得エラー:', listError);
                     throw new Error('バックアップファイル一覧の取得に失敗しました');
@@ -2906,12 +3169,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 const backupFiles = allBackupFiles;
+                console.log('📊 取得されたバックアップファイル:', backupFiles);
 
                 // レポートファイルも取得
                 const { data: reportFiles, error: reportListError } = await supabase.storage
                     .from('backups')
                     .list('reports', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
 
+                console.log('📋 reportsフォルダの内容:', reportFiles);
                 if (reportListError) {
                     console.warn('レポートファイル一覧取得エラー:', reportListError);
                 }
@@ -3125,9 +3390,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (type === 'report') {
                     // レポートファイルの場合は既存のレポート表示機能を使用
+                    console.log('📋 レポートファイルを表示:', path);
                     SupabaseAPI.showAdminBackupReport(contentData, data.size, path);
                 } else {
                     // データファイルの場合は新しい詳細表示機能を使用
+                    console.log('📊 データバックアップファイルを表示:', path, 'サイズ:', data.size);
                     showBackupDataModal(contentData, data.size, path);
                 }
 
@@ -3283,10 +3550,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(modal);
         }
         
-        // ユーザー情報セクションの前に挿入
-        const userInfoSection = accordionContent.querySelector('.user-info-section');
-        if (userInfoSection) {
-            userInfoSection.parentNode.insertBefore(reportButton, userInfoSection);
+        // 列幅リセットボタンの前に挿入（「バックアップレポート表示」「列幅リセット」「スクロールモード」の順序）
+        const resetColumnButton = accordionContent.querySelector('#reset-column-widths-button');
+        if (resetColumnButton) {
+            resetColumnButton.parentNode.insertBefore(reportButton, resetColumnButton);
         } else {
             // フォールバック: ユーザー情報セクションの前に挿入
             const userInfoSection = accordionContent.querySelector('.user-info-section');
@@ -3365,63 +3632,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ページ読み込み時にフォントサイズを適用
     loadFontSize();
 
-    // 基本的なレスポンシブテーブル機能を初期化
+    // レスポンシブテーブル機能を初期化
     setTimeout(() => {
-        initBasicResponsiveTable();
+        initResponsiveTable();
     }, 1500);
-
-    // カバーレイヤー制御機能
-    const coverOverlay = document.getElementById('cover-overlay');
-    const showCoverBtn = document.getElementById('show-cover-btn');
-    const hideCoverBtn = document.getElementById('hide-cover-btn');
-    const focusModeBtn = document.getElementById('focus-mode-btn');
-
-    // カバー表示
-    showCoverBtn?.addEventListener('click', () => {
-        coverOverlay.style.display = 'block';
-        coverOverlay.style.zIndex = '1000';
-        coverOverlay.style.opacity = '0';
-
-        setTimeout(() => {
-            coverOverlay.style.opacity = '1';
-            coverOverlay.style.pointerEvents = 'auto';
-        }, 50);
-
-        showCoverBtn.style.display = 'none';
-    });
-
-    // カバー非表示
-    hideCoverBtn?.addEventListener('click', () => {
-        coverOverlay.style.opacity = '0';
-        coverOverlay.style.pointerEvents = 'none';
-        setTimeout(() => {
-            coverOverlay.style.display = 'none';
-            showCoverBtn.style.display = 'block';
-        }, 300);
-    });
-
-    // 集中モード（カバー+アコーディオン閉じる）
-    focusModeBtn?.addEventListener('click', () => {
-        // 全アコーディオンを閉じる
-        document.querySelectorAll('.accordion-content').forEach(content => {
-            content.style.display = 'none';
-        });
-        document.querySelectorAll('.accordion-icon').forEach(icon => {
-            icon.textContent = '▼';
-        });
-
-        // カバーを非表示
-        hideCoverBtn.click();
-    });
-
-    // Escキーでカバー切り替え
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            if (coverOverlay.style.display === 'block') {
-                hideCoverBtn.click();
-            } else {
-                showCoverBtn.click();
-            }
-        }
-    });
 });

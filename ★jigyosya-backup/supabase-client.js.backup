@@ -210,10 +210,8 @@ export class SupabaseAPI {
                 }
                 return data;
             } else {
-                // 全件取得（analytics用）- RLS問題回避のため並べ替え追加
-                const { data, error } = await query
-                    .order('month', { ascending: false })
-                    .order('id', { ascending: true });
+                // 全件取得（analytics用）
+                const { data, error } = await query;
                 if (error) {
                     console.error('Error fetching all monthly tasks:', error);
                     return [];
@@ -244,9 +242,7 @@ export class SupabaseAPI {
         const { data, error } = await supabase
             .from('monthly_tasks')
             .select('*')
-            .order('month', { ascending: false }) // 新しい月から
-            .order('completed', { ascending: false }) // 完了済みを先に（index.js用）
-            .order('id', { ascending: true }); // RLS問題回避のためidでソート
+            .order('client_id', { ascending: true });
 
         if (error) {
             console.error('Error fetching all monthly tasks for all clients:', error);
@@ -446,6 +442,7 @@ export class SupabaseAPI {
                 custom_tasks_by_year: customTasksByYear
             });
             
+            console.log(`Initial tasks setup completed for client ${client.name}:`, defaultTasks);
             return {
                 client: updatedClient,
                 tasks: defaultTasks,
@@ -539,7 +536,7 @@ export class SupabaseAPI {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin + '/analytics.html',
+                redirectTo: window.location.origin,
                 ...signInOptions
             }
         });
@@ -557,41 +554,6 @@ export class SupabaseAPI {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) throw error;
         return user;
-    }
-
-    static async getCurrentUserWithRouting() {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) throw error;
-
-        if (user) {
-            // 現在のページを確認
-            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-
-            // 設定画面への意図的アクセスかチェック
-            const urlParams = new URLSearchParams(window.location.search);
-            const isSettingsPage = currentPage === 'index.html';
-            const isSettingsAccess = urlParams.has('settings') ||
-                                   sessionStorage.getItem('settings-access') === 'true';
-
-            // index.htmlかつ設定アクセスでない場合はリダイレクト
-            if (isSettingsPage && !isSettingsAccess) {
-                window.location.replace('analytics.html');
-                return null; // リダイレクト中なのでnullを返す
-            }
-
-            // 設定画面の場合はフラグクリア
-            if (isSettingsAccess) {
-                sessionStorage.removeItem('settings-access');
-            }
-        }
-
-        return user;
-    }
-
-    // 設定画面用の専用リダイレクト関数
-    static redirectToSettings() {
-        sessionStorage.setItem('settings-access', 'true');
-        window.location.href = 'index.html?settings=true';
     }
 
     static async getUserRole() {
@@ -804,6 +766,7 @@ export class SupabaseAPI {
                 
             if (error) throw error;
             
+            console.log(`初期タスク設定完了: クライアントID ${clientId}, 経理方式: ${accountingMethod}`);
         } catch (error) {
             console.error('初期タスク設定エラー:', error);
             // エラーが発生してもクライアント作成は成功とする
@@ -1004,6 +967,7 @@ export class SupabaseAPI {
                 }
             });
             
+            console.log('DB state retrieved (with missing months initialized):', state);
             return state;
             
         } catch (error) {
@@ -1015,7 +979,8 @@ export class SupabaseAPI {
     // 月次タスクの状態を更新（新しい整合性チェックの自動修復用）
     static async updateMonthlyTasksByMonth(clientId, month, updateData) {
         try {
-                
+            console.log('Updating monthly tasks for month:', month, 'with data:', updateData);
+            
             // 既存のレコードを取得
             const { data: existingData, error: selectError } = await supabase
                 .from('monthly_tasks')
@@ -1045,6 +1010,7 @@ export class SupabaseAPI {
                     .single();
                 
                 if (error) throw error;
+                console.log('Updated existing monthly task:', data);
                 return data;
             } else {
                 // 新しいレコードを作成
@@ -1061,6 +1027,7 @@ export class SupabaseAPI {
                     .single();
                 
                 if (error) throw error;
+                console.log('Created new monthly task:', data);
                 return data;
             }
             
@@ -1474,7 +1441,8 @@ export class SupabaseAPI {
     // データベースバックアップ機能
     static async createFullBackup() {
         try {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            console.log('🔄 バックアップ作成開始...');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const backupData = {
                 timestamp,
                 version: '1.0',
@@ -1488,6 +1456,7 @@ export class SupabaseAPI {
             let totalRecords = 0;
             
             for (const tableName of tables) {
+                console.log(`📊 バックアップ中: ${tableName}`);
                 
                 try {
                     const { data, error } = await supabase
@@ -1503,8 +1472,12 @@ export class SupabaseAPI {
                     const recordCount = data?.length || 0;
                     totalRecords += recordCount;
                     
+                    console.log(`✅ ${tableName}: ${recordCount} 件取得完了`);
                     
                     // 詳細なデータ確認（最初の数件をサンプル表示）
+                    if (recordCount > 0) {
+                        console.log(`📄 ${tableName} サンプルデータ:`, data.slice(0, Math.min(2, recordCount)));
+                    }
                     
                 } catch (tableError) {
                     console.error(`❌ ${tableName} テーブル処理中にエラー:`, tableError);
@@ -1514,8 +1487,23 @@ export class SupabaseAPI {
             }
             
             const backupSize = JSON.stringify(backupData).length;
+            console.log(`🎉 バックアップ作成完了:`, {
+                totalTables: tables.length,
+                totalRecords,
+                backupSizeBytes: backupSize,
+                backupSizeKB: Math.round(backupSize / 1024),
+                timestamp: backupData.timestamp
+            });
             
             // 全体のデータ構造をチェック
+            console.log('📋 バックアップデータ構造:', {
+                hasTimestamp: !!backupData.timestamp,
+                hasVersion: !!backupData.version,
+                hasDatabase: !!backupData.database,
+                hasTablesObject: !!backupData.tables,
+                tableKeys: Object.keys(backupData.tables),
+                totalDataSize: Object.values(backupData.tables).reduce((sum, table) => sum + table.length, 0)
+            });
             
             return backupData;
             
@@ -1620,12 +1608,14 @@ export class SupabaseAPI {
             // LocalStorageに履歴を保存
             localStorage.setItem('lastBackupDate', new Date().toISOString());
             
+            console.log(`バックアップ保存完了: ${subFolder ? `${subFolder}/` : ''}${fileName}`);
             return backupData;
 
         } catch (error) {
             console.error('フォルダバックアップエラー:', error);
             
             // エラー時はフォールバック
+            console.log('フォールバック: 通常のダウンロードを実行');
             return await this.downloadBackup();
         }
     }
@@ -1633,6 +1623,8 @@ export class SupabaseAPI {
     // データ復元機能
     static async restoreFromBackup(backupData, skipDelete = false) {
         try {
+            console.log('データ復元を開始:', backupData);
+            console.log('削除スキップモード:', skipDelete);
             
             if (!backupData.tables) {
                 throw new Error('無効なバックアップファイルです');
@@ -1646,11 +1638,14 @@ export class SupabaseAPI {
             
             if (!skipDelete) {
                 // まず既存データを安全な順序で削除（小さなバッチで処理）
+                console.log('既存データの削除を開始...');
                 for (const tableName of deleteOrder) {
                     if (allTables.includes(tableName)) {
+                        console.log(`削除中: ${tableName}`);
                         
                         if (tableName === 'staffs') {
                             // staffsテーブルの場合、先にclientsテーブルのstaff_idをnullに設定
+                            console.log('clients.staff_id をnullに設定中...');
                             const { data: updateData, error: updateError } = await supabase
                                 .from('clients')
                                 .update({ staff_id: null })
@@ -1660,6 +1655,7 @@ export class SupabaseAPI {
                             if (updateError) {
                                 console.error('clients.staff_id null更新エラー:', updateError);
                             } else {
+                                console.log(`clients.staff_id を ${updateData?.length || 0} 件null設定完了`);
                             }
                         }
                         
@@ -1686,14 +1682,17 @@ export class SupabaseAPI {
                                 break; // 削除するデータがない
                             }
                             
+                            console.log(`${tableName}: ${deleteCount} 件削除済み（バッチ: ${batchDeleteCount}）`);
                             
                             // 少し待機してレート制限を回避
                             await new Promise(resolve => setTimeout(resolve, 100));
                         }
                         
+                        console.log(`${tableName} 削除完了: 合計 ${deleteCount} 件`);
                     }
                 }
             } else {
+                console.log('削除処理をスキップ: upsertのみで復元します');
             }
             
             // 順序指定されたテーブル + その他のテーブル（挿入用）
@@ -1704,7 +1703,9 @@ export class SupabaseAPI {
             
             const results = {};
 
+            console.log('データの挿入を開始...');
             for (const tableName of orderedTables) {
+                console.log(`復元中: ${tableName}`);
                 const tableData = backupData.tables[tableName];
                 
                 if (Array.isArray(tableData) && tableData.length > 0) {
@@ -1718,6 +1719,7 @@ export class SupabaseAPI {
                             const batch = tableData.slice(i, i + batchSize);
                             
                             // upsert方式でIDを保持して確実に復元
+                            console.log(`${tableName} upsert実行: ${batch.length} 件 (${insertedCount + 1}-${insertedCount + batch.length})`);
                             
                             let upsertOptions = { ignoreDuplicates: false };
                             let selectColumns = '*';
@@ -1752,6 +1754,7 @@ export class SupabaseAPI {
                                 }
                                 
                                 // フォールバック: 通常のinsertを試行
+                                console.log(`${tableName}: insertモードで再試行`);
                                 const { data: insertData, error: insertError } = await supabase
                                     .from(tableName)
                                     .insert(batch)
@@ -1762,10 +1765,13 @@ export class SupabaseAPI {
                                     throw new Error(`${tableName} の復元に失敗: ${insertError.message}`);
                                 }
                                 
+                                console.log(`${tableName}: insertで ${insertData?.length || batch.length} 件成功`);
                             } else {
+                                console.log(`${tableName}: upsertで ${upsertData?.length || batch.length} 件成功`);
                             }
                             
                             insertedCount += batch.length;
+                            console.log(`${tableName}: ${insertedCount}/${tableData.length} 件処理完了`);
                             
                             // レート制限対策の待機
                             if (i + batchSize < tableData.length) {
@@ -1775,6 +1781,7 @@ export class SupabaseAPI {
                         
                         // clientsテーブル復元後、staff_idの整合性を再確認
                         if (tableName === 'clients') {
+                            console.log('clients復元後: staff_id整合性チェック開始');
                             const originalClientsData = backupData.tables['clients'];
                             
                             for (const clientData of originalClientsData) {
@@ -1790,9 +1797,11 @@ export class SupabaseAPI {
                                     }
                                 }
                             }
+                            console.log('clients staff_id整合性チェック完了');
                         }
                         
                         results[tableName] = { restored: insertedCount };
+                        console.log(`${tableName}: ${insertedCount} 件復元完了`);
                         
                     } catch (error) {
                         console.error(`${tableName} 復元エラー:`, error);
@@ -1801,9 +1810,11 @@ export class SupabaseAPI {
                     }
                 } else {
                     results[tableName] = { restored: 0 };
+                    console.log(`${tableName}: データなし`);
                 }
             }
 
+            console.log('データ復元完了:', results);
             return results;
         } catch (error) {
             console.error('データ復元エラー:', error);
@@ -1817,6 +1828,8 @@ export class SupabaseAPI {
         const settings = this.getBackupSettings();
         
         if (settings.enabled) {
+            console.log('🔧 自動バックアップが有効です');
+            console.log('📋 バックアップ設定:', settings);
             
             // ページ読み込み時に未実行のバックアップがあるかチェック
             this.checkMissedBackups(settings);
@@ -1834,6 +1847,7 @@ export class SupabaseAPI {
         window.addEventListener('beforeunload', () => {
             const nextBackupDate = localStorage.getItem('nextBackupDate');
             if (nextBackupDate) {
+                console.log('📝 バックアップスケジュールを保存中...');
                 // バックアップスケジュール情報をlocalStorageに保存（既に保存済み）
             }
         });
@@ -1854,6 +1868,7 @@ export class SupabaseAPI {
                 const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
                 
                 if (hoursDiff >= 1) {
+                    console.log(`⏰ ${hoursDiff}時間前のバックアップが未実行です。即座に実行します。`);
                     
                     // 遅延実行されたバックアップを即座に実行
                     setTimeout(() => {
@@ -1865,6 +1880,7 @@ export class SupabaseAPI {
             }
         }
         
+        console.log('✅ バックアップスケジュールは正常です');
     }
 
     static getBackupSettings() {
@@ -1884,6 +1900,7 @@ export class SupabaseAPI {
 
     static saveBackupSettings(settings) {
         localStorage.setItem('backupSettings', JSON.stringify(settings));
+        console.log('💾 バックアップ設定を保存:', settings);
         
         // 既存のタイマーをクリア
         if (this.backupTimer) {
@@ -1893,6 +1910,7 @@ export class SupabaseAPI {
         if (settings.enabled) {
             this.scheduleNextBackup(settings);
         } else {
+            console.log('🔕 自動バックアップが無効化されました');
             localStorage.removeItem('nextBackupDate');
         }
     }
@@ -1925,6 +1943,21 @@ export class SupabaseAPI {
     // デバッグ用：バックアップ状況をコンソールに表示
     static logBackupStatus() {
         const status = this.getBackupStatus();
+        console.log('📊 === バックアップ状況 ===');
+        console.log(`🔧 自動バックアップ: ${status.enabled ? '有効' : '無効'}`);
+        console.log(`📋 バックアップ方式: ${status.method}`);
+        console.log(`⏰ バックアップ時刻: ${status.time}`);
+        console.log(`📅 次回予定: ${status.nextBackup || '未設定'}`);
+        console.log(`📝 最終実行: ${status.lastBackup ? 
+            `${status.lastBackup.timestamp} (${status.lastBackup.success ? '成功' : '失敗'})` : 
+            '未実行'}`);
+        console.log(`📈 成功率: ${status.successRate}% (${status.totalBackups}回中)`);
+        
+        if (status.lastBackup && !status.lastBackup.success) {
+            console.log(`❌ 最終エラー: ${status.lastBackup.error}`);
+        }
+        
+        console.log('=========================');
         return status;
     }
     
@@ -1956,6 +1989,7 @@ export class SupabaseAPI {
                 }
             }
             
+            console.log('前回のレポートデータが見つかりませんでした');
             return null;
         } catch (error) {
             console.error('前回レポートデータ取得エラー:', error);
@@ -1965,14 +1999,17 @@ export class SupabaseAPI {
     
     // デバッグ用：手動バックアップテスト
     static async testBackupNow() {
+        console.log('🔬 バックアップテストを開始します...');
         const settings = this.getBackupSettings();
         
         if (!settings.enabled) {
+            console.log('⚠️ 自動バックアップが無効です。設定を確認してください。');
             return false;
         }
         
         try {
             await this.executeAutoBackup(settings);
+            console.log('✅ バックアップテストが成功しました！');
             return true;
         } catch (error) {
             console.error('❌ バックアップテストが失敗しました:', error);
@@ -1994,6 +2031,7 @@ export class SupabaseAPI {
 
         const timeUntilBackup = nextBackup.getTime() - now.getTime();
         
+        console.log(`次回自動バックアップ: ${nextBackup.toLocaleString()}`);
         
         // 既存のタイマーをクリア
         if (this.backupTimer) {
@@ -2011,17 +2049,22 @@ export class SupabaseAPI {
 
     static async executeAutoBackup(settings) {
         try {
+            console.log('🔄 自動バックアップを実行中...');
             
             // バックアップデータを取得
             const backupData = await this.getAllData();
             
             // クラウドバックアップとローカルバックアップの両方を実行
             if (settings.method === 'cloud' || settings.method === 'both') {
+                console.log('☁️ クラウドバックアップを実行中...');
                 await this.uploadBackupToCloud(backupData);
+                console.log('✅ クラウドバックアップが完了しました');
             }
             
             if (settings.method === 'weekly-rotation' || settings.method === 'both') {
+                console.log('💾 ローカルバックアップを実行中...');
                 await this.downloadBackup();
+                console.log('✅ ローカルバックアップが完了しました');
             }
             
             // バックアップ実行履歴を保存
@@ -2034,6 +2077,7 @@ export class SupabaseAPI {
             // 履歴は最新10件まで保持
             localStorage.setItem('backupHistory', JSON.stringify(history.slice(0, 10)));
             
+            console.log('🎉 自動バックアップが正常に完了しました');
             
             // 次回のバックアップをスケジュール
             this.scheduleNextBackup(settings);
@@ -2062,6 +2106,7 @@ export class SupabaseAPI {
     // クラウドバックアップ（Supabase Storage）
     static async uploadBackupToCloud(backupData, fileName = null) {
         try {
+            console.log('☁️ クラウドバックアップ開始...');
             
             if (!fileName) {
                 // 週次ローテーション方式でファイル名生成
@@ -2072,14 +2117,28 @@ export class SupabaseAPI {
             }
 
             // バックアップデータの詳細チェック
+            console.log('📊 アップロード準備中のデータ詳細:', {
+                timestamp: backupData?.timestamp,
+                version: backupData?.version,
+                database: backupData?.database,
+                tablesCount: Object.keys(backupData?.tables || {}).length,
+                totalRecords: Object.values(backupData?.tables || {}).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0)
+            });
 
             const jsonData = JSON.stringify(backupData, null, 2);
             const blob = new Blob([jsonData], { type: 'application/json' });
 
+            console.log(`📄 JSON文字列サイズ: ${jsonData.length} 文字`);
+            console.log(`💾 Blobサイズ: ${blob.size} バイト (${Math.round(blob.size / 1024)} KB)`);
             
             // データ内容の簡易チェック
+            if (jsonData.length < 1000) {
+                console.warn('⚠️ JSONサイズが小さすぎます。データが正しく含まれていない可能性があります');
+                console.log('🔍 JSON内容の一部:', jsonData.substring(0, 500));
+            }
 
             // Supabase Storageにアップロード（上書き）
+            console.log(`📤 Supabase Storageにアップロード中: ${fileName}`);
             const { data, error } = await supabase.storage
                 .from('backups')
                 .upload(fileName, blob, { 
@@ -2092,6 +2151,7 @@ export class SupabaseAPI {
                 throw error;
             }
 
+            console.log(`✅ クラウドバックアップ完了: ${fileName}`, data);
             
             // バックアップレポートデータ作成
             const reportData = this.generateBackupReport(backupData, blob.size, data.path);
@@ -2133,6 +2193,7 @@ export class SupabaseAPI {
                         total_records: reportData.totalRecords,
                         error_message: null
                     });
+                console.log('📝 Manual backup history recorded successfully');
             } catch (historyError) {
                 console.warn('⚠️ Manual backup history insert warning:', historyError);
                 // Don't fail the backup for history issues
@@ -2180,6 +2241,7 @@ export class SupabaseAPI {
         try {
             // ファイル名が指定されていない場合は最新のバックアップを取得
             if (!fileName) {
+                console.log('ファイル名が指定されていないため、最新のバックアップを検索中...');
                 
                 // 週次ローテーションフォルダから最新ファイルを検索
                 const { data: folders, error: folderError } = await supabase.storage
@@ -2220,6 +2282,7 @@ export class SupabaseAPI {
                 }
 
                 fileName = latestFile;
+                console.log(`最新のバックアップファイルを選択: ${fileName}`);
             }
 
             const { data, error } = await supabase.storage
@@ -2231,6 +2294,7 @@ export class SupabaseAPI {
             const text = await data.text();
             const backupData = JSON.parse(text);
 
+            console.log(`クラウドからバックアップダウンロード完了: ${fileName}`);
             return backupData;
 
         } catch (error) {
@@ -2314,6 +2378,7 @@ export class SupabaseAPI {
     // バックアップレポートをSupabase Storageに保存
     static async saveBackupReport(reportData) {
         try {
+            console.log('📋 バックアップレポート保存中...');
             
             // 毎日上書き方式でレポートファイル名生成
             const today = new Date();
@@ -2335,6 +2400,7 @@ export class SupabaseAPI {
             if (error) {
                 console.error('❌ レポート保存エラー:', error);
             } else {
+                console.log(`✅ バックアップレポート保存完了: ${reportFileName}`);
             }
             
             // 詳細な完了通知を表示
@@ -2355,6 +2421,7 @@ export class SupabaseAPI {
             `💾 総容量: ${reportData.fileSizeKB} KB\n` +
             `📅 ${reportData.reportDate} ${reportData.reportTime}`;
         
+        console.log(notificationText);
         
         // Toast通知がある場合は表示
         if (typeof window !== 'undefined' && window.showToast) {
@@ -2575,6 +2642,7 @@ export class SupabaseAPI {
                 .download(reportFileName);
 
             if (error) {
+                console.log('本日のレポートファイルが見つかりません:', error.message);
                 return;
             }
 
@@ -2592,10 +2660,12 @@ export class SupabaseAPI {
     // 自動クラウドバックアップ実行
     static async executeAutoCloudBackup() {
         try {
+            console.log('自動クラウドバックアップを実行中...');
             
             const backupData = await this.createFullBackup();
             const result = await this.uploadBackupToCloud(backupData);
             
+            console.log('自動クラウドバックアップ完了:', result);
             return result;
 
         } catch (error) {
@@ -2619,6 +2689,7 @@ export class SupabaseAPI {
             // 1. クラウドバックアップ実行
             try {
                 results.cloud = await this.uploadBackupToCloud(backupData);
+                console.log('クラウドバックアップ成功');
             } catch (error) {
                 console.error('クラウドバックアップ失敗:', error);
                 results.errors.push({ type: 'cloud', error: error.message });
@@ -2627,6 +2698,7 @@ export class SupabaseAPI {
             // 2. ローカルバックアップ実行（緊急用）
             try {
                 results.local = await this.downloadBackupWithFolder();
+                console.log('ローカルバックアップ成功');
             } catch (error) {
                 console.error('ローカルバックアップ失敗:', error);
                 results.errors.push({ type: 'local', error: error.message });
@@ -2639,306 +2711,11 @@ export class SupabaseAPI {
             throw error;
         }
     }
-
-    // 期間指定で月次タスクを取得
-    static async getMonthlyTasksByPeriod(startPeriod, endPeriod) {
-        try {
-            const { data, error } = await supabase
-                .from('monthly_tasks')
-                .select('*')
-                .gte('month', startPeriod)
-                .lte('month', endPeriod)
-                .order('month', { ascending: true });
-
-            if (error) throw error;
-            return data || [];
-
-        } catch (error) {
-            console.error('期間指定月次タスク取得エラー:', error);
-            throw error;
-        }
-    }
-
-    // === 週次進捗スナップショット機能 ===
-
-    // 現在の進捗状況をスナップショットとして保存
-    static async saveWeeklySnapshot(weekDate = null, filters = {}) {
-        try {
-            if (!weekDate) {
-                // 日本時間での今日の日付を取得
-                const now = new Date();
-
-                // 日本時間に変換（Asia/Tokyo タイムゾーンを使用）
-                const japanTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
-
-                // 今日の日付をYYYY-MM-DD形式で取得
-                const year = japanTime.getFullYear();
-                const month = String(japanTime.getMonth() + 1).padStart(2, '0');
-                const day = String(japanTime.getDate()).padStart(2, '0');
-                weekDate = `${year}-${month}-${day}`;
-
-                console.log('🗾 日本時間基準の進捗記録:', {
-                    UTC時刻: now.toISOString(),
-                    日本時刻: japanTime.toLocaleString('ja-JP'),
-                    記録日: weekDate
-                });
-            }
-
-            console.log('📅 週次スナップショット日付:', weekDate, '（UPSERT方式で重複防止）');
-
-            // 現在の全クライアントと月次タスクを取得
-            const clients = await this.getClients();
-
-            // フィルター条件に基づいて月次タスクを取得
-            let monthlyTasks;
-            if (filters.startPeriod && filters.endPeriod) {
-                // 【修正】直接期間指定でフィルタリング
-                const startPeriod = filters.startPeriod; // YYYY-MM形式
-                const endPeriod = filters.endPeriod;     // YYYY-MM形式
-
-                console.log('🗓️ 月次タスク期間フィルター:', {
-                    startPeriod,
-                    endPeriod,
-                    note: '正確な期間フィルタリング'
-                });
-
-                monthlyTasks = await this.getMonthlyTasksByPeriod(startPeriod, endPeriod);
-                console.log('📋 取得された月次タスク数:', monthlyTasks.length);
-            } else {
-                monthlyTasks = await this.getMonthlyTasks();
-                console.log('📋 全月次タスク数:', monthlyTasks.length);
-            }
-
-            const snapshots = [];
-
-            for (const client of clients) {
-                if (client.status === 'inactive') continue; // 非活性クライアントはスキップ
-
-                // 該当クライアントの全月次タスクを取得（期間累積方式）
-                const clientMonthlyTasks = monthlyTasks.filter(task => task.client_id === client.id);
-
-                let progressRate = 0;
-                let completedTasks = 0;
-                let totalTasks = 0;
-
-                // 全期間のタスクを累積計算
-                if (clientMonthlyTasks && clientMonthlyTasks.length > 0) {
-                    for (const monthlyTask of clientMonthlyTasks) {
-                        if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
-                            const tasks = monthlyTask.tasks;
-                            const monthTotalTasks = Object.keys(tasks).length;
-                            const monthCompletedTasks = Object.values(tasks).filter(Boolean).length;
-
-                            totalTasks += monthTotalTasks;
-                            completedTasks += monthCompletedTasks;
-                        }
-                    }
-
-                    // 全期間累積の進捗率
-                    progressRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-                }
-
-                // 【修正】タスクがあるクライアントのみスナップショット保存
-                if (totalTasks > 0) {
-                    snapshots.push({
-                        week_date: weekDate,
-                        client_id: client.id,
-                        staff_id: client.staff_id,
-                        progress_rate: Math.round(progressRate * 100) / 100, // 小数点第2位まで
-                        completed_tasks: completedTasks,
-                        total_tasks: totalTasks,
-                        fiscal_month: client.fiscal_month,
-                        client_name: client.name,
-                        staff_name: client.staffs?.name || null
-                    });
-                }
-            }
-
-            // UPSERT：重複時は最新データで更新
-            if (snapshots.length > 0) {
-                const { data, error } = await supabase
-                    .from('weekly_progress_snapshots')
-                    .upsert(snapshots, {
-                        onConflict: 'week_date,client_id',
-                        ignoreDuplicates: false
-                    })
-                    .select();
-
-                if (error) throw error;
-
-                console.log('✅ UPSERT完了:', {
-                    保存件数: snapshots.length,
-                    実際保存件数: data?.length || 0,
-                    重複更新: snapshots.length !== (data?.length || 0) ? '有り' : '無し'
-                });
-
-                return {
-                    success: true,
-                    saved_count: snapshots.length,
-                    week_date: weekDate,
-                    snapshots: data
-                };
-            }
-
-            return {
-                success: true,
-                saved_count: 0,
-                week_date: weekDate,
-                message: '保存対象のクライアントがありませんでした'
-            };
-
-        } catch (error) {
-            console.error('週次スナップショット保存エラー:', error);
-            throw error;
-        }
-    }
-
-    // 週次進捗データを取得（フィルター対応）
-    static async getWeeklyProgressData(filters = {}) {
-        try {
-            let query = supabase
-                .from('weekly_progress_snapshots')
-                .select('*')
-                .order('week_date', { ascending: true });
-
-            // フィルター適用
-            if (filters.startDate) {
-                query = query.gte('week_date', filters.startDate);
-            }
-            if (filters.endDate) {
-                query = query.lte('week_date', filters.endDate);
-            }
-            if (filters.staffId) {
-                query = query.eq('staff_id', filters.staffId);
-            }
-            if (filters.fiscalMonth) {
-                query = query.eq('fiscal_month', filters.fiscalMonth);
-            }
-            if (filters.clientName) {
-                query = query.ilike('client_name', `%${filters.clientName}%`);
-            }
-
-            const { data, error } = await query;
-
-            if (error) throw error;
-            return data || [];
-
-        } catch (error) {
-            console.error('週次進捗データ取得エラー:', error);
-            throw error;
-        }
-    }
-
-    // 週次進捗トレンド分析（前週比計算）
-    static async getWeeklyTrends(filters = {}) {
-        try {
-            const data = await this.getWeeklyProgressData(filters);
-
-            // 週ごとにグループ化
-            const weeklyData = {};
-            data.forEach(snapshot => {
-                if (!weeklyData[snapshot.week_date]) {
-                    weeklyData[snapshot.week_date] = [];
-                }
-                weeklyData[snapshot.week_date].push(snapshot);
-            });
-
-            // 週次統計を計算
-            const trends = [];
-            const sortedWeeks = Object.keys(weeklyData).sort();
-
-            for (let i = 0; i < sortedWeeks.length; i++) {
-                const weekDate = sortedWeeks[i];
-                const weekSnapshots = weeklyData[weekDate];
-
-                const totalClients = weekSnapshots.length;
-
-                // 【修正】累積タスク数ベースで進捗率計算（全体ダッシュボードと同じ方式）
-                const totalCompletedTasks = weekSnapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
-                const totalAllTasks = weekSnapshots.reduce((sum, s) => sum + s.total_tasks, 0);
-                const cumulativeProgress = totalAllTasks > 0 ? (totalCompletedTasks / totalAllTasks) * 100 : 0;
-
-                // 従来の平均も保持（参考用）
-                const avgProgress = totalClients > 0
-                    ? weekSnapshots.reduce((sum, s) => sum + s.progress_rate, 0) / totalClients
-                    : 0;
-
-                const completedCount = weekSnapshots.filter(s => s.progress_rate >= 100).length;
-                const lowProgressCount = weekSnapshots.filter(s => s.progress_rate < 50).length;
-
-                // 【追加】月次完了数の概算計算
-                // 各クライアントの進捗率から月次完了数を推定
-                let estimatedMonthlyCompleted = 0;
-                let estimatedTotalMonthly = 0;
-
-                weekSnapshots.forEach(snapshot => {
-                    // 期間内の推定月数（12ヶ月期間の場合）
-                    const estimatedMonthsPerClient = 12; // 固定値として設定
-                    estimatedTotalMonthly += estimatedMonthsPerClient;
-
-                    // 進捗率から完了月数を推定（100%なら全月完了、50%なら半分完了）
-                    const estimatedCompletedMonths = (snapshot.progress_rate / 100) * estimatedMonthsPerClient;
-                    estimatedMonthlyCompleted += Math.round(estimatedCompletedMonths);
-                });
-
-                let weekOverWeekChange = null;
-                if (i > 0) {
-                    const previousWeek = trends[i - 1];
-                    // 【修正】累積進捗率ベースで前週比計算
-                    weekOverWeekChange = cumulativeProgress - previousWeek.cumulative_progress;
-                }
-
-                trends.push({
-                    week_date: weekDate,
-                    total_clients: totalClients,
-                    // 【修正】累積進捗率をメイン指標に
-                    average_progress: Math.round(cumulativeProgress * 100) / 100,
-                    cumulative_progress: Math.round(cumulativeProgress * 100) / 100,
-                    // 参考用として従来の平均も保持
-                    client_average_progress: Math.round(avgProgress * 100) / 100,
-                    completed_count: completedCount,
-                    low_progress_count: lowProgressCount,
-                    week_over_week_change: weekOverWeekChange ? Math.round(weekOverWeekChange * 100) / 100 : null,
-                    // タスク合計情報も追加
-                    total_completed_tasks: totalCompletedTasks,
-                    total_all_tasks: totalAllTasks,
-                    // 月次完了情報を追加
-                    monthly_completed: estimatedMonthlyCompleted,
-                    monthly_total: estimatedTotalMonthly,
-                    snapshots: weekSnapshots
-                });
-            }
-
-            return trends;
-
-        } catch (error) {
-            console.error('週次トレンド分析エラー:', error);
-            throw error;
-        }
-    }
-
-    // 最新の週次データを取得
-    static async getLatestWeeklySnapshot() {
-        try {
-            const { data, error } = await supabase
-                .from('weekly_progress_snapshots')
-                .select('week_date')
-                .order('week_date', { ascending: false })
-                .limit(1);
-
-            if (error) throw error;
-            return data && data.length > 0 ? data[0].week_date : null;
-
-        } catch (error) {
-            console.error('最新スナップショット取得エラー:', error);
-            throw error;
-        }
-    }
 }
 
 export const handleSupabaseError = (error) => {
     console.error('Supabase error:', error);
-
+    
     if (error.code === 'PGRST116') {
         return 'データが見つかりません';
     } else if (error.code === '23505') {

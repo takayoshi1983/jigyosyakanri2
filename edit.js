@@ -11,9 +11,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const accountingMethodSelect = document.getElementById('accounting-method');
     const saveButton = document.getElementById('save-button');
     
-    // Status and loading elements
-    const connectionStatus = document.getElementById('connection-status');
-    const statusText = document.getElementById('status-text');
+    // Status and loading elements (updated for modern structure)
+    const clientStatusCard = document.getElementById('client-status-card');
     const loadingIndicator = document.getElementById('loading-indicator');
     
     // 削除関連の要素
@@ -41,13 +40,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Utility Functions ---
     function showStatus(message, type = 'info') {
-        connectionStatus.className = type;
-        connectionStatus.style.display = 'block';
-        statusText.textContent = message;
+        // Modern toast notification will handle status messages
+        console.log(`Status (${type}): ${message}`);
     }
 
     function hideStatus() {
-        connectionStatus.style.display = 'none';
+        // No longer needed with modern design
+        console.log('Hide status called');
     }
 
     function showLoading() {
@@ -172,12 +171,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Update display name and status
-        clientNameDisplay.textContent = client.name || '';
+        // Update display name and status in the status card
+        if (clientNameDisplay) {
+            clientNameDisplay.textContent = client.name || '';
+        }
+        
+        // Show the status card for existing clients
+        if (clientStatusCard) {
+            clientStatusCard.style.display = 'block';
+        }
         
         // Show/hide inactive status and apply gray-out effect
         if (client.status === 'deleted' || client.status === 'inactive') {
-            inactiveStatusBadge.style.display = 'inline';
+            if (inactiveStatusBadge) {
+                inactiveStatusBadge.style.display = 'inline-flex';
+            }
             if (reactivateButton) reactivateButton.style.display = 'inline-block';
             if (inactiveButton) inactiveButton.style.display = 'none';
             
@@ -213,7 +221,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 saveButton.style.opacity = '0.5';
             }
         } else {
-            inactiveStatusBadge.style.display = 'none';
+            if (inactiveStatusBadge) {
+                inactiveStatusBadge.style.display = 'none';
+            }
             if (reactivateButton) reactivateButton.style.display = 'none';
             if (inactiveButton) inactiveButton.style.display = 'inline-block';
             
@@ -245,8 +255,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Mode Initialization ---
     function initializeNewMode() {
-        pageTitle.textContent = '顧客情報新規作成（Supabase版）';
-        clientNameDisplay.textContent = '新規顧客';
+        pageTitle.textContent = '顧客情報新規作成';
+        
+        // Hide status card for new mode
+        if (clientStatusCard) {
+            clientStatusCard.style.display = 'none';
+        }
         
         // Hide danger zone for new mode
         if (dangerZone) {
@@ -274,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function initializeEditMode() {
         try {
-            pageTitle.textContent = '顧客情報編集（Supabase版）';
+            pageTitle.textContent = '顧客情報編集';
             
             // キャッシュされたクライアントデータを優先使用
             const cachedClient = sessionStorage.getItem('cached_client_data');
@@ -360,8 +374,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 toast.update(saveToast, '新規顧客作成完了', 'success');
                 
-                // Redirect to main page
+                // Redirect to index page for new client (with settings access flag)
                 setTimeout(() => {
+                    sessionStorage.setItem('settings-access', 'true');
                     window.location.href = 'index.html';
                 }, 1500);
                 
@@ -374,6 +389,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 populateFormFields(currentClient);
                 
                 toast.update(saveToast, '更新完了', 'success');
+                
+                // 更新成功後、1.5秒待ってからメイン画面に遷移
+                setTimeout(() => {
+                    window.location.href = 'analytics.html';
+                }, 1500);
             }
 
         } catch (error) {
@@ -435,7 +455,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await SupabaseAPI.updateClient(currentClient.id, { status: 'inactive' });
                     currentClient.status = 'inactive';
                     showNotification('顧客を関与終了にしました', 'success');
-                    break;
+
+                    // Close modal and redirect to analytics page after inactive
+                    hideDeleteModal();
+                    setTimeout(() => {
+                        window.location.href = 'analytics.html';
+                    }, 2000);
+                    return;
                     
                 case 'reactivate':
                     await SupabaseAPI.restoreClient(currentClient.id);
@@ -446,11 +472,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 case 'delete':
                     await SupabaseAPI.permanentlyDeleteClient(currentClient.id);
                     showNotification('顧客を完全に削除しました', 'success');
-                    
-                    // Close modal and redirect to main page after delete
+
+                    // Close modal and redirect to analytics page with refresh parameter
                     hideDeleteModal();
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.href = 'analytics.html?refresh=true';
                     }, 2000);
                     return;
             }
@@ -526,6 +552,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     function addEventListeners() {
         // Save button
         saveButton.addEventListener('click', saveDataHandler);
+
+        // Back button
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Navigate based on mode: new -> index.html, edit -> analytics.html
+                if (isNewMode) {
+                    // Set flag to prevent redirect when going to index.html
+                    sessionStorage.setItem('settings-access', 'true');
+                    window.location.href = 'index.html';
+                } else {
+                    window.location.href = 'analytics.html';
+                }
+            });
+        }
         
         // Modal events
         if (modalCancel) {

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析機能 - 進捗管理ダッシュボード</title>
+    <!-- Favicon with cache busting and multiple formats -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico?v=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico?v=1">
+
+    <!-- Preload resources for better performance -->
+    <link rel="modulepreload" href="supabase-client.js" crossorigin>
+    <link rel="modulepreload" href="utils.js" crossorigin>
+    <link rel="modulepreload" href="analytics.js" crossorigin>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom-dropdown.css">
+    <link rel="stylesheet" href="toast.css">
+
+    <!-- Chart.js CDN for weekly progress graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <!-- SortableJS CDN for drag and drop functionality -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 統一ナビゲーションタブ -->
+        <div class="tab-navigation">
+            <a href="analytics.html" class="nav-tab dashboard active">
+                📈 進捗ダッシュボード
+            </a>
+            <a href="performance.html" class="nav-tab performance">
+                👥 担当者別進捗
+            </a>
+            <a href="index.html" class="nav-tab settings">
+                ⚙️ 設定画面
+            </a>
+        </div>
+
+        <!-- 統合ヘッダー & フィルターエリア -->
+        <div class="analytics-filters" style="background: #55e8ff47; padding: 15px; border-radius: 8px; margin-bottom: 10px; overflow: visible;box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
+            <!-- タイトル行 -->
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 14px; position: relative; overflow: visible;">
+                <h1 style="margin: 0;">📈 進捗管理ダッシュボード</h1>
+
+                <!-- その他アプリ アコーディオンメニュー -->
+                <div id="other-apps-accordion" class="accordion-container" style="position: absolute; right: 200px; top: -25px; z-index: 9999; overflow: visible;width: 200px;">
+                    <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <span>🔗 その他アプリ</span>
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div class="accordion-content" style="display: none; position: absolute; top: 100%; right: 0; min-width: 180px; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 8px; z-index: 10000;">
+                        <div class="accordion-buttons-container">
+                            <button id="url-settings-button" class="accordion-button" style="width: 100%;text-align: center;padding: 6px 6px;border: outset;background: none;cursor: pointer;border-radius: 55px;background-color: #d7d7d7f7;color: #000000;font-size: 21px;">URL設定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: end;">
+                <!-- 期間選択 -->
+                <div>
+                    <label for="start-period" style="display: block; margin-bottom: 5px; font-weight: bold;">開始年月:</label>
+                    <select id="start-period" style="padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;">
+                        <!-- JavaScript で動的生成 -->
+                    </select>
+                </div>
+
+                <div>
+                    <label for="end-period" style="display: block; margin-bottom: 5px; font-weight: bold;">終了年月:</label>
+                    <select id="end-period" style="padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;">
+                        <!-- JavaScript で動的生成 -->
+                    </select>
+                </div>
+
+                <!-- 担当者選択 -->
+                <div>
+                    <label for="staff-filter" style="display: block; margin-bottom: 5px; font-weight: bold;">担当者:</label>
+                    <select id="staff-filter" style="padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;">
+                        <option value="">全員</option>
+                        <!-- JavaScript で動的生成 -->
+                    </select>
+                </div>
+
+                <!-- 決算月選択 -->
+                <div>
+                    <label for="fiscal-month-filter" style="display: block; margin-bottom: 5px; font-weight: bold;">決算月:</label>
+                    <select id="fiscal-month-filter" style="padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;">
+                        <option value="">全決算月</option>
+                        <option value="1">1月</option>
+                        <option value="2">2月</option>
+                        <option value="3">3月</option>
+                        <option value="4">4月</option>
+                        <option value="5">5月</option>
+                        <option value="6">6月</option>
+                        <option value="7">7月</option>
+                        <option value="8">8月</option>
+                        <option value="9">9月</option>
+                        <option value="10">10月</option>
+                        <option value="11">11月</option>
+                        <option value="12">12月</option>
+                    </select>
+                </div>
+
+                <!-- 事業者名検索 -->
+                <div>
+                    <label for="business-name-filter" style="display: block; margin-bottom: 5px; font-weight: bold;">事業者名:</label>
+                    <input type="text" id="business-name-filter" placeholder="事業者名を検索..." style="padding: 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-width: 200px;">
+                </div>
+
+                <!-- アクションボタン -->
+                <div style="display: flex; gap: 10px;">
+                    
+                    <!-- Clear Filters Button -->
+                    <button id="clear-analytics-filters-button" style="
+                        background: linear-gradient(135deg, #ffd700, #ffb347); 
+                        color: #333; 
+                        border: none; 
+                        padding: 12px 32px; 
+                        border-radius: 4px; 
+                        cursor: pointer; 
+                        font-size: 14px; 
+                        font-weight: bold; 
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.background='linear-gradient(135deg, #ffb347, #ff8c00)'" onmouseout="this.style.background='linear-gradient(135deg, #ffd700, #ffb347)'">
+                        🔄 クリア
+                    </button>
+
+                    <!-- Dashboard Toggle Button -->
+                    <button id="toggle-dashboard-button" style="
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        border: none;
+                        padding: 12px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: bold;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        transition: all 0.3s ease;
+                        margin-left: 10px;
+                    " onmouseover="this.style.background='linear-gradient(135deg, #20c997, #17a2b8)'" onmouseout="this.style.background='linear-gradient(135deg, #28a745, #20c997)'">
+                        📊 グラフ非表示
+                    </button>
+
+                    <div class="export-dropdown" style="position: relative; margin-left: 20px;">
+                        <button id="export-button" style="background: #007bff; color: white; border: none; padding: 13px 6px; border-radius: 4px; cursor: pointer; font-weight: bold;" disabled>
+                            📊 エクスポート ▼
+                        </button>
+                        <div id="export-menu" style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000; min-width: 150px;">
+                            <div onclick="analytics.exportToCSV()" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
+                                📄 CSV形式
+                            </div>
+                            <div onclick="analytics.exportToExcel()" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
+                                📗 Excel形式
+                            </div>
+                            <div onclick="analytics.exportToPDF()" style="padding: 10px 15px; cursor: pointer;">
+                                📕 PDF形式
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- 統合サマリーダッシュボード（集計結果 + 週次進捗） -->
+        <div id="summary-dashboard" style="display: block; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 5px; margin-bottom: 10px;">
+            <!-- ヘッダー情報 -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0px; flex-wrap: wrap; gap: 15px;">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <h3 style="margin: 0;">📊 集計結果サマリー & 週次進捗推移</h3>
+                    <div id="summary-filter-info" style="font-size: 14px; color: #666; line-height: 1.4; font-weight: bold;">
+                        <!-- JavaScript で動的に更新されます -->
+                    </div>
+                </div>
+
+                <!-- 現在の進捗を記録ボタン（ヘッダー右端） -->
+                <button id="save-snapshot-btn-header" style="
+                    background: linear-gradient(135deg, #28a745, #20c997);
+                    color: white;
+                    border: none;
+                    padding: 3px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    flex-shrink: 0;
+                ">📊 現在の進捗を記録</button>
+            </div>
+
+            <!-- メインコンテンツエリア：4分割レイアウト -->
+            <div class="dashboard-main-content" style="display: flex; gap: 15px;">
+
+                <!-- 1/4：集計結果サマリー + ステータス円グラフ -->
+                <div class="summary-section" style="flex: 0 0 25%; min-width: 0; display: flex; flex-direction: column;">
+                    <!-- サマリーカード群（横並び・コンパクト） - 40% -->
+                    <div style="flex: 0 0 40%; display: flex; gap: 6px; margin-bottom: -4px; align-items: center;">
+                        <!-- 全体進捗率 -->
+                        <div style="background: #e3f2fd; padding: 8px 6px; border-radius: 4px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 80px;">
+                            <div style="font-size: 15px; color: #0277bd; margin-bottom: 4px;">📈進捗率</div>
+                            <div id="overall-progress" style="font-size: 22px; font-weight: bold; color: #01579b;">--%</div>
+                        </div>
+
+                        <!-- 完了タスク数 -->
+                        <div style="background: #e8f5e8; padding: 8px 6px; border-radius: 4px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 80px;">
+                            <div style="font-size: 15px; color: #2e7d32; margin-bottom: 4px;">✅完了タスク数</div>
+                            <div id="completed-tasks" style="font-size: 22px; font-weight: bold; color: #1b5e20;">-- / --</div>
+                        </div>
+
+                        <!-- 要注意クライアント数 -->
+                        <div style="background: #fff3cd; padding: 8px 6px; border-radius: 4px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 80px;">
+                            <div style="font-size: 15px; color: #856404; margin-bottom: 4px;">⚠️要注意数</div>
+                            <div id="attention-clients" style="font-size: 22px; font-weight: bold; color: #6c5200;">--件</div>
+                        </div>
+                    </div>
+
+                    <!-- ステータス別構成円グラフ（commit eed561f復旧） - 60% -->
+                    <div style="flex: 1; background: #f8f9fa; padding: 3px; border-radius: 6px; min-height: 160px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
+                        <div style="font-size: 13px; color: #495057; margin-bottom: 0px; font-weight: bold; text-align: center;">📊 ステータス別構成</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 140px;">
+                            <!-- 円グラフ -->
+                            <div style="flex-shrink: 0;">
+                                <canvas id="status-chart" width="140" height="140" style="max-width: 250px; max-height: 250px; min-height: 200px;"></canvas>
+                            </div>
+                            <!-- 凡例 -->
+                            <div id="chart-legend" style="flex: 1; font-size: 11px; text-align: left;">
+                                <!-- JavaScript で動的生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2/4：要注意クライアント欄 -->
+                <div class="attention-clients-section" style="flex: 0 0 25%; min-width: 0;">
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; height: 280px; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0; font-size: 14px; color: #856404;">⚠️ 要注意クライアント</h4>
+                            <span id="attention-count" style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 10px; font-size: 12px; font-weight: bold;">0</span>
+                        </div>
+                        <div id="attention-clients-list" style="flex: 1; overflow-y: auto; font-size: 12px;">
+                            <!-- 要注意クライアント一覧がここに表示されます -->
+                        </div>
+                        <button id="show-all-attention-btn" style="
+                            display: none;
+                            background: #ffc107;
+                            color: #212529;
+                            border: none;
+                            padding: 6px 12px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: bold;
+                            margin-top: 8px;
+                        ">📋 全件表示</button>
+                    </div>
+                </div>
+
+                <!-- 3/4 & 4/4：週次進捗推移グラフ（50%幅） -->
+                <div class="weekly-progress-section" style="flex: 0 0 48%; min-width: 0; height: 303px;box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
+                    <div style="background: #f8f9fa; padding: 8px; border-radius: 6px; height: 95%; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0;">
+                            <h4 style="margin: 0; font-size: 14px; color: #495057;">📈 週次進捗推移</h4>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <!-- 前週比情報 -->
+                                <div id="weekly-trend-info" style="font-size: 12px; color: #6c757d; display: none;">
+                                    前週比: <span id="weekly-trend-value" style="font-weight: bold;">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- グラフエリア -->
+                        <div id="weekly-chart-area-compact" style="position: relative; flex: 1; min-height: 0;">
+                            <canvas id="weeklyProgressChartCompact"></canvas>
+                        </div>
+
+                        <!-- データなし表示 -->
+                        <div id="no-weekly-data-compact" style="text-align: center; padding: 20px; color: #6c757d; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <div style="font-size: 32px; margin-bottom: 8px;">📈</div>
+                            <div style="font-size: 13px; margin-bottom: 6px;">週次進捗データなし</div>
+                            <div style="font-size: 11px; color: #999;">「現在の進捗を記録」で開始</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- レスポンシブ用CSS -->
+            <style>
+                @media (max-width: 1199px) {
+                    .dashboard-main-content {
+                        flex-direction: column !important;
+                    }
+                    .summary-section,
+                    .weekly-progress-section {
+                        flex: none !important;
+                    }
+                    .weekly-progress-section {
+                        height: 320px !important;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .dashboard-main-content {
+                        gap: 15px !important;
+                    }
+                    .summary-section div[style*="grid-template-columns"] {
+                        grid-template-columns: 1fr !important;
+                        gap: 8px !important;
+                    }
+                    .weekly-progress-section {
+                        height: 280px !important;
+                    }
+
+                    /* モバイルでヘッダーを縦積み */
+                    #summary-dashboard > div:first-child {
+                        flex-direction: column !important;
+                        align-items: flex-start !important;
+                        gap: 10px !important;
+                    }
+
+                    #summary-filter-info {
+                        font-size: 12px !important;
+                    }
+
+                    #save-snapshot-btn-header {
+                        font-size: 12px !important;
+                        padding: 8px 12px !important;
+                    }
+                }
+
+                /* グラフの高さを厳格に制御 */
+                #weekly-chart-area-compact {
+                    overflow: hidden;
+                }
+
+                #weeklyProgressChartCompact {
+                    max-height: 100% !important;
+                }
+
+                /* モダンなツールチップスタイル */
+                .custom-tooltip {
+                    position: absolute;
+                    bottom: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+                    color: white;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    white-space: nowrap;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                    opacity: 0;
+                    pointer-events: none;
+                    margin-bottom: 8px;
+                    transition: opacity 0.2s ease-out;
+                }
+
+                .custom-tooltip.show {
+                    opacity: 1;
+                }
+
+                .custom-tooltip::before {
+                    content: '';
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    border: 5px solid transparent;
+                    border-top-color: #1a1a1a;
+                }
+            </style>
+        </div>
+
+        <!-- 週次進捗グラフ（統合ダッシュボード導入により非表示） -->
+        <div id="weekly-progress-chart-container" style="display: none; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">📈 週次進捗推移</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <!-- スナップショット保存ボタン -->
+                    <button id="save-snapshot-btn" style="
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    ">📊 現在の進捗を記録</button>
+
+                    <!-- グラフ表示切替ボタン -->
+                    <button id="toggle-chart-btn" style="
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">📈 グラフを表示</button>
+                </div>
+            </div>
+
+            <!-- グラフ情報表示エリア -->
+            <div id="weekly-progress-info" style="background: #e9f7ef; padding: 15px; border-radius: 6px; margin-bottom: 15px; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 18px; font-weight: bold; color: #28a745;" id="weekly-trend-value">--</div>
+                        <div style="font-size: 12px; color: #6c757d;">前週比増減</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 18px; font-weight: bold; color: #007bff;" id="weekly-data-points">--</div>
+                        <div style="font-size: 12px; color: #6c757d;">データ週数</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 18px; font-weight: bold; color: #17a2b8;" id="weekly-latest-snapshot">--</div>
+                        <div style="font-size: 12px; color: #6c757d;">最新記録日</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- グラフエリア -->
+            <div id="weekly-chart-area" style="position: relative; height: 400px; display: none;">
+                <canvas id="weeklyProgressChart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+
+            <!-- データなし表示 -->
+            <div id="no-weekly-data" style="text-align: center; padding: 40px; color: #6c757d;">
+                <div style="font-size: 48px; margin-bottom: 10px;">📈</div>
+                <div style="font-size: 16px; margin-bottom: 8px;">週次進捗データがありません</div>
+                <div style="font-size: 14px;">「現在の進捗を記録」ボタンを押してスナップショットを作成してください</div>
+            </div>
+        </div>
+
+        <!-- 進捗マトリクス表 -->
+        <div id="progress-matrix" style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 13px;">
+            <h3 style="margin-top: -11px; margin-bottom: 5px; text-align: left;">📋 進捗マトリクス表</h3>
+
+            <div style="overflow-x: auto; max-height: 80vh;">
+                <table id="analytics-table" style="width: 100%; border-collapse: collapse; margin-top: 5px;">
+                    <thead style="position: sticky; top: 0; z-index: 10; background: #f8f9fa;">
+                        <tr style="background: #f8f9fa;">
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="id">
+                                ID(編集) <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="name">
+                                事業者名 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="staff">
+                                担当者 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="fiscal">
+                                決算月 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="accounting">
+                                経理方式 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="progress">
+                                進捗率 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <!-- 動的に年月列が追加される -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- JavaScript で動的生成 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 4px; font-size: 14px; color: #6c757d;">
+                <strong>進捗表示の見方:</strong> 
+                <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">5/5</span> 完了
+                <span style="background: #ffc107; color: black; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">3/5</span> 進行中
+                <span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">1/5</span> 遅延
+            </div>
+        </div>
+    </div>
+
+    <!-- 要注意クライアント全件表示モーダル -->
+    <div id="attention-clients-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">⚠️ 要注意クライアント 全件一覧</h2>
+                <span class="close-button" id="close-attention-modal" style="cursor: pointer; font-size: 28px; font-weight: bold; color: #aaa;">&times;</span>
+            </div>
+
+            <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #856404;">
+                <strong>📊 表示条件:</strong> 進捗率50%未満のクライアント
+            </div>
+
+            <div id="attention-clients-modal-list" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px;">
+                <!-- 全件一覧がここに表示されます -->
+            </div>
+
+            <div style="margin-top: 15px; text-align: right;">
+                <button id="close-attention-modal-btn" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: bold;
+                ">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="config.js"></script>
+    <script type="module" src="toast.js"></script>
+    <script type="module" src="supabase-client.js"></script>
+    <!-- SheetJS library for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script type="module" src="analytics.js"></script>
+
+    <!-- Dashboard Toggle Functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButton = document.getElementById('toggle-dashboard-button');
+            const dashboardSection = document.querySelector('#summary-dashboard');
+
+            // 初期状態は表示（HTMLの実際の状態に合わせて）
+            let isDashboardVisible = true;
+
+            toggleButton.addEventListener('click', function() {
+                if (isDashboardVisible) {
+                    // ダッシュボードを非表示
+                    dashboardSection.style.display = 'none';
+                    toggleButton.innerHTML = '📊 グラフ表示';
+                    toggleButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                    toggleButton.onmouseover = function() { this.style.background = 'linear-gradient(135deg, #495057, #343a40)'; };
+                    toggleButton.onmouseout = function() { this.style.background = 'linear-gradient(135deg, #6c757d, #495057)'; };
+                } else {
+                    // ダッシュボードを表示
+                    dashboardSection.style.display = 'block';
+                    toggleButton.innerHTML = '📊 グラフ非表示';
+                    toggleButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                    toggleButton.onmouseover = function() { this.style.background = 'linear-gradient(135deg, #20c997, #17a2b8)'; };
+                    toggleButton.onmouseout = function() { this.style.background = 'linear-gradient(135deg, #28a745, #20c997)'; };
+                }
+                isDashboardVisible = !isDashboardVisible;
+            });
+        });
+    </script>
+
+    <!-- URL Settings Modal -->
+    <div id="url-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>URL設定</h2>
+            <p>「その他アプリ」メニューに表示するカスタムリンクを設定します。</p>
+
+            <div id="url-list-container" class="list-container">
+                <!-- URLアイテムがここに動的に追加されます -->
+            </div>
+
+            <div class="new-item-form">
+                <input type="text" id="new-url-name" placeholder="リンク名">
+                <input type="url" id="new-url-link" placeholder="https://example.com">
+                <button id="add-url-button" class="add-button">追加</button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="save-url-settings-button" class="save-button">保存</button>
+                <button id="cancel-url-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copyright Notice -->
+    <div style="position: fixed; bottom: 10px; right: 15px; opacity: 0.6; font-size: 11px; color: #666; z-index: 100; pointer-events: none;">
+        ©Mori-hiroki tax accountant's office
+    </div>
+</body>
+</html>

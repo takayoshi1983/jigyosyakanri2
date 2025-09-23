@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>担当者別パフォーマンスダッシュボード</title>
+    <!-- Favicon with cache busting and multiple formats -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico?v=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico?v=1">
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom-dropdown.css">
+    <link rel="stylesheet" href="toast.css">
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -15px;">
+
+            <!-- 統一ナビゲーションタブ -->
+            <div class="tab-navigation">
+                <a href="analytics.html" class="nav-tab dashboard">
+                    📈 進捗ダッシュボード
+                </a>
+                <a href="performance.html" class="nav-tab performance active">
+                    👥 担当者別進捗
+                </a>
+                <a href="index.html" class="nav-tab settings">
+                    ⚙️ 設定画面
+                </a>
+            </div>
+        </div>
+
+        <!-- フィルターエリア -->
+        <div class="performance-filters" style="background: #1ecd0533; padding: 30px; border-radius: 8px; margin-bottom: 15px;box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
+            <h1 style="margin-top: -15px;margin-bottom: 4px;">👥担当者別パフォーマンスダッシュボード</h1>
+            
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: end;">
+                <!-- 期間選択 -->
+                <div>
+                    <label for="evaluation-period" style="display: block; margin-bottom: 5px; font-weight: bold;">評価期間:</label>
+                    <select id="evaluation-period" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;font-size: 21px;margin: 8px;">
+                        <option value="current-year">今年度</option>
+                        <option value="last-quarter">前四半期</option>
+                        <option value="last-6-months">過去6ヶ月</option>
+                        <option value="last-12-months" selected>過去12ヶ月</option>
+                        <option value="custom">カスタム期間</option>
+                    </select>
+                </div>
+
+                <!-- カスタム期間（初期非表示） -->
+                <div id="custom-period-container" style="display: none;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">カスタム期間:</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="month" id="custom-start-period" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;font-size: 21px;margin: 8px;">
+                        <span>〜</span>
+                        <input type="month" id="custom-end-period" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;font-size: 21px;margin: 8px;font-size: 21px;margin: 8px;">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- パフォーマンス一覧表 -->
+        <div id="performance-results" style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
+            <h3 style="margin-top: 0;">📊 担当者別パフォーマンス一覧</h3>
+            
+            <div style="overflow-x: auto;">
+                <table id="performance-table" style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer;" data-sort="staff-id">
+                                担当者ID <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: left; cursor: pointer;" data-sort="name">
+                                担当者名 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer;" data-sort="client-count">
+                                担当クライアント数 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer;" data-sort="avg-completion">
+                                期間内平均完了率 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer;" data-sort="completed-months">
+                                完了月数 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer;" data-sort="delayed-months">
+                                遅延発生月数 <span class="sort-icon">▲▼</span>
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">
+                                パフォーマンス評価
+                            </th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">
+                                詳細確認
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="performance-table-body">
+                        <!-- パフォーマンスデータが自動で読み込まれます -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- パフォーマンス評価の説明 -->
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; font-size: 14px; color: #6c757d;">
+                <strong>📋 指標の説明:</strong><br>
+                <div style="margin-top: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <div>
+                        <strong>担当クライアント数:</strong> 現在担当している事業者数
+                    </div>
+                    <div>
+                        <strong>期間内平均完了率:</strong> (完了タスク数 / 全タスク数) × 100
+                    </div>
+                    <div>
+                        <strong>完了月数:</strong> 月次タスクが100%完了した月の延べ数
+                    </div>
+                    <div>
+                        <strong>遅延発生月数:</strong> 遅延ステータスになった月の延べ数
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <strong>🎯 パフォーマンス評価:</strong>
+                    <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">優秀</span> 95%以上
+                    <span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">良好</span> 85-94%
+                    <span style="background: #ffc107; color: black; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">標準</span> 70-84%
+                    <span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">要改善</span> 70%未満
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="config.js"></script>
+    <script type="module" src="toast.js"></script>
+    <script type="module" src="supabase-client.js"></script>
+    <script type="module" src="performance.js"></script>
+
+    <!-- Copyright Notice -->
+    <div style="position: fixed; bottom: 10px; right: 15px; opacity: 0.6; font-size: 11px; color: #666; z-index: 100; pointer-events: none;">
+        ©Mori-hiroki tax accountant's office
+    </div>
+</body>
+</html>

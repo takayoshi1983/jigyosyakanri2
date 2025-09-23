@@ -42,12 +42,12 @@ body {
 }
 
 h1, h2 {
-    color: #2c3e50;
+    color: #000000a8;
 }
 
 .container {
-    background-color: #fff;
-    padding: 20px;
+    background-color: #dee2e666;
+    padding: 10px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* シャドウを追加 */
     margin-bottom: 20px;
@@ -86,8 +86,8 @@ h1, h2 {
     color: #333;
     font-weight: bold;
     padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-bottom: 2px solid #ddd;
+    border: 1px solid #967e7e7a;
+    border-bottom: 4px solid #b7b2b2a3;
     text-align: center;
     vertical-align: middle;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -122,8 +122,8 @@ h1, h2 {
 
 .nav-links a {
     display: inline-block;
-    padding: 10px 15px;
-    background-color: #007bff;
+    padding: 12px 15px;
+    background-color: #007bffa4;
     color: white;
     text-decoration: none;
     border-radius: 5px;
@@ -142,7 +142,7 @@ h1, h2 {
 }
 .controls input[type="text"],
 .controls select {
-    padding: 8px;
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
@@ -176,7 +176,7 @@ table {
 
 .client-info-table th:nth-child(2), /* 事業所名 */
 .client-info-table td:nth-child(2) {
-    width: 250px;
+    width: 125px;
 }
 
 .client-info-table th:nth-child(3), /* 決算月 */
@@ -186,12 +186,12 @@ table {
 
 .client-info-table th:nth-child(4), /* 担当者 */
 .client-info-table td:nth-child(4) {
-    width: 150px;
+    width: 125px;
 }
 
 th, td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
+    padding: 2px 15px;
+    border: 1px solid #967e7e7a;
     text-align: center;
     vertical-align: middle;
 }
@@ -202,7 +202,7 @@ th {
     color: #333;
     font-weight: bold;
     padding: 12px 15px;
-    border: 1px solid #ddd;
+    border: 1px solid #967e7e7a;
     text-align: center;
     vertical-align: middle;
 }
@@ -243,11 +243,33 @@ tr:hover {
 
 /* Details Page Specific Styles */
 .details-table-wrapper {
-    overflow-x: auto; /* Enable horizontal scrolling */
-    width: 100%;
+    overflow-x: auto; /* Remove horizontal scrolling border */
+    width: fit-content;
     position: relative; /* z-indexを適用するために必要 */
-    z-index: 25; /* アコーディオンより上に設定 */
+    z-index: 5; /* タイトルより下に設定（25→5） */
     background-color: white; /* 背景色を確実に設定 */
+}
+
+/* 全体メモの幅をテーブルと合わせる */
+.memo-section {
+    padding: 20px;
+    margin-top: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.memo-textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: vertical;
+    box-sizing: border-box;
 }
 
 /* レスポンシブテーブル幅調整システム */
@@ -322,13 +344,13 @@ tr:hover {
     table-layout: auto; /* 自動列幅調整に変更 */
     font-size: clamp(11px, 1.4vw, 13px); /* レスポンシブフォントサイズ */
     position: relative; /* z-indexを適用するために必要 */
-    z-index: 26; /* ラッパーより上に設定 */
+    z-index: 6; /* ラッパーより上、タイトルより下に設定（26→6） */
     background-color: white; /* 背景色を確実に設定 */
 }
 
 #notes-table {
     position: relative; /* z-indexを適用するために必要 */
-    z-index: 26; /* タスクテーブルと同じ高さに */
+    z-index: 6; /* タスクテーブルと同じ高さに（26→6） */
     background-color: white; /* 背景色を確実に設定 */
 }
 
@@ -470,7 +492,7 @@ tr:hover {
     background-color: #28a745; /* Green color */
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 47px;
     cursor: pointer;
     transition: background-color 0.3s ease;
     justify-self: start; /* Align button to the start of the grid cell */
@@ -557,30 +579,595 @@ th[data-sort-key].active-sort {
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 100; /* Sit on top */
+    z-index: 10000; /* Much higher z-index to ensure visibility */
     left: 0;
     top: 0;
     width: 100%; /* Full width */
-    height: 100%; /* Full height */
+    height: 95%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
     padding-top: 60px;
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 5% auto; /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
-    max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    background-color: #fffffff2; /* Brighter white */
+    margin: -4% auto;
+    padding: 37px; /* Increased padding */
+    border: none; /* Remove border */
+    width: 90%; /* Slightly wider */
+    max-width: 520px; /* Increased max-width */
+    border-radius: 12px; /* More rounded corners */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Softer, larger shadow */
     position: relative;
 }
 
+/* Modern Staff Modal Styles */
+.staff-modal-content {
+    max-width: 723px;
+    max-height: 100vh;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.06);
+    padding: 0;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.staff-close-button {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 32px;
+    color: #6c757d;
+    z-index: 10;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.staff-close-button:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    transform: scale(1.1);
+}
+
+.staff-modal-header {
+    background: linear-gradient(135deg, #3990cab4 0%, #148cb1a6 100%);
+    color: white;
+    padding: 0px;
+    text-align: center;
+    position: relative;
+}
+
+.staff-header-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+
+.staff-modal-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+}
+
+.staff-header-description {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+.staff-main-section, .staff-add-section {
+    padding: 5px 90px;
+}
+
+.staff-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.staff-section-header h3 {
+    margin: 0;
+    color: #495057;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.staff-count-badge {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.modern-staff-list {
+    min-height: 300px;
+    max-height: 800px;
+    height: auto;
+    overflow-y: auto;
+    padding: 0;
+    background-color: #ffffff;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.staff-add-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-top: 1px solid #e9ecef;
+}
+
+.modern-add-staff-form {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    align-items: end;
+}
+
+.form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.role-group {
+    flex: 0.6;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modern-input, .modern-select {
+    padding: 14px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modern-input:focus, .modern-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.modern-add-button {
+    background: linear-gradient(135deg, #3c9bb8ab 0%, #1075a3a2 100%);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    min-width: 200px;
+    justify-content: center;
+}
+
+.modern-add-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.staff-modal-actions {
+    padding: 25px 30px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+}
+
+.modern-save-button, .modern-cancel-button, .modern-export-button {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+    justify-content: center;
+}
+
+.modern-save-button {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.modern-save-button:hover {
+    background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.modern-cancel-button {
+    background: linear-gradient(135deg, #eeeeee 0%, #c2c3c5 100%);
+    color: rgb(15, 15, 15);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+.modern-cancel-button:hover {
+    background: linear-gradient(135deg, #a4a4a5 0%, #6d7072be 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+.modern-export-button {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    margin-right: auto;
+}
+
+.modern-export-button:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.button-icon {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+#staff-list-container {
+    padding: 10;
+}
+
+/* Modern Staff Item Styles */
+.modern-staff-item {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 0px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.modern-staff-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.staff-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3c8fbec4 0%, #0f6b96b7 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.staff-id-badge {
+    background: linear-gradient(135deg, #6c757d 0%, #404c58 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 40px;
+    justify-content: center;
+}
+
+.staff-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.staff-name-input {
+    font-size: 16px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+    min-width: 180px;
+}
+
+.staff-name-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.staff-email-input {
+    font-size: 15px;
+    color: #313538;
+    padding: 6px 12px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.staff-email-input:focus {
+    outline: none;
+    border-color: #20c997;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(32, 201, 151, 0.1);
+}
+
+.staff-role-select {
+    padding: 6px 10px;
+    border: 2px solid #e9ecef;
+    border-radius: 5px;
+    background: white;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-width: 110px;
+}
+
+.staff-role-select:focus {
+    outline: none;
+    border-color: #ffc107;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+.staff-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-end;
+    flex-shrink: 0;
+}
+
+.staff-clients-badge {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(23, 162, 184, 0.3);
+}
+
+.modern-delete-staff-button {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.modern-delete-staff-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.modern-delete-staff-button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+    box-shadow: none;
+}
+
+.staff-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.staff-tooltip:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.empty-staff-placeholder {
+    padding: 40px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    margin: 20px;
+}
+
+.empty-staff-placeholder .placeholder-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.6;
+}
+
+/* Mobile Responsive Styles for Staff Modal */
+@media screen and (max-width: 768px) {
+    .staff-modal-content {
+        max-width: 95%;
+        margin: 10px auto;
+        border-radius: 12px;
+    }
+
+    .staff-modal-header {
+        padding: 20px;
+    }
+
+    .staff-header-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+
+    .staff-modal-header h2 {
+        font-size: 22px;
+    }
+
+    .staff-header-description {
+        font-size: 14px;
+    }
+
+    .staff-main-section, .staff-add-section {
+        padding: 20px 15px;
+    }
+
+    .staff-section-header h3 {
+        font-size: 18px;
+    }
+
+    .modern-add-staff-form {
+        padding: 20px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .form-group {
+        width: 100%;
+    }
+
+    .modern-add-button {
+        width: 100%;
+        padding: 16px;
+        min-width: auto;
+    }
+
+    .staff-modal-actions {
+        padding: 20px 15px;
+        flex-direction: column;
+    }
+
+    .modern-save-button, .modern-cancel-button {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .modern-staff-item {
+        margin: 8px;
+        padding: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .staff-id-badge {
+        align-self: center;
+        margin-bottom: 5px;
+    }
+
+    .staff-avatar {
+        align-self: center;
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .staff-info {
+        width: 100%;
+        align-items: stretch;
+    }
+
+    .staff-name-input, .staff-email-input {
+        min-width: auto;
+        width: 100%;
+        padding: 8px 12px;
+    }
+
+    .staff-role-select {
+        min-width: auto;
+        width: 100%;
+        padding: 8px 12px;
+    }
+
+    .staff-meta {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    .modern-delete-staff-button {
+        flex-shrink: 0;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
+
 .close-button {
-    color: #aaa;
+    color: #fff9f9;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -601,7 +1188,7 @@ th[data-sort-key].active-sort {
 
 .task-item input[type="text"] {
     flex-grow: 1;
-    padding: 8px;
+    padding: 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
     margin-right: 10px;
@@ -634,8 +1221,8 @@ th[data-sort-key].active-sort {
 
 .add-task-section input[type="text"] {
     flex-grow: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
+    padding: 20px;
+    border: 4px solid #ccc;
     border-radius: 4px;
     margin-right: 10px;
 }
@@ -733,7 +1320,7 @@ th[data-sort-key].active-sort {
 
 #edit-tasks-button, #finalize-year-button, #save-changes-button {
     padding: 10px 20px; /* パディングを調整してボタンを大きくする */
-    font-size: 1rem; /* フォントサイズを調整 */
+    font-size: 20px; /* フォントサイズを調整 */
     border: 1px solid #ccc; /* この行を追加 */
     border-radius: 5px;
     cursor: pointer;
@@ -895,9 +1482,9 @@ th[data-sort-key].active-sort {
 .details-table td:first-child,
 #notes-table th:first-child,
 #notes-table td:first-child {
-    width: 120px !important;
-    min-width: 120px !important;
-    max-width: 120px !important;
+    width: 95px !important;
+    min-width: 90px !important;
+    max-width: 100px !important;
 }
 
 /* 年月列の幅も統一（2024年4月などの文字列に対応） */
@@ -962,9 +1549,9 @@ th[data-sort-key].active-sort {
     position: sticky;
     top: 0;
     background-color: #d1cfcfd8; /* 背景色を固定エリアの背景色と合わせる */
-    z-index: 20; /* 他の要素より手前に表示 */
+    z-index: 10; /* ドロップダウンより下に変更（20→10） */
     padding-left: 20px; /* 左側に余白を追加 */
-    padding-bottom: -20px; /* 下部に少しスペース */
+    padding-bottom: 0px; /* 下部に少しスペース */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.24); /* シャドウを追加 */
 }
 
@@ -1051,7 +1638,7 @@ button:active {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     color: #333;
     transition: background-color 0.2s;
@@ -1071,7 +1658,7 @@ button:active {
 .accordion-buttons-container {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 3px;
 }
 
 .accordion-button {
@@ -1079,18 +1666,18 @@ button:active {
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    background: #007bff;
+    background: linear-gradient( 178deg, #0063ff8f, #001292);
     color: white;
-    border: none;
-    border-radius: 4px;
+    border: double;
+    border-radius: 47px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 20px;
     transition: background-color 0.2s;
     justify-content: center; /* テキストとアイコンを中央揃え */
 }
 
 .accordion-button:hover {
-    background-color: #0056b3;
+    background: linear-gradient(135deg,#0face0c0, #0d42a5c7);
 }
 
 /* Default Tasks Modal Styles */
@@ -1281,7 +1868,7 @@ button:active {
 /* 簡素化された閾値設定項目（ラベル → セレクト → カラーピッカー） */
 .setting-item.threshold-setting-simple {
     justify-content: flex-start;
-    gap: 10px;
+    gap: 0px;
     align-items: center;
 }
 
@@ -1464,6 +2051,169 @@ button:active {
 
 .settings-button.admin-only:disabled:hover {
     background-color: #6c757d;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 危険な操作の区切りとスタイル */
+.danger-section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #dc3545, transparent);
+    margin: 20px 0;
+    position: relative;
+}
+
+.danger-section-divider::before {
+    content: "危険な操作";
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    color: #dc3545;
+    font-size: 12px;
+    padding: 0 10px;
+    font-weight: bold;
+}
+
+.danger-section {
+    background-color: #fff5f5;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+    margin-top: 10px;
+}
+
+/* データベース初期化確認モーダル */
+.danger-modal-content {
+    max-width: 500px;
+    border: 2px solid #dc3545;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.danger-warning-header {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    padding: 25px;
+    text-align: center;
+    margin: -20px -20px 20px -20px;
+}
+
+.warning-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.danger-warning-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.danger-warning-content {
+    padding: 0 5px;
+}
+
+.danger-warning-content ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.danger-warning-content li {
+    margin: 8px 0;
+    color: #721c24;
+}
+
+.app-name-verification {
+    margin: 25px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+}
+
+.app-name-verification label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #721c24;
+}
+
+.app-name-verification input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.app-name-verification input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.app-name-verification input.valid {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.app-name-verification input.invalid {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.verification-status {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.verification-status.valid {
+    color: #28a745;
+}
+
+.verification-status.invalid {
+    color: #dc3545;
+}
+
+.danger-modal-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.danger-confirm-button {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.danger-confirm-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c82333, #b21e2c);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.danger-confirm-button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.danger-confirm-button:disabled:hover {
     transform: none;
     box-shadow: none;
 }
@@ -1781,6 +2531,86 @@ button:active {
     color: #6c757d !important;
 }
 
+/* 関与終了事業者の非表示制御 */
+body.hide-inactive-clients .inactive-client {
+    display: none !important;
+}
+
+/* === 統一ナビゲーションタブ === */
+.tab-navigation {
+    position: absolute;
+    top: 20px;
+    right: 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 1500;
+}
+
+.nav-tab {
+    padding: 10px 21px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 50px 0px 0px 0%;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -2px 2px 8px rgba(0,0,0,0.1);
+    min-width: 150px;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* 色別スタイル */
+.nav-tab.dashboard {
+    border-left: 4px solid #17a2b8;
+    color: #17a2b8;
+}
+.nav-tab.performance {
+    border-left: 4px solid #28a745;
+    color: #28a745;
+}
+.nav-tab.settings {
+    border-left: 4px solid #fd7e14;
+    color: #fd7e14;
+}
+
+/* アクティブ状態（現在いるページ） */
+.nav-tab.active {
+    background: #e9ecef;
+    color: #495057 !important;
+    cursor: default;
+    box-shadow: inset -4px 4px 12px rgba(0,0,0,0.2), inset 2px -2px 8px rgba(0,0,0,0.1);
+    border-left-color: #6c757d !important;
+    border-color: #535455ad !important;
+    transform: translateX(22px) translateY(2px);
+    opacity: 0.9;
+    border-radius: 50px 0px 0px 0px;
+    position: relative;
+}
+
+/* ホバーエフェクト */
+.nav-tab:not(.active):hover {
+    background: #f8f9fa;
+    transform: translateX(-2px);
+    box-shadow: -4px 4px 12px rgba(0,0,0,0.15);
+}
+
+.nav-tab:not(.active):hover.dashboard {
+    background: rgba(23, 162, 184, 0.1);
+}
+.nav-tab:not(.active):hover.performance {
+    background: rgba(40, 167, 69, 0.1);
+}
+.nav-tab:not(.active):hover.settings {
+    background: rgba(253, 126, 20, 0.1);
+}
+
 /* 関与終了マーク */
 .inactive-badge {
     display: inline-block;
@@ -1795,16 +2625,16 @@ button:active {
 
 /* App Link Button Style */
 .app-link-button {
-    background: linear-gradient(135deg, #ffc107, #ffb300) !important;
-    border: 1px solid #ffc107 !important;
+    background: linear-gradient(135deg, #ffc107, #ffb300a2) !important;
+    border: 1px solid #ffc107ab !important;
     color: #ffffff !important;
     font-weight: bold !important;
     text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
 }
 
 .app-link-button:hover {
-    background: linear-gradient(135deg, #ffca28, #ffa000) !important;
-    border-color: #ffca28 !important;
+    background: linear-gradient(135deg, #ffca28, #ffa20096) !important;
+    border-color: #ffc928a1 !important;
     color: #ffffff !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 8px rgba(255,193,7,0.3) !important;
@@ -1839,13 +2669,13 @@ button:active {
     background-color: white; /* 背景色を確実に設定 */
 }
 
-/* 詳細画面のテーブルが確実に最前面に表示されるように */
+/* 詳細画面のテーブルセルのz-index調整 */
 .details-table th,
 .details-table td,
 #notes-table th,
 #notes-table td {
     position: relative;
-    z-index: 27; /* セル単位でも最前面に */
+    z-index: 7; /* セル単位でタイトルより下に（27→7） */
     background-color: inherit;
 }
 
@@ -2385,6 +3215,745 @@ button:active {
 @media screen and (min-width: 481px) {
     .mobile-cards-container {
         display: none !important;
+    }
+}
+
+/* ========================================
+   Modern Edit Form Styles (顧客情報編集画面)
+   ========================================*/
+
+/* Modern Container */
+.modern-container {
+    max-width: 651px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fdff 100%);
+    min-height: 100vh;
+}
+
+/* Modern Header */
+.modern-header {
+    background: linear-gradient(135deg, #266b9caf 0%, #165991b9 100%);
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 7px;
+    box-shadow: 0 8px 32px rgba(33, 150, 243, 0.15);
+    border: 1px solid rgba(33, 150, 243, 0.1);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+}
+
+.header-icon {
+    font-size: 48px;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.header-text {
+    flex: 1;
+}
+
+.header-text h1 {
+    margin: 0 0 8px 0;
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.header-description {
+    margin: 0;
+    color: #f8f8f8;
+    font-size: 16px;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.modern-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: linear-gradient(135deg, #f9f9f9d9 0%, #fbfbfb 100%);
+    color: rgba(0, 0, 0, 0.753);
+    text-decoration: none;
+    padding: 18px 55px;
+    border-radius: 65px;
+    font-size: 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(253, 254, 255, 0.3);
+}
+
+.modern-back-btn:hover {
+    background: linear-gradient(135deg, #c8dbedcc 0%, #e1e1e1c7 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+}
+
+.back-icon {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Status Card */
+.status-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fdff 100%);
+    border: 2px solid #e3f2fd;
+    border-radius: 16px;
+    padding: 5px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(33, 150, 243, 0.1);
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.status-icon {
+    font-size: 36px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    padding: 15px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15);
+}
+
+.status-details h3 {
+    margin: 0 0 8px 0;
+    color: #1565c0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.inactive-badge {
+    background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
+    color: #e65100;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+/* Modern Form Container */
+.modern-form-container {
+    background: rgb(255, 255, 255);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(137, 137, 138, 0.322);
+    border: 1px solid rgba(33, 150, 243, 0.1);
+    overflow: hidden;
+}
+
+.modern-edit-form {
+    padding: 0;
+}
+
+/* Form Sections */
+.form-section {
+    padding: 15px;
+    border-bottom: 1px solid #e3f2fd;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e3f2fd;
+}
+
+.section-header h2 {
+    margin: 0;
+    color: #1565c0;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.section-icon {
+    font-size: 24px;
+    opacity: 0.7;
+}
+
+/* Modern Form Groups */
+.modern-form-group {
+    margin-bottom: 25px;
+}
+
+.modern-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #1565c0;
+    font-size: 16px;
+}
+
+.label-icon {
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+.label-text {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 14px;
+}
+
+/* Modern Inputs */
+.modern-input {
+    width: 100%;
+    padding: 15px 4px;
+    border: 2px solid #919597d5;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    background: linear-gradient(135deg, #ffffff 0%, #fafffe 100%);
+    transition: all 0.3s ease;
+    color: #1f2022;
+    box-shadow: inset 0 1px 3px rgba(33, 150, 243, 0.1);
+}
+
+.modern-input:focus {
+    outline: none;
+    border-color: #42a5f5;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15);
+    transform: translateY(-1px);
+}
+
+.modern-input::placeholder {
+    color: #90caf9;
+    opacity: 0.8;
+}
+
+/* Modern Select Wrapper */
+.modern-select-wrapper {
+    width: 100%;
+}
+
+.modern-select-trigger {
+    padding: 16px 20px !important;
+    border: 2px solid #58646dd5 !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    background: linear-gradient(135deg, #ffffff 0%, #fafffe 100%) !important;
+    color: #000000 !important;
+    box-shadow: inset 0 1px 3px rgba(33, 150, 243, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.modern-select-trigger:hover {
+    border-color: #42a5f5 !important;
+    transform: translateY(-1px) !important;
+}
+
+.modern-select-trigger:focus,
+.custom-select-wrapper.active .modern-select-trigger {
+    border-color: #42a5f5 !important;
+    box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.15) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Form Actions */
+.form-actions {
+    padding: 10px;
+    text-align: center;
+    background: linear-gradient(135deg, #f8fdff 0%, #ffffff 100%);
+}
+
+.modern-save-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+    min-width: 200px;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.modern-save-btn:hover {
+    background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.btn-icon {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.btn-text {
+    font-weight: 600;
+}
+
+/* Danger Zone */
+.danger-zone {
+    border-top: 3px solid #ffeb3b !important;
+    background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%) !important;
+    padding: 7px !important;
+    margin-top: -20 !important;
+}
+
+.danger-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.danger-header h2 {
+    margin: 0;
+    color: #f57c00;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.danger-icon {
+    font-size: 24px;
+}
+
+.danger-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Danger Buttons */
+.modern-reactivate-btn, .modern-inactive-btn, .modern-delete-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modern-reactivate-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+    color: white;
+}
+
+.modern-reactivate-btn:hover {
+    background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+}
+
+.modern-inactive-btn {
+    background: linear-gradient(135deg, #ffeb3b 0%, #ffc107 100%);
+    color: #e65100;
+}
+
+.modern-inactive-btn:hover {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.3);
+}
+
+.modern-delete-btn {
+    background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+    color: white;
+}
+
+.modern-delete-btn:hover {
+    background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(244, 67, 54, 0.3);
+}
+
+/* Modern Modal */
+.modern-modal {
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.modern-modal-content {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fdff 100%);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(33, 150, 243, 0.2);
+    border: 1px solid rgba(33, 150, 243, 0.1);
+    padding: 0;
+    overflow: hidden;
+    max-width: 500px;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    padding: 30px;
+    text-align: center;
+}
+
+.modal-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.modal-header h3 {
+    margin: 0 0 8px 0;
+    color: #1565c0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.modal-description {
+    margin: 0;
+    color: #1976d2;
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+.modal-info-card {
+    padding: 25px;
+    background: white;
+    border-top: 1px solid #e3f2fd;
+    border-bottom: 1px solid #e3f2fd;
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    color: #1565c0;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.info-icon {
+    font-size: 20px;
+}
+
+.info-details p {
+    margin: 8px 0;
+    color: #424242;
+}
+
+.info-details strong {
+    color: #1565c0;
+}
+
+.modal-actions {
+    padding: 25px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    background: linear-gradient(135deg, #c9d1d4 0%, #ffffff 100%);
+}
+
+.modern-cancel-btn, .modern-confirm-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modern-cancel-btn {
+    background: linear-gradient(135deg, #9e9e9e 0%, #616161 100%);
+    color: white;
+}
+
+.modern-cancel-btn:hover {
+    background: linear-gradient(135deg, #616161 0%, #424242 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(158, 158, 158, 0.3);
+}
+
+.modern-confirm-btn {
+    background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+    color: white;
+}
+
+.modern-confirm-btn:hover {
+    background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(244, 67, 54, 0.3);
+}
+
+/* ========================================
+   Mobile Responsive Styles for Edit Form
+   ========================================*/
+
+@media screen and (max-width: 768px) {
+    .modern-container {
+        padding: 15px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fdff 100%);
+    }
+
+    /* Modern Header Mobile */
+    .modern-header {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .header-icon {
+        font-size: 40px;
+    }
+
+    .header-text h1 {
+        font-size: 28px;
+    }
+
+    .header-description {
+        font-size: 14px;
+    }
+
+    .modern-back-btn {
+        padding: 10px 18px;
+        font-size: 14px;
+        border-radius: 20px;
+    }
+
+    /* Status Card Mobile */
+    .status-card {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .status-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .status-icon {
+        font-size: 32px;
+        padding: 12px;
+    }
+
+    .status-details h3 {
+        font-size: 20px;
+    }
+
+    /* Form Container Mobile */
+    .modern-form-container {
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(33, 150, 243, 0.1);
+    }
+
+    /* Form Sections Mobile */
+    .form-section {
+        padding: 20px 15px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+    }
+
+    .section-header h2 {
+        font-size: 20px;
+    }
+
+    .section-icon {
+        font-size: 20px;
+    }
+
+    /* Form Groups Mobile */
+    .modern-form-group {
+        margin-bottom: 20px;
+    }
+
+    .modern-label {
+        justify-content: center;
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+
+    .label-icon {
+        font-size: 16px;
+    }
+
+    .label-text {
+        font-size: 13px;
+    }
+
+    /* Inputs Mobile */
+    .modern-input {
+        padding: 14px 16px;
+        font-size: 16px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .modern-select-trigger {
+        padding: 14px 16px !important;
+        font-size: 16px !important;
+        border-radius: 10px !important;
+        text-align: center !important;
+    }
+
+    /* Form Actions Mobile */
+    .form-actions {
+        padding: 20px 15px;
+    }
+
+    .modern-save-btn {
+        width: 100%;
+        padding: 16px;
+        font-size: 16px;
+        border-radius: 40px;
+        min-width: auto;
+    }
+
+    /* Danger Zone Mobile */
+    .danger-zone {
+        padding: 20px 15px !important;
+    }
+
+    .danger-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .danger-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .modern-reactivate-btn, 
+    .modern-inactive-btn, 
+    .modern-delete-btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 14px;
+        border-radius: 20px;
+        min-width: auto;
+    }
+
+    /* Modal Mobile */
+    .modern-modal-content {
+        max-width: 95%;
+        margin: 10px;
+        border-radius: 15px;
+    }
+
+    .modal-header {
+        padding: 20px;
+    }
+
+    .modal-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    .modal-header h3 {
+        font-size: 20px;
+    }
+
+    .modal-description {
+        font-size: 14px;
+    }
+
+    .modal-info-card {
+        padding: 20px;
+    }
+
+    .info-header {
+        justify-content: center;
+        margin-bottom: 12px;
+    }
+
+    .modal-actions {
+        padding: 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .modern-cancel-btn, 
+    .modern-confirm-btn {
+        width: 100%;
+        padding: 14px;
+        min-width: auto;
+        border-radius: 20px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .modern-container {
+        padding: 10px;
+    }
+
+    .header-text h1 {
+        font-size: 24px;
+    }
+
+    .header-description {
+        font-size: 13px;
+    }
+
+    .form-section {
+        padding: 15px 10px;
+    }
+
+    .section-header h2 {
+        font-size: 18px;
+    }
+
+    .modern-input {
+        padding: 12px 14px;
+        font-size: 16px;
+    }
+
+    .modern-select-trigger {
+        padding: 12px 14px !important;
+        font-size: 16px !important;
+    }
+
+    .modern-save-btn {
+        padding: 14px;
+        font-size: 15px;
     }
 }
 

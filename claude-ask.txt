@@ -1,2 +1,324 @@
-円グラフの内容としては全員での抽出であれば全員、担当者を選択しているのであれば、
-aaaaaaaaaaaaaaaaaaa
+ 🚀 TaskFlow for Accountants 実装計画書 (改訂版)
+
+  プロジェクト概要
+
+  プロジェクト名: TaskFlow for Accountants (統合開発版)目的:
+  既存「事業者管理アプリ」の同一DB環境で、詳細なタスク管理機能を統合実装開発アプローチ:
+  既存インフラを最大活用し、段階的機能拡張による統合アプリケーション構築
+
+  ---
+  📋 Step 1: データベーススキーマ拡張 (既存DB活用)
+
+  1.1 既存テーブルの活用確認
+
+  - ✅ clients - 事業者情報 (5社のデータ存在)
+  - ✅ staffs - 担当者情報 (既存データ活用)
+  - ✅ 認証・RLSシステム完備
+
+  1.2 新規テーブル追加
+
+  -- タスク優先度ENUM型
+  CREATE TYPE task_priority AS ENUM ('高', '中', '低');
+
+  -- メインタスクテーブル
+  CREATE TABLE tasks (
+      id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+      client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
+      staff_id INTEGER REFERENCES staffs(id), -- 依頼者
+      assignee_id INTEGER REFERENCES staffs(id), -- 受任者
+      task_title TEXT NOT NULL,
+      task_description TEXT,
+      reference_url TEXT,
+      estimated_time_hours NUMERIC(5, 2),
+      actual_time_hours NUMERIC(5, 2),
+      due_date DATE,
+      status TEXT NOT NULL DEFAULT '依頼中'
+          CHECK (status IN ('依頼中', '作業中', '作業完了', '確認完了')),
+      priority task_priority DEFAULT '中',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  -- タスクテンプレート管理
+  CREATE TABLE task_templates (
+      id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+      template_name TEXT NOT NULL UNIQUE,
+      task_title TEXT NOT NULL,
+      task_description TEXT,
+      estimated_time_hours NUMERIC(5, 2),
+      priority task_priority DEFAULT '中',
+      is_routine BOOLEAN DEFAULT FALSE,
+      routine_day INT -- 毎月何日に生成するか
+  );
+
+  -- タスクコメント履歴
+  CREATE TABLE task_comments (
+      id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+      task_id BIGINT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+      staff_id INTEGER REFERENCES staffs(id), -- staffsテーブルと連携
+      comment TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+
+  -- RLSポリシー設定
+  ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "Authenticated users can manage tasks" ON tasks
+      FOR ALL USING (auth.role() = 'authenticated');
+
+  ALTER TABLE task_templates ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "Auth users can manage task templates" ON task_templates
+      FOR ALL USING (auth.role() = 'authenticated');
+
+  ALTER TABLE task_comments ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "Users can manage task comments" ON task_comments
+      FOR ALL USING (auth.role() = 'authenticated');
+
+  ---
+  🎯 Step 2: 統合ナビゲーション実装
+
+  2.1 ナビゲーションタブ拡張
+
+  既存の analytics.html ナビゲーションを拡張：
+  <div class="tab-navigation">
+      <a href="analytics.html" class="nav-tab dashboard">
+          📈 進捗ダッシュボード
+      </a>
+      <a href="tasks.html" class="nav-tab tasks">
+          📋 タスク管理
+      </a>
+      <a href="task-dashboard.html" class="nav-tab task-dashboard">
+          📊 タスク分析
+      </a>
+      <a href="performance.html" class="nav-tab performance">
+          👥 担当者別進捗
+      </a>
+      <a href="index.html" class="nav-tab settings">
+          ⚙️ 設定画面
+      </a>
+  </div>
+
+  2.2 共通コンポーネント活用
+
+  - ✅ supabase-client.js - 既存API活用
+  - ✅ toast.js - 通知システム継承
+  - ✅ style.css - デザイン統一
+  - ✅ custom-dropdown.css - UIコンポーネント流用
+
+  ---
+  📝 Step 3: タスク管理メイン画面実装 (tasks.html)
+
+  3.1 高機能テーブル実装
+
+  // 既存analytics.jsの手法を流用
+  class TasksPage {
+      constructor() {
+          this.tasks = [];
+          this.clients = []; // 既存clientsテーブル活用
+          this.staffs = [];  // 既存staffsテーブル活用
+          this.currentFilters = {
+              assignee: '',
+              client: '',
+              status: '',
+              priority: ''
+          };
+      }
+  }
+
+  3.2 表示機能
+
+  - ステータスバッジ: 色付き表示 (依頼中=青, 作業中=黄, 作業完了=緑, 確認完了=灰)
+  - ソート機能: 既存analytics.htmlのソート機能を流用
+  - フィルター: 担当者・事業者・ステータス・優先度
+  - リアルタイム検索: タスク名・事業者名のキーワード検索
+
+  3.3 操作機能
+
+  - 新規タスク追加: 既存モーダルデザインを流用
+  - 一括操作: チェックボックス選択での担当者・ステータス一括変更
+  - 編集機能: インライン編集またはモーダル編集
+
+  ---
+  📊 Step 4: タスク分析ダッシュボード実装 (task-dashboard.html)
+
+  4.1 Chart.js統合
+
+  既存の週次進捗グラフ実装を参考に：
+  // タスクステータス比率 (円グラフ)
+  const statusChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+          labels: ['依頼中', '作業中', '作業完了', '確認完了'],
+          datasets: [{
+              data: statusCounts,
+              backgroundColor: ['#007bff', '#ffc107', '#28a745', '#6c757d']
+          }]
+      }
+  });
+
+  // 担当者別タスク負荷 (棒グラフ)
+  const workloadChart = new Chart(ctx, {
+      type: 'bar',
+      data: staffWorkloadData
+  });
+
+  4.2 要注意タスクリスト
+
+  - 期限切れタスク (赤色ハイライト)
+  - 本日期限タスク (オレンジ色ハイライト)
+  - 長期滞留タスク (作業中3日以上)
+
+  ---
+  🎨 Step 5: 多様なビューの実装
+
+  5.1 ビュー切り替えUI
+
+  <div class="view-selector">
+      <button class="view-btn active" data-view="table">📋 テーブル</button>
+      <button class="view-btn" data-view="board">📌 ボード</button>
+      <button class="view-btn" data-view="calendar">📅 カレンダー</button>
+      <button class="view-btn" data-view="gantt">📈 ガント</button>
+  </div>
+
+  5.2 各ビューの実装
+
+  ボードビュー (カンバン)
+
+  // SortableJS活用（既存analytics.htmlで使用済み）
+  const sortable = Sortable.create(columnElement, {
+      group: 'tasks',
+      onEnd: async (evt) => {
+          await updateTaskStatus(taskId, newStatus);
+      }
+  });
+
+  カレンダービュー
+
+  <!-- FullCalendar.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.0/index.global.min.js"></script>
+
+  ガントチャートビュー
+
+  <!-- frappe-gantt CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/frappe-gantt@0.6.1/dist/frappe-gantt.min.js"></script>
+
+  ---
+  🤝 Step 6: コラボレーション機能
+
+  6.1 コメントシステム
+
+  // 既存toast.jsを活用した投稿通知
+  async function addTaskComment(taskId, comment) {
+      const result = await SupabaseAPI.insertTaskComment(taskId, comment);
+      if (result.success) {
+          showToast('コメントを投稿しました', 'success');
+          refreshComments(taskId);
+      }
+  }
+
+  6.2 タイムトラッキング
+
+  class TimeTracker {
+      startTimer(taskId) {
+          this.startTime = Date.now();
+          showToast('作業時間の計測を開始しました', 'info');
+      }
+
+      stopTimer(taskId) {
+          const elapsedHours = (Date.now() - this.startTime) / (1000 * 60 * 60);
+          return this.updateActualTime(taskId, elapsedHours);
+      }
+  }
+
+  ---
+  🔄 Step 7: テンプレート・自動化機能
+
+  7.1 テンプレート管理
+
+  既存の基本設定モーダルに統合：
+  // index.htmlの管理メニューに追加
+  <button id="task-templates-button" class="accordion-button">📝 タスクテンプレート</button>
+
+  7.2 ルーティンタスク自動生成
+
+  -- Supabase Edge Function + pg_cron
+  SELECT cron.schedule(
+      'generate-routine-tasks',
+      '0 9 * * *', -- 毎日9:00に実行
+      'SELECT generate_routine_tasks()'
+  );
+
+  ---
+  🔗 Step 8: 既存システムとの連携
+
+  8.1 進捗管理との連携
+
+  // monthly_tasks完了時にタスクステータス更新
+  async function onMonthlyTaskComplete(clientId, month) {
+      // 該当する記帳関連タスクを自動的に「確認完了」に更新
+      await SupabaseAPI.updateRelatedTasks(clientId, month, '確認完了');
+  }
+
+  8.2 データ同期
+
+  - 事業者追加時→タスクテンプレートから初期タスク生成
+  - 担当者変更時→関連タスクの担当者自動更新
+
+  ---
+  📱 Step 9: レスポンシブ対応・デプロイ
+
+  9.1 モバイル最適化
+
+  既存の style.css レスポンシブ設定を拡張：
+  @media screen and (max-width: 768px) {
+      .task-table { font-size: 12px; }
+      .view-selector { flex-direction: column; }
+  }
+
+  9.2 Vercel統合デプロイ
+
+  既存の vercel.json 設定にルーティング追加：
+  {
+    "rewrites": [
+      { "source": "/", "destination": "/analytics.html" },
+      { "source": "/tasks", "destination": "/tasks.html" },
+      { "source": "/task-dashboard", "destination": "/task-dashboard.html" }
+    ]
+  }
+
+  ---
+  🤖 Step 10: AI機能準備 (フェーズ2)
+
+  10.1 API準備
+
+  // ダミー関数実装
+  async function suggestOptimalAssignee(taskData) {
+      // Gemini API連携準備
+      return { suggestedStaffId: null, confidence: 0 };
+  }
+
+  async function generateMonthlyReport(completedTasks) {
+      // 報告書生成準備
+      return { reportDraft: '', generatedAt: new Date() };
+  }
+
+  ---
+  📅 実装スケジュール
+
+  | Phase | 内容           | 推定時間 |
+  |-------|--------------|------|
+  | 1     | DB拡張・サンプルデータ | 2時間  |
+  | 2     | タスク管理基本画面    | 4時間  |
+  | 3     | ダッシュボード実装    | 3時間  |
+  | 4     | 多様なビュー実装     | 6時間  |
+  | 5     | コラボレーション機能   | 3時間  |
+  | 6     | テンプレート・自動化   | 4時間  |
+  | 7     | 連携・最終調整      | 2時間  |
+  | 合計    |              | 24時間 |
+
+  ---
+  🎯 成功指標
+
+  1. 機能完成度: 指図書の全機能実装完了
+  2. 既存システム統合: シームレスなナビゲーション実現
+  3. パフォーマンス: 既存アプリと同等のレスポンス維持
+  4. ユーザビリティ: 直感的な操作性確保

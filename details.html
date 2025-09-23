@@ -3,332 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>顧客進捗管理 - 詳細（Supabase版）</title>
+    <title>顧客進捗管理 - 詳細画面</title>
+    <!-- Favicon with cache busting and multiple formats -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico?v=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico?v=1">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="custom-dropdown.css">
     <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="achievement-effects.css">
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-    <style>
-        /* 🎉 達成時エフェクト用CSS */
-        .effect-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 1000;
-        }
-
-        /* 1. 紙吹雪エフェクト（既存） */
-        .confetti {
-            position: absolute;
-            animation: confetti-fall 3s linear forwards;
-        }
-
-        @keyframes confetti-fall {
-            0% {
-                transform: translateY(-100vh) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        /* 2. 神々しい光エフェクト */
-        .divine-light {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 100vh;
-            background: linear-gradient(to bottom, 
-                rgba(255, 215, 0, 0.8) 0%, 
-                rgba(255, 215, 0, 0.4) 50%, 
-                rgba(255, 215, 0, 0) 100%);
-            animation: divine-beam 3s ease-in-out forwards;
-            filter: blur(2px);
-        }
-
-        @keyframes divine-beam {
-            0% {
-                opacity: 0;
-                transform: translateX(-50%) scaleY(0);
-            }
-            30% {
-                opacity: 1;
-                transform: translateX(-50%) scaleY(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateX(-50%) scaleY(1);
-            }
-        }
-
-        /* 3. Good!の指エフェクト */
-        .thumbs-up {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: 120px;
-            animation: thumbs-appear 2.5s ease-out forwards;
-        }
-
-        @keyframes thumbs-appear {
-            0% {
-                transform: translate(-50%, -50%) scale(0) rotate(-180deg);
-                opacity: 0;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.2) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1) rotate(0deg);
-                opacity: 0;
-            }
-        }
-
-        /* 4. くす玉+ハトエフェクト */
-        .kusudama-ball {
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle, #ff69b4, #ff1493);
-            border-radius: 50%;
-            animation: kusudama-drop 1s ease-in forwards;
-        }
-
-        .kusudama-piece {
-            position: absolute;
-            animation: kusudama-burst 2s ease-out forwards;
-        }
-
-        .kusudama-dove {
-            position: absolute;
-            font-size: 25px;
-            animation: kusudama-dove-fly 3s ease-out forwards;
-        }
-
-        @keyframes kusudama-drop {
-            0% {
-                transform: translateX(-50%) translateY(-100px);
-            }
-            100% {
-                transform: translateX(-50%) translateY(0px);
-            }
-        }
-
-        @keyframes kusudama-burst {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--bx), var(--by)) scale(0.3);
-                opacity: 0;
-            }
-        }
-
-        @keyframes kusudama-dove-fly {
-            0% {
-                transform: translate(0, 0) scale(0) rotate(0deg);
-                opacity: 0;
-            }
-            20% {
-                transform: translate(0, 0) scale(1) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--dx), var(--dy)) scale(0.8) rotate(var(--rotation));
-                opacity: 0;
-            }
-        }
-
-        /* 5. 音符ダンスエフェクト */
-        .musical-note {
-            position: absolute;
-            font-size: 30px;
-            animation: note-dance 3s ease-in-out forwards;
-            transform-origin: center;
-        }
-
-        @keyframes note-dance {
-            0% {
-                transform: translate(0, 0) scale(0) rotate(0deg);
-                opacity: 0;
-            }
-            15% {
-                transform: translate(0, 0) scale(1.2) rotate(0deg);
-                opacity: 1;
-            }
-            25% {
-                transform: translate(20px, -30px) scale(1) rotate(15deg);
-            }
-            50% {
-                transform: translate(-15px, -60px) scale(1.1) rotate(-10deg);
-            }
-            75% {
-                transform: translate(25px, -90px) scale(0.9) rotate(20deg);
-            }
-            100% {
-                transform: translate(0, -120px) scale(0.5) rotate(0deg);
-                opacity: 0;
-            }
-        }
-
-        /* 6. サーカス風船エフェクト */
-        .circus-balloon {
-            position: absolute;
-            font-size: 35px;
-            animation: balloon-rise 4s ease-out forwards;
-            transform-origin: center bottom;
-        }
-
-        .balloon-string {
-            position: absolute;
-            width: 2px;
-            background: linear-gradient(to bottom, #333, transparent);
-            animation: string-sway 4s ease-in-out forwards;
-            transform-origin: top center;
-        }
-
-        @keyframes balloon-rise {
-            0% {
-                transform: translateY(100vh) scale(0.8);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) scale(1.2);
-                opacity: 0;
-            }
-        }
-
-        @keyframes string-sway {
-            0%, 100% {
-                transform: rotate(0deg);
-            }
-            25% {
-                transform: rotate(3deg);
-            }
-            75% {
-                transform: rotate(-3deg);
-            }
-        }
-
-        /* 7. トロフィー授与エフェクト */
-        .trophy-award {
-            position: absolute;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 80px;
-            animation: trophy-descend 3s ease-out forwards;
-        }
-
-        .trophy-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.3), transparent);
-            border-radius: 50%;
-            animation: trophy-glow-pulse 2s infinite;
-        }
-
-        @keyframes trophy-descend {
-            0% {
-                transform: translateX(-50%) translateY(-100px) scale(0.5);
-                opacity: 0;
-            }
-            30% {
-                transform: translateX(-50%) translateY(20vh) scale(1.2);
-                opacity: 1;
-            }
-            70% {
-                transform: translateX(-50%) translateY(20vh) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(-50%) translateY(20vh) scale(0.8);
-                opacity: 0;
-            }
-        }
-
-        @keyframes trophy-glow-pulse {
-            0%, 100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 0.5;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.5);
-                opacity: 0.8;
-            }
-        }
-
-        .sparkle {
-            position: absolute;
-            animation: sparkle 1.5s ease-out forwards;
-        }
-
-        @keyframes sparkle {
-            0% {
-                transform: scale(0) rotate(0deg);
-                opacity: 1;
-            }
-            50% {
-                transform: scale(1) rotate(180deg);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(0) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        /* === URLリンク化機能のスタイル === */
-        #notes-table td {
-            position: relative; /* ボタンを配置するため */
-        }
-        #notes-table input[data-field="url"].url-like {
-            color: #007bff;
-            text-decoration: underline;
-            text-decoration-color: #007bff;
-        }
-        .url-jump-button {
-            display: none; /* 初期状態では非表示 */
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            font-size: 1.5rem; /* アイコンサイズを大きく */
-            cursor: pointer;
-            padding: 4px;
-            line-height: 1;
-            transition: transform 0.2s ease;
-        }
-        .url-jump-button:hover {
-            transform: translateY(-50%) scale(1.2);
-        }
-    </style>
 </head>
 <body class="details-page">
     <!-- 🎉 達成時エフェクト用オーバーレイ -->
@@ -354,13 +40,16 @@
     </div>
     <div class="container">
         <div class="sticky-header-area">
-            <h1>顧客進捗管理 - 詳細（Supabase版）</h1>
+            <div class="title-row">
+                <h1>顧客進捗管理 - 詳細</h1>
+                <h2 id="client-name-display" class="client-name-large"><!-- 事業者名がここに表示されます --></h2>
+            </div>
             <div class="nav-links">
-                <a href="index.html" id="back-to-main">メイン画面に戻る</a>
+                <a href="analytics.html" id="back-to-main">ダッシュボードに戻る</a>
                 <!-- 「年度を選択してください」のラベルを削除 -->
                 <div class="custom-select-wrapper">
                     <div class="custom-select-trigger"></div>
-                    <div class="custom-options"></div>
+                    <div class="custom-options" style="display: block; position: absolute;"></div>
                     <select id="year-filter" class="custom-select-target" style="display: none;">
                         <!-- JavaScriptでオプションを生成 -->
                     </select>
@@ -375,6 +64,7 @@
                 <span id="finalized-status" style="display: none; color: green; font-weight: bold; margin-left: 10px;"></span>
             </div>
         </div>
+
 
         <!-- Legacy status display - now replaced with toast notifications -->
         <div id="connection-status" style="display: none !important;">
@@ -409,8 +99,7 @@
         </div>
 
         <!-- New table for URL/Memo -->
-        <h2 style="margin-top: 30px;">URL・メモ</h2>
-        <div class="details-table-wrapper">
+        <div class="details-table-wrapper" style="margin-top: 5px;">
             <table id="notes-table" class="details-table">
                 <thead></thead>
                 <tbody></tbody>
@@ -419,7 +108,7 @@
 
         <!-- メモ欄セクション -->
         <div class="memo-section">
-            <h3>📝 全体メモ</h3>
+            <h3>📝 全体メモ（翌年以降も引き継がれます）</h3>
             <textarea 
                 id="general-memo" 
                 class="memo-textarea" 
@@ -502,10 +191,10 @@
 
         .client-info-table th,
         .client-info-table td {
-            border: 1px solid #ddd;
-            padding: 4px 8px; /* 元の padding を半分に */
-            text-align: left;
-            font-size: 20px;
+            border: 1px solid #967e7eb5;
+            padding: 10px 10px; /* 元の padding を半分に */
+            text-align: center;
+            font-size: 16px; /* 20px → 16px に縮小 */
             line-height: 1.2;
         }
 
@@ -516,16 +205,38 @@
 
         .client-info-table th:first-child,
         .client-info-table th:nth-child(3) {
-            width: 160px; /* 事業者名・担当者の列幅をさらに広く */
+            width: 100px; /* 事業者名・担当者の列幅をさらに広く */
         }
 
         .client-info-table th:nth-child(2),
         .client-info-table th:nth-child(4) {
-            width: 80px; /* 決算月・会計方式は標準幅 */
+            width: 100px; /* 決算月・会計方式は標準幅 */
         }
 
         .client-info-table td {
             background-color: #fff;
+        }
+
+        /* タイトル行のレイアウト */
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 10px;
+        }
+
+        .title-row h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .client-name-large {
+            margin: 0;
+            font-size: 75px;
+            font-weight: bold;
+            color: #0020f0;
+            text-align: start;
+            flex-grow: 1;
         }
 
         /* チェックボックスの当たり判定を広く */
@@ -533,11 +244,11 @@
             padding: 8px;
             text-align: center;
             min-height: 65px;
-            vertical-align: top;
+            vertical-align: middle;
         }
 
         .details-table input[type="checkbox"] {
-            transform: scale(1.3);
+            transform: scale(1.4);
             margin: 6px;
             cursor: pointer;
         }
@@ -572,13 +283,13 @@
         }
 
         .checkbox-memo-container input[type="checkbox"] {
-            margin: 2px 0 1px 0;
+            margin: -4px 0 2px 0;
             align-self: center;
         }
 
         .checkbox-memo-input {
-            width: calc(100% - 4px);
-            height: 38px;
+            width: calc(100% - 10px);
+            height: 33px;
             padding: 2px 4px;
             border: 1px solid #cccccc96;
             border-radius: 3px;
@@ -714,10 +425,16 @@
         }
     </style>
     
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="custom-dropdown.js"></script>
     <script src="toast.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script type="module" src="details.js"></script>
+
+    <!-- Copyright Notice -->
+    <div style="position: fixed; bottom: 10px; right: 15px; opacity: 0.6; font-size: 11px; color: #666; z-index: 100; pointer-events: none;">
+        ©Mori-hiroki tax accountant's office
+    </div>
 </body>
 </html>

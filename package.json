@@ -1,0 +1,19 @@
+{
+  "name": "jigyosya-kanri-app",
+  "version": "1.0.0",
+  "description": "事業者管理アプリケーション - Supabase版",
+  "main": "index.html",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js && npx serve -s . -p 3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/your-repo.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}

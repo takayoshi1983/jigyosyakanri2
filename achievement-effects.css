@@ -1,0 +1,469 @@
+/* 🎉 モダンな達成エフェクト用CSS - 2024年最適化版 */
+.effect-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1000;
+    isolation: isolate; /* レイヤー分離で描画最適化 */
+}
+
+/* アクセシビリティ対応：アニメーション軽減 */
+@media (prefers-reduced-motion: reduce) {
+    .effect-overlay * {
+        animation-duration: 0.3s !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+/* 1. モダンホログラム効果 */
+.hologram-burst {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg,
+        #ff00ff, #00ffff, #ffff00, #ff00ff);
+    animation: hologram-expand 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    mix-blend-mode: screen;
+    will-change: transform, opacity, filter;
+}
+
+@keyframes hologram-expand {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        opacity: 0;
+        filter: blur(10px) brightness(2);
+    }
+    30% {
+        opacity: 0.8;
+        filter: blur(5px) brightness(1.8);
+    }
+    60% {
+        transform: translate(-50%, -50%) scale(2) rotate(180deg);
+        opacity: 0.6;
+        filter: blur(0px) brightness(1.4);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(4) rotate(360deg);
+        opacity: 0;
+        filter: blur(15px) brightness(0.5);
+    }
+}
+
+/* 2. ネオン波紋エフェクト */
+.neon-ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 3px solid #00ffff;
+    border-radius: 50%;
+    box-shadow:
+        0 0 20px #00ffff,
+        inset 0 0 20px #00ffff,
+        0 0 40px #00ffff,
+        0 0 80px #00ffff;
+    animation: neon-ripple-wave 3s ease-out forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes neon-ripple-wave {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        opacity: 0.7;
+        filter: hue-rotate(180deg);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(20);
+        opacity: 0;
+        filter: hue-rotate(360deg);
+    }
+}
+
+/* 3. パーティクル爆発エフェクト */
+.particle-explosion {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    animation: particle-burst 2s ease-out forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes particle-burst {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    20% {
+        transform: translate(var(--dx), var(--dy)) scale(1.5);
+        opacity: 0.9;
+    }
+    100% {
+        transform: translate(calc(var(--dx) * 2), calc(var(--dy) * 2)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* 4. 3Dフリップカード */
+.flip-card-3d {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 80px;
+    perspective: 1000px;
+    animation: flip-entrance 3s ease-in-out forwards;
+    will-change: transform;
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    text-align: center;
+    line-height: 120px;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    animation: flip-rotation 2s infinite linear;
+}
+
+@keyframes flip-entrance {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotateY(-90deg);
+        opacity: 0;
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1.2) rotateY(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotateY(0deg);
+        opacity: 0;
+    }
+}
+
+@keyframes flip-rotation {
+    from { transform: rotateX(0deg) rotateY(0deg); }
+    to { transform: rotateX(360deg) rotateY(360deg); }
+}
+
+/* 5. モーフィング図形エフェクト */
+.morphing-shape {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #feca57);
+    background-size: 400% 400%;
+    animation:
+        morphing-transform 4s ease-in-out forwards,
+        gradient-shift 2s infinite alternate;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    will-change: transform, clip-path, background-position;
+}
+
+@keyframes morphing-transform {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+    25% {
+        transform: translate(-50%, -50%) scale(1.2) rotate(90deg);
+        clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
+        clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    }
+    75% {
+        transform: translate(-50%, -50%) scale(1.8) rotate(270deg);
+        clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0) rotate(360deg);
+        clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+/* 6. 液体メタボール */
+.liquid-blob {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ff6b6b, #ff1744);
+    animation: blob-motion 3s ease-in-out forwards;
+    filter: blur(1px);
+    will-change: transform, border-radius;
+}
+
+@keyframes blob-motion {
+    0% {
+        transform: scale(0) translate(0, 0);
+        border-radius: 50%;
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.8;
+        border-radius: 60% 40% 30% 70%/60% 30% 70% 40%;
+    }
+    40% {
+        border-radius: 30% 60% 70% 40%/50% 60% 30% 60%;
+    }
+    60% {
+        border-radius: 75% 25% 60% 40%/25% 75% 50% 60%;
+    }
+    80% {
+        border-radius: 40% 60% 30% 70%/40% 40% 60% 50%;
+    }
+    100% {
+        transform: scale(var(--scale, 2)) translate(var(--dx, 0), var(--dy, -100px));
+        border-radius: 50%;
+        opacity: 0;
+    }
+}
+
+/* 7. グリッチ効果 */
+.glitch-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    font-weight: bold;
+    color: #00ff00;
+    text-shadow:
+        2px 0 0 #ff0040,
+        -2px 0 0 #00ffff;
+    animation: glitch-effect 2s ease-in-out forwards;
+    will-change: transform, text-shadow;
+}
+
+@keyframes glitch-effect {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+        text-shadow: 2px 0 0 #ff0040, -2px 0 0 #00ffff;
+    }
+    20% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 1;
+        text-shadow: 4px 0 0 #ff0040, -4px 0 0 #00ffff;
+    }
+    40% {
+        transform: translate(-48%, -52%) scale(1.1);
+        text-shadow: -2px 0 0 #ff0040, 2px 0 0 #00ffff;
+    }
+    60% {
+        transform: translate(-52%, -48%) scale(1.05);
+        text-shadow: 3px 0 0 #ff0040, -3px 0 0 #00ffff;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+        text-shadow: 0 0 0 #ff0040, 0 0 0 #00ffff;
+    }
+}
+
+/* 8. エネルギー球エフェクト */
+.energy-orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%,
+        rgba(255, 255, 255, 0.8),
+        rgba(0, 191, 255, 0.8),
+        rgba(30, 144, 255, 0.4),
+        transparent);
+    box-shadow:
+        0 0 20px #00bfff,
+        0 0 40px #1e90ff,
+        0 0 80px #0080ff,
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
+    animation: energy-pulse 2.5s ease-out forwards;
+    will-change: transform, opacity, box-shadow;
+}
+
+@keyframes energy-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+        box-shadow: 0 0 0px #00bfff;
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+        box-shadow:
+            0 0 30px #00bfff,
+            0 0 60px #1e90ff,
+            0 0 120px #0080ff;
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(3);
+        opacity: 0;
+        box-shadow:
+            0 0 100px #00bfff,
+            0 0 200px #1e90ff,
+            0 0 400px #0080ff;
+    }
+}
+
+/* 9. DNA螺旋エフェクト */
+.dna-helix {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px;
+    height: 60vh;
+    animation: dna-spiral 4s ease-in-out forwards;
+    will-change: transform;
+}
+
+.dna-strand {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    animation: strand-orbit 1s infinite linear;
+    will-change: transform;
+}
+
+@keyframes dna-spiral {
+    0% {
+        transform: translateX(-50%) scaleY(0);
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+    }
+    70% {
+        transform: translateX(-50%) scaleY(1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateX(-50%) scaleY(0);
+        opacity: 0;
+    }
+}
+
+@keyframes strand-orbit {
+    from {
+        transform: rotateZ(0deg) translateX(20px) rotateZ(0deg);
+    }
+    to {
+        transform: rotateZ(360deg) translateX(20px) rotateZ(-360deg);
+    }
+}
+
+/* 10. レインボー爆発 */
+.rainbow-explosion {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0px;
+    height: 0px;
+    border-radius: 50%;
+    background: conic-gradient(
+        #ff0000, #ff8000, #ffff00, #80ff00,
+        #00ff00, #00ff80, #00ffff, #0080ff,
+        #0000ff, #8000ff, #ff00ff, #ff0080, #ff0000);
+    animation: rainbow-burst 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes rainbow-burst {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(8) rotate(180deg);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(15) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* キラキラパーティクル用CSS */
+.sparkle-particle {
+    position: absolute;
+    font-size: 20px;
+    animation: sparkle-twinkle 1.5s ease-out forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes sparkle-twinkle {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.3) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* === URLリンク化機能のスタイル === */
+#notes-table td {
+    position: relative; /* ボタンを配置するため */
+}
+#notes-table input[data-field="url"].url-like {
+    color: #007bff;
+    text-decoration: underline;
+    text-decoration-color: #007bff;
+}
+.url-jump-button {
+    display: none; /* 初期状態では非表示 */
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5rem; /* アイコンサイズを大きく */
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+.url-jump-button:hover {
+    transform: translateY(-50%) scale(1.2);
+}

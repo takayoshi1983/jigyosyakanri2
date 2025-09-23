@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>顧客進捗管理 - メイン画面（Supabase版）</title>
+    <title>顧客進捗管理 - メイン画面</title>
+    <!-- Favicon with cache busting and multiple formats -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico?v=1">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico?v=1">
     
     <!-- Preload resources for better performance -->
     <link rel="preload" href="style.css" as="style">
     <link rel="preload" href="custom-dropdown.css" as="style">
     <link rel="modulepreload" href="supabase-client.js" crossorigin>
+    <link rel="modulepreload" href="utils.js" crossorigin>
     <link rel="modulepreload" href="index.js" crossorigin>
     
     <link rel="stylesheet" href="style.css">
@@ -17,6 +23,95 @@
     <link rel="stylesheet" href="table-resize.css">
 </head>
 <body>
+    <!-- カバーレイヤー -->
+    <div id="cover-overlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgb(255 235 209), rgb(255 207 133 / 95%), rgb(255 196 113 / 95%));
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        transition: opacity 0.3s ease;
+        opacity: 1;
+        pointer-events: auto;
+        display: block;
+    ">
+        <!-- カバー制御ボタン -->
+        <div style="position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 1001;">
+            <button id="hide-cover-btn" style="
+                background: rgba(255, 255, 255, 0.9);
+                border: 2px solid #007bff;
+                color: #007bff;
+                padding: 8px 16px;
+                border-radius: 25px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                transition: all 0.2s ease;
+            " onmouseover="this.style.background='rgba(0,123,255,0.9)'; this.style.color='white';"
+               onmouseout="this.style.background='rgba(255,255,255,0.9)'; this.style.color='#007bff';">
+                🎭 カバーOFF
+            </button>
+            <button id="focus-mode-btn" style="
+                background: rgba(255, 255, 255, 0.9);
+                border: 2px solid #28a745;
+                color: #28a745;
+                padding: 8px 16px;
+                border-radius: 25px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                transition: all 0.2s ease;
+                display: none;
+            " onmouseover="this.style.background='rgba(40,167,69,0.9)'; this.style.color='white';"
+               onmouseout="this.style.background='rgba(255,255,255,0.9)'; this.style.color='#28a745';">
+                🎯 集中モード
+            </button>
+        </div>
+
+        <!-- カバー中央メッセージ -->
+        <div style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            pointer-events: none;
+        ">
+            　⚙️設定🔒管理画面 
+        </div>
+    </div>
+
+    <!-- カバーONボタン（非表示状態） -->
+    <div style="position: fixed; top: 20px; left: 20px; z-index: 1500; display: flex; gap: 10px;">
+        <button id="show-cover-btn" style="
+            background: linear-gradient(135deg, #87ceeb, #87cefa);
+            border: none;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 3px 15px rgba(135, 206, 235, 0.4);
+            transition: all 0.3s ease;
+            display: none;
+        " onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 5px 20px rgba(135, 206, 235, 0.6)';"
+           onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 3px 15px rgba(135, 206, 235, 0.4)';">
+            🎭 カバーON
+        </button>
+    </div>
+
     <!-- ユーザー情報表示エリア（非表示、管理メニューに統合） -->
     <div id="user-info" style="display:none;">
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -31,32 +126,19 @@
         </div>
     </div>
 
-    <!-- その他アプリ用アコーディオンメニュー -->
-    <div id="other-apps-accordion" class="accordion-container" style="position: absolute; right: 300px; top: 25px; z-index: 1000;">
-        <button class="accordion-header">
-            <span>🔗 その他アプリ</span>
-            <span class="accordion-icon">▼</span>
-        </button>
-        <div class="accordion-content" style="display: none;">
-            <div class="accordion-buttons-container">
-                <button id="url-settings-button" class="accordion-button">URL設定</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- 管理者用アコーディオンメニュー -->
-    <div id="management-accordion" class="accordion-container" style="position: absolute; right: 20px; top: 25px; z-index: 1000;">
+    <div id="management-accordion" class="accordion-container" style="position: absolute; right: 300px; top: 25px; z-index: 1000;">
         <button class="accordion-header">
             <span>🎛️ 管理メニュー</span>
-            <span class="accordion-icon">▼</span>
+            <span class="accordion-icon">▲</span>
         </button>
-        <div class="accordion-content" style="display: none;">
+        <div class="accordion-content" style="display: block;">
             <div class="accordion-buttons-container">
                 <button id="manage-staff-button" class="accordion-button">担当者管理</button>
                 <button id="add-client-button" class="accordion-button">顧問先追加</button>
-                <hr>
                 <button id="basic-settings-button" class="accordion-button">基本設定</button>
-                <button id="reset-column-widths-button" class="accordion-button">📏 列幅リセット</button>
                 <hr>
                 <!-- ユーザー情報セクション -->
                 <div class="user-info-section">
@@ -77,7 +159,21 @@
     </div>
 
     <div class="container">
-        <h1>顧客進捗管理 - メイン画面（Supabase版）</h1>
+        <h1>顧客進捗管理 - メイン画面</h1>
+
+        <!-- 統一ナビゲーションタブ -->
+        <div class="tab-navigation" style="z-index: 2000;">
+            <a href="analytics.html" class="nav-tab dashboard">
+                📈 進捗ダッシュボード
+            </a>
+            <a href="performance.html" class="nav-tab performance">
+                👥 担当者別進捗
+            </a>
+            <a href="index.html" class="nav-tab settings active">
+                ⚙️ 設定画面
+            </a>
+        </div>
+
         <!-- Legacy status display - now replaced with toast notifications -->
         <div id="connection-status" style="display: none !important;">
             <span id="status-text"></span>
@@ -101,6 +197,23 @@
                     <!-- Options will be populated by JavaScript -->
                 </select>
             </div>
+            
+            <!-- Clear Button -->
+            <button id="clear-filters-button" style="
+                background: linear-gradient(135deg, #ffd700, #ffb347); 
+                color: #333; 
+                border: 2px solid white; 
+                padding: 14px 28px; 
+                border-radius: 6px; 
+                cursor: pointer; 
+                font-size: 14px; 
+                font-weight: bold; 
+                margin-left: 10px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='linear-gradient(135deg, #ffb347, #ff8c00)'" onmouseout="this.style.background='linear-gradient(135deg, #ffd700, #ffb347)'">
+                🔄 クリア
+            </button>
         </div>
 
         <div class="table-container">
@@ -133,24 +246,68 @@
 
     <!-- 担当者編集モーダル -->
     <div id="staff-edit-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>担当者管理</h2>
-            <div id="staff-list-container">
-                <!-- 担当者項目がここに動的に追加される -->
+        <div class="modal-content staff-modal-content">
+            <span class="close-button staff-close-button">&times;</span>
+            <div class="staff-modal-header">
+                <div class="staff-header-icon">👥</div>
+                <h2>担当者管理</h2>
+                <p class="staff-header-description">チームメンバーの追加・編集・削除を行えます</p>
             </div>
-            <div class="add-staff-section" style="display: flex; gap: 10px;">
-                <input type="text" id="new-staff-name" placeholder="新しい担当者名" style="flex: 1;">
-                <input type="email" id="new-staff-email" placeholder="メールアドレス" style="flex: 1;">
-                <select id="new-staff-role" style="flex: 0.5;">
-                    <option value="staff">担当者</option>
-                    <option value="admin">管理者</option>
-                </select>
-                <button id="add-staff-button">追加</button>
+            
+            <div class="staff-main-section">
+                <div class="staff-section-header">
+                    <h3>📋 現在の担当者</h3>
+                    <div class="staff-count-badge">
+                        <span id="staff-count-display">0名</span>
+                    </div>
+                </div>
+                <div id="staff-list-container" class="modern-staff-list">
+                    <!-- 担当者項目がここに動的に追加される -->
+                </div>
             </div>
-            <div class="modal-buttons">
-                <button id="save-staff-button" class="save-button">保存</button>
-                <button id="cancel-staff-button" class="cancel-button">キャンセル</button>
+
+            <div class="staff-add-section">
+                <div class="staff-section-header">
+                    <h3>➕ 新しい担当者を追加</h3>
+                </div>
+                <div class="modern-add-staff-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-staff-name">担当者名</label>
+                            <input type="text" id="new-staff-name" placeholder="例: 田中太郎" class="modern-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-staff-email">メールアドレス</label>
+                            <input type="email" id="new-staff-email" placeholder="例: tanaka@example.com" class="modern-input">
+                        </div>
+                        <div class="form-group role-group">
+                            <label for="new-staff-role">権限</label>
+                            <select id="new-staff-role" class="modern-select">
+                                <option value="staff">👤 担当者</option>
+                                <option value="admin">🔐 管理者</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="add-staff-button" class="modern-add-button">
+                        <span class="button-icon">➕</span>
+                        担当者を追加
+                    </button>
+                </div>
+            </div>
+
+            <div class="staff-modal-actions">
+                <button id="export-staff-csv-button" class="modern-export-button">
+                    <span class="button-icon">📊</span>
+                    CSV抽出
+                </button>
+                <button id="save-staff-button" class="modern-save-button">
+                    <span class="button-icon">💾</span>
+                    変更を保存
+                </button>
+                <button id="cancel-staff-button" class="modern-cancel-button">
+                    <span class="button-icon">❌</span>
+                    キャンセル
+                </button>
             </div>
         </div>
     </div>
@@ -196,6 +353,15 @@
                 <div class="settings-column">
                     <div class="settings-section">
                         <h3>📋 個別設定</h3>
+                        <div class="setting-item">
+                            <label>文字サイズ:</label>
+                            <div class="font-size-control-group" style="display: flex; align-items: center; gap: 10px;">
+                                <button id="font-size-decrease" class="font-size-button" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">－</button>
+                                <span id="font-size-display" style="min-width: 40px; text-align: center; font-weight: bold;">100%</span>
+                                <button id="font-size-increase" class="font-size-button" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">＋</button>
+                                <button id="font-size-reset" class="font-size-button" style="padding: 4px 8px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">リセット</button>
+                            </div>
+                        </div>
                         <div class="setting-item">
                             <label for="font-family-select">全体のフォント:</label>
                             <select id="font-family-select"></select>
@@ -249,7 +415,11 @@
                         <div class="setting-item button-setting">
                             <button id="backup-settings-button-modal" class="settings-button admin-only">💾 バックアップ設定</button>
                         </div>
-                        <div class="setting-item button-setting">
+
+                        <!-- 危険な操作の区切り -->
+                        <div class="danger-section-divider"></div>
+
+                        <div class="setting-item button-setting danger-section">
                             <button id="reset-database-button-modal" class="settings-button admin-only danger-button">⚠️ データベース初期化</button>
                         </div>
                     </div>
@@ -304,6 +474,15 @@
                         </label>
                     </div>
                     <div class="backup-setting-item">
+                        <label for="backup-destination">保存先:</label>
+                        <select id="backup-destination">
+                            <option value="cloud">☁️ クラウド（推奨）</option>
+                            <option value="local">💻 ローカル</option>
+                            <option value="both">🔄 クラウド + ローカル</option>
+                        </select>
+                        <small>クラウドは常時実行、ローカルは緊急用として利用可能</small>
+                    </div>
+                    <div class="backup-setting-item">
                         <label for="backup-frequency">実行頻度:</label>
                         <select id="backup-frequency">
                             <option value="daily">毎日</option>
@@ -328,7 +507,7 @@
                         </select>
                     </div>
                     <div class="backup-setting-item">
-                        <label for="backup-path">保存先:</label>
+                        <label for="select-backup-folder-button">保存先:</label>
                         <button id="select-backup-folder-button" class="backup-folder-button">
                             📂 バックアップフォルダを選択
                         </button>
@@ -342,10 +521,22 @@
                 <div class="backup-section">
                     <h3>💾 手動バックアップ</h3>
                     <div class="backup-setting-item">
-                        <button id="manual-backup-button" class="backup-action-button">
-                            今すぐバックアップを実行
+                        <button id="manual-cloud-backup-button" class="backup-action-button">
+                            ☁️ クラウドバックアップを実行
                         </button>
-                        <small>現在のデータを即座にダウンロードします</small>
+                        <small>データをクラウド（Supabase Storage）に保存します</small>
+                    </div>
+                    <div class="backup-setting-item">
+                        <button id="manual-backup-button" class="backup-action-button restore-button">
+                            💻 ローカルバックアップを実行（緊急用）
+                        </button>
+                        <small>データを端末のローカルフォルダに即座ダウンロードします</small>
+                    </div>
+                    <div class="backup-setting-item">
+                        <button id="manual-full-backup-button" class="backup-action-button" style="background: linear-gradient(135deg, #6f42c1, #563d7c);">
+                            🔄 統合バックアップを実行
+                        </button>
+                        <small>クラウドとローカル両方にバックアップを実行します</small>
                     </div>
                 </div>
 
@@ -360,8 +551,14 @@
                         <small>Supabase制限回避用。既存データに上書きのみ行います</small>
                     </div>
                     <div class="backup-setting-item">
+                        <button id="restore-cloud-backup-button" class="backup-action-button">
+                            ☁️ クラウドから復元
+                        </button>
+                        <small>クラウドに保存されたバックアップから復元します</small>
+                    </div>
+                    <div class="backup-setting-item">
                         <button id="restore-backup-button" class="backup-action-button restore-button">
-                            バックアップファイルから復元
+                            📁 ローカルファイルから復元
                         </button>
                         <small>⚠️ 現在のデータは全て置き換えられます</small>
                         <input type="file" id="restore-file-input" accept=".json" style="display: none;">
@@ -374,7 +571,11 @@
                     <div class="backup-history">
                         <div id="backup-history-list">
                             <div class="history-item">
-                                <span class="history-date">最終バックアップ: </span>
+                                <span class="history-date">☁️ 最終クラウドバックアップ: </span>
+                                <span id="last-cloud-backup-date">未実行</span>
+                            </div>
+                            <div class="history-item">
+                                <span class="history-date">💻 最終ローカルバックアップ: </span>
                                 <span id="last-backup-date">未実行</span>
                             </div>
                             <div class="history-item">
@@ -410,6 +611,41 @@
             </button>
             <div id="auth-status" style="margin-top: 20px; padding: 10px; border-radius: 4px; display: none;">
                 <span id="auth-status-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Reset Confirmation Modal -->
+    <div id="database-reset-modal" class="modal" style="display:none;">
+        <div class="modal-content danger-modal-content">
+            <div class="danger-warning-header">
+                <div class="warning-icon">⚠️</div>
+                <h2>危険な操作: データベース初期化</h2>
+            </div>
+
+            <div class="danger-warning-content">
+                <p>この操作により以下が実行されます：</p>
+                <ul>
+                    <li>全てのクライアントデータが削除されます</li>
+                    <li>全ての月次タスクデータが削除されます</li>
+                    <li>サンプルデータで初期化されます</li>
+                </ul>
+                <p><strong>この操作は元に戻せません。</strong></p>
+
+                <div class="app-name-verification">
+                    <label>続行するには、アプリ名を正確に入力してください:</label>
+                    <input type="text" id="app-name-input" placeholder="事業者管理アプリ">
+                    <div class="verification-status" id="verification-status"></div>
+                </div>
+            </div>
+
+            <div class="danger-modal-actions">
+                <button id="confirm-reset-button" class="danger-confirm-button" disabled>
+                    データベースを初期化する
+                </button>
+                <button id="cancel-reset-button" class="cancel-button">
+                    キャンセル
+                </button>
             </div>
         </div>
     </div>
@@ -682,6 +918,7 @@
         }
     </style>
 
+    <script src="config.js"></script>
     <script src="custom-dropdown.js"></script>
     <script src="toast.js"></script>
     <script src="table-resize.js"></script>
@@ -703,6 +940,11 @@
                 ログイン画面に戻る
             </button>
         </div>
+    </div>
+
+    <!-- Copyright Notice -->
+    <div style="position: fixed; bottom: 10px; right: 15px; opacity: 0.6; font-size: 11px; color: #666; z-index: 100; pointer-events: none;">
+        ©Mori-hiroki tax accountant's office
     </div>
 </body>
 </html>

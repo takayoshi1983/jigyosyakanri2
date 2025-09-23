@@ -1,0 +1,589 @@
+# スマートデバウンス自動保存機能 実装手順書
+
+## 📋 実装準備
+
+### 前提条件確認
+- 現在のブランチ: `main`
+- 対象ファイル: `details.html`, `details.js`
+- 実装対象: タスクチェック、URL入力、メモ入力、ステータス変更の自動保存
+
+## 🚀 Phase 1: ブランチ作成とベース実装
+
+### Step 1.1: 新しいブランチ作成
+```bash
+git checkout -b feature/auto-save-details
+```
+
+### Step 1.2: details.html の修正 - 保存状態インジケーター追加
+
+**追加場所**: `<body>` タグ直後
+```html
+<!-- 自動保存状態インジケーター -->
+<div id="autosave-indicator" style="
+    position: fixed; 
+    top: 15px; 
+    right: 15px; 
+    z-index: 1000; 
+    padding: 8px 12px; 
+    border-radius: 6px; 
+    background: #f8f9fa; 
+    border: 1px solid #dee2e6; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    text-align: center;
+">
+    <span id="save-status">💾 準備完了</span>
+</div>
+```
+
+### Step 1.3: details.js の修正 - AutoSaveManager クラス追加
+
+**追加場所**: ファイルの先頭（既存のクラス定義の前）
+```javascript
+/**
+ * スマートデバウンス自動保存管理クラス
+ */
+class AutoSaveManager {
+    constructor() {
+        this.debounceTime = 3000; // 3秒
+        this.saveTimer = null;
+        this.isSaving = false;
+        this.lastSaveTime = 0;
+        this.retryCount = 0;
+        this.maxRetries = 3;
+        this.pendingChanges = false;
+        
+        console.log('AutoSaveManager initialized');
+        this.initializeIndicator();
+        this.setupNetworkMonitoring();
+    }
+    
+    /**
+     * 自動保存をスケジュール（デバウンス処理）
+     */
+    scheduleSave() {
+        // 既存のタイマーをクリア
+        clearTimeout(this.saveTimer);
+        
+        // 保存中でなければデバウンスタイマーを設定
+        if (!this.isSaving) {
+            this.updateStatus('⏳ 保存待機中...', 'waiting');
+            this.pendingChanges = true;
+            
+            console.log('Auto-save scheduled in 3 seconds...');
+            
+            this.saveTimer = setTimeout(() => {
+                this.executeSave();
+            }, this.debounceTime);
+        } else {
+            console.log('Save in progress, scheduling delayed...');
+            // 保存中の場合は少し後に再スケジュール
+            setTimeout(() => this.scheduleSave(), 1000);
+        }
+    }
+    
+    /**
+     * 保存実行
+     */
+    async executeSave() {
+        if (this.isSaving) {
+            console.log('Save already in progress, skipping...');
+            return;
+        }
+        
+        try {
+            this.isSaving = true;
+            this.updateStatus('💾 保存中...', 'saving');
+            
+            console.log('Executing auto-save...');
+            
+            // 既存のsaveProgress関数を呼び出し
+            await saveProgress();
+            
+            this.pendingChanges = false;
+            this.lastSaveTime = Date.now();
+            this.retryCount = 0;
+            this.updateStatus('✅ 保存完了', 'saved');
+            
+            console.log('Auto-save completed successfully');
+            
+            // 3秒後に準備完了状態に戻す
+            setTimeout(() => {
+                if (!this.pendingChanges) {
+                    this.updateStatus('💾 準備完了', 'ready');
+                }
+            }, 3000);
+            
+        } catch (error) {
+            console.error('Auto-save failed:', error);
+            this.handleSaveError(error);
+        } finally {
+            this.isSaving = false;
+        }
+    }
+    
+    /**
+     * 保存エラー処理
+     */
+    handleSaveError(error) {
+        this.retryCount++;
+        
+        console.log(`Save error occurred, retry ${this.retryCount}/${this.maxRetries}:`, error);
+        
+        if (this.retryCount <= this.maxRetries) {
+            this.updateStatus(`⚠️ リトライ中... (${this.retryCount}/${this.maxRetries})`, 'retrying');
+            
+            // 指数的待機時間でリトライ
+            const retryDelay = 1000 * this.retryCount;
+            setTimeout(() => {
+                this.executeSave();
+            }, retryDelay);
+        } else {
+            this.updateStatus('❌ 保存失敗', 'error');
+            this.retryCount = 0;
+            
+            // エラートーストを表示
+            if (window.showToast) {
+                showToast('自動保存に失敗しました。手動で保存してください。', 'error');
+            } else {
+                alert('自動保存に失敗しました。手動で保存してください。');
+            }
+            
+            // 手動保存ボタンを強調表示
+            this.highlightManualSaveButton();
+        }
+    }
+    
+    /**
+     * 保存状態の表示更新
+     */
+    updateStatus(message, type) {
+        const indicator = document.getElementById('save-status');
+        if (indicator) {
+            indicator.textContent = message;
+            
+            // 状態に応じた色分け
+            const colors = {
+                ready: { bg: '#d4edda', color: '#155724' },
+                waiting: { bg: '#fff3cd', color: '#856404' },
+                saving: { bg: '#d1ecf1', color: '#0c5460' },
+                saved: { bg: '#d4edda', color: '#155724' },
+                retrying: { bg: '#ffeaa7', color: '#856404' },
+                error: { bg: '#f8d7da', color: '#721c24' },
+                offline: { bg: '#e2e3e5', color: '#495057' }
+            };
+            
+            const parentElement = document.getElementById('autosave-indicator');
+            if (parentElement && colors[type]) {
+                parentElement.style.backgroundColor = colors[type].bg;
+                parentElement.style.color = colors[type].color;
+                parentElement.style.borderColor = colors[type].color;
+            }
+        }
+    }
+    
+    /**
+     * インジケーターの初期化
+     */
+    initializeIndicator() {
+        // 初期状態を設定
+        this.updateStatus('💾 準備完了', 'ready');
+        
+        // インジケーターがクリックされた時の動作
+        const indicator = document.getElementById('autosave-indicator');
+        if (indicator) {
+            indicator.style.cursor = 'pointer';
+            indicator.title = 'クリックで詳細表示';
+            
+            indicator.addEventListener('click', () => {
+                const lastSave = this.lastSaveTime ? new Date(this.lastSaveTime).toLocaleTimeString() : '未保存';
+                const info = `
+最終保存: ${lastSave}
+待機中の変更: ${this.pendingChanges ? 'あり' : 'なし'}
+ネットワーク: ${navigator.onLine ? 'オンライン' : 'オフライン'}
+                `.trim();
+                
+                if (window.showToast) {
+                    showToast(info, 'info');
+                } else {
+                    alert(info);
+                }
+            });
+        }
+    }
+    
+    /**
+     * ネットワーク監視設定
+     */
+    setupNetworkMonitoring() {
+        window.addEventListener('online', () => {
+            console.log('Network back online');
+            this.updateStatus('🌐 オンライン復帰', 'ready');
+            
+            // オフライン中の変更があれば保存
+            if (this.pendingChanges) {
+                console.log('Pending changes detected, scheduling save...');
+                this.scheduleSave();
+            }
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('Network went offline');
+            this.updateStatus('📱 オフライン', 'offline');
+            
+            if (window.showToast) {
+                showToast('オフラインです。オンライン復帰時に自動保存されます', 'warning');
+            }
+        });
+    }
+    
+    /**
+     * 手動保存ボタンの強調表示
+     */
+    highlightManualSaveButton() {
+        const saveButton = document.getElementById('save-progress-button');
+        if (saveButton) {
+            // 既存のスタイルを保存
+            const originalStyle = {
+                background: saveButton.style.background,
+                boxShadow: saveButton.style.boxShadow,
+                animation: saveButton.style.animation
+            };
+            
+            // 強調スタイルを適用
+            saveButton.style.background = 'linear-gradient(45deg, #dc3545, #ff6b6b)';
+            saveButton.style.boxShadow = '0 0 15px rgba(220, 53, 69, 0.5)';
+            saveButton.style.animation = 'pulse 2s infinite';
+            
+            // 5秒後に元のスタイルに戻す
+            setTimeout(() => {
+                saveButton.style.background = originalStyle.background;
+                saveButton.style.boxShadow = originalStyle.boxShadow;
+                saveButton.style.animation = originalStyle.animation;
+            }, 5000);
+        }
+    }
+    
+    /**
+     * 手動保存実行（既存の保存ボタン用）
+     */
+    async executeManualSave() {
+        console.log('Manual save requested');
+        
+        // 自動保存タイマーをクリア
+        clearTimeout(this.saveTimer);
+        this.pendingChanges = false;
+        
+        // 即座に保存実行
+        await this.executeSave();
+        
+        if (window.showToast) {
+            showToast('✅ 手動保存が完了しました', 'success');
+        }
+    }
+}
+
+// グローバル変数として AutoSaveManager のインスタンスを作成
+let autoSaveManager = null;
+```
+
+## 🚀 Phase 2: イベントリスナーの実装
+
+### Step 2.1: details.js の修正 - 自動保存の初期化
+
+**追加場所**: 既存の `document.addEventListener('DOMContentLoaded', async () => {` 内の最後
+```javascript
+// 自動保存機能の初期化
+function initializeAutoSave() {
+    console.log('Initializing auto-save functionality...');
+    
+    // AutoSaveManager のインスタンスを作成
+    autoSaveManager = new AutoSaveManager();
+    
+    // タスクチェックボックスの監視
+    document.addEventListener('change', (e) => {
+        if (e.target.type === 'checkbox' && e.target.name && e.target.name.startsWith('task')) {
+            console.log('Task checkbox changed:', e.target.name, e.target.checked);
+            autoSaveManager.scheduleSave();
+        }
+    });
+    
+    // URL入力フィールドの監視
+    document.addEventListener('input', (e) => {
+        if (e.target.classList.contains('url-input') || 
+            (e.target.name && e.target.name.includes('url'))) {
+            console.log('URL input changed:', e.target.value);
+            autoSaveManager.scheduleSave();
+        }
+    });
+    
+    // メモ入力フィールドの監視
+    document.addEventListener('input', (e) => {
+        if (e.target.classList.contains('memo-input') || 
+            (e.target.name && e.target.name.includes('memo'))) {
+            console.log('Memo input changed:', e.target.value);
+            autoSaveManager.scheduleSave();
+        }
+    });
+    
+    // ステータス変更の監視
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('status-select') ||
+            (e.target.name && e.target.name.includes('status'))) {
+            console.log('Status changed:', e.target.value);
+            autoSaveManager.scheduleSave();
+        }
+    });
+    
+    // 全体メモの監視
+    const globalMemoTextarea = document.querySelector('textarea[placeholder*="メモ"]');
+    if (globalMemoTextarea) {
+        globalMemoTextarea.addEventListener('input', () => {
+            console.log('Global memo changed');
+            autoSaveManager.scheduleSave();
+        });
+    }
+    
+    console.log('Auto-save event listeners initialized');
+}
+
+// 自動保存機能を初期化
+initializeAutoSave();
+```
+
+### Step 2.2: 既存の手動保存ボタンの改修
+
+**修正場所**: 既存の `document.getElementById('save-progress-button')` のイベントリスナー
+```javascript
+// 既存の保存ボタンのイベントリスナーを修正
+const saveButton = document.getElementById('save-progress-button');
+if (saveButton) {
+    // 既存のイベントリスナーを削除して新しいものを追加
+    saveButton.onclick = async (e) => {
+        e.preventDefault();
+        
+        if (autoSaveManager) {
+            await autoSaveManager.executeManualSave();
+        } else {
+            // フォールバック：従来の保存処理
+            await saveProgress();
+        }
+    };
+    
+    // ボタンのテキストを更新（オプション）
+    saveButton.innerHTML = '🚨 今すぐ保存';
+    saveButton.title = '自動保存を待たずに即座に保存します';
+}
+```
+
+## 🚀 Phase 3: ページ離脱防止の実装
+
+### Step 3.1: details.js に追加 - 未保存データの離脱防止
+
+**追加場所**: ファイルの最後
+```javascript
+// ページ離脱時の未保存データ確認
+window.addEventListener('beforeunload', (e) => {
+    if (autoSaveManager && autoSaveManager.pendingChanges) {
+        const message = '未保存の変更があります。このページを離れますか？';
+        e.preventDefault();
+        e.returnValue = message;
+        return message;
+    }
+});
+
+// ページ表示時にオンライン状態を確認
+window.addEventListener('pageshow', () => {
+    if (autoSaveManager) {
+        if (navigator.onLine) {
+            autoSaveManager.updateStatus('💾 準備完了', 'ready');
+        } else {
+            autoSaveManager.updateStatus('📱 オフライン', 'offline');
+        }
+    }
+});
+```
+
+## 🚀 Phase 4: CSS アニメーション追加
+
+### Step 4.1: details.html に追加 - CSSアニメーション
+
+**追加場所**: `<head>` 内のスタイルタグ
+```css
+<style>
+/* 自動保存インジケーター用アニメーション */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#autosave-indicator {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* 保存ボタンの脈動アニメーション */
+@keyframes saveButtonPulse {
+    0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    #autosave-indicator {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 100px;
+    }
+}
+</style>
+```
+
+## 🚀 Phase 5: テストと動作確認
+
+### Step 5.1: 基本動作テストケース
+
+**テスト手順**:
+1. **タスクチェックテスト**
+   - タスクをチェック/アンチェック
+   - 3秒後に「保存中...」→「保存完了」の表示確認
+   - データベースに反映されているか確認
+
+2. **URL入力テスト**
+   - URL欄に文字入力
+   - 入力停止から3秒後の自動保存確認
+   - 複数回入力した場合のデバウンス動作確認
+
+3. **メモ入力テスト**
+   - メモ欄に長文入力
+   - 入力中は保存されず、停止後3秒で保存されることを確認
+   - 日本語入力での動作確認
+
+4. **ステータス変更テスト**
+   - ステータスドロップダウンの変更
+   - 3秒後の自動保存確認
+
+5. **エラーテスト**
+   - ネットワークを無効化してオフライン状態をテスト
+   - ネットワーク復帰時の自動保存確認
+   - 保存エラー時のリトライ動作確認
+
+### Step 5.2: パフォーマンステスト
+
+**確認項目**:
+- 高速連続入力時のデバウンス動作
+- メモリリークの確認（開発者ツール）
+- 長時間使用時の安定性
+- モバイルデバイスでの動作
+
+### Step 5.3: ユーザビリティテスト
+
+**確認項目**:
+- 保存状態インジケーターの視認性
+- 保存タイミングの適切性
+- エラー時の分かりやすさ
+- 手動保存との使い分け
+
+## 🚀 Phase 6: デプロイとコミット
+
+### Step 6.1: 最終確認
+
+**チェックリスト**:
+- [ ] 全てのイベントリスナーが正しく動作
+- [ ] 保存状態インジケーターが適切に表示
+- [ ] エラーハンドリングが機能
+- [ ] オフライン対応が動作
+- [ ] ページ離脱防止が機能
+- [ ] モバイル対応が完了
+- [ ] 既存機能に影響なし
+
+### Step 6.2: Git コミット
+
+```bash
+# 変更をステージング
+git add .
+
+# コミット作成
+git commit -m "feat: スマートデバウンス自動保存機能実装
+
+- 3秒間のデバウンス自動保存機能
+- タスクチェック、URL入力、メモ入力、ステータス変更に対応
+- 保存状態の視覚的インジケーター実装
+- エラーハンドリングと3回リトライ機能
+- オフライン対応とネットワーク復帰時の自動同期
+- 未保存データのページ離脱防止
+- 手動保存オプション維持
+- レスポンシブ対応とアニメーション効果
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# メインブランチにマージ（テスト完了後）
+git checkout main
+git merge feature/auto-save-details
+
+# リモートにプッシュ
+git push origin main
+```
+
+## 📊 実装完了後の確認事項
+
+### 成功指標の測定
+- 手動保存ボタンのクリック数減少
+- 自動保存の実行回数
+- エラー発生率
+- ユーザーの操作フロー改善
+
+### 運用監視項目
+- DB API呼び出し頻度
+- 保存処理のレスポンス時間  
+- エラーログの監視
+- ユーザーフィードバックの収集
+
+## ⚠️ トラブルシューティング
+
+### よくある問題と対処法
+
+1. **自動保存が動作しない**
+   - コンソールログで AutoSaveManager の初期化を確認
+   - イベントリスナーの設定状況を確認
+   - ネットワーク接続状態を確認
+
+2. **保存が頻繁すぎる**
+   - デバウンス時間（debounceTime）を調整
+   - イベントリスナーの重複登録を確認
+
+3. **エラーが多発する**
+   - ネットワーク状態の確認
+   - Supabase の接続状況確認
+   - リトライ回数の調整
+
+4. **UI が崩れる**
+   - CSS の競合を確認
+   - レスポンシブ設定の調整
+   - ブラウザ互換性の確認
+
+## 🎯 実装完了
+
+この手順書に従って実装することで、詳細画面に「スマートデバウンス自動保存機能」が完全に導入されます。
+
+**次回実装時のアクション**:
+1. ブランチ作成: `git checkout -b feature/auto-save-details`
+2. Phase 1 から順次実装
+3. 各Phaseでの動作確認
+4. 最終テストとデプロイ
+
+**実装時間見積もり**: 約2.5時間（テスト含む）
+**リスク**: 低（既存機能への影響最小限）
+**メリット**: UX大幅改善、データ損失防止、作業効率向上
