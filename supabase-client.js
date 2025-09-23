@@ -1548,16 +1548,37 @@ export class SupabaseAPI {
             let totalRecords = 0;
             
             for (const tableName of tables) {
-                
+
                 try {
-                    const { data, error } = await supabase
-                        .from(tableName)
-                        .select('*');
-                    
-                    if (error) {
-                        console.error(`❌ ${tableName} テーブル取得エラー:`, error);
-                        throw error;
+                    // ページネーションで全件取得（1000件制限回避）
+                    let allData = [];
+                    let from = 0;
+                    const batchSize = 1000;
+
+                    while (true) {
+                        const { data, error } = await supabase
+                            .from(tableName)
+                            .select('*')
+                            .order('id', { ascending: true })
+                            .range(from, from + batchSize - 1);
+
+                        if (error) {
+                            console.error(`${tableName} バックアップ取得エラー:`, error);
+                            throw error;
+                        }
+
+                        if (!data || data.length === 0) break;
+
+                        allData = allData.concat(data);
+                        console.log(`📦 ${tableName} バックアップ中: ${allData.length}件`);
+
+                        // 取得件数がバッチサイズより少ない場合は最後のバッチ
+                        if (data.length < batchSize) break;
+
+                        from += batchSize;
                     }
+
+                    const data = allData;
                     
                     backupData.tables[tableName] = data || [];
                     const recordCount = data?.length || 0;
