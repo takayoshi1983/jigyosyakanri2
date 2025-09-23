@@ -217,6 +217,7 @@ export class SupabaseAPI {
                 const batchSize = 1000;
 
                 while (true) {
+                    console.log(`📊 バッチ取得中: range(${from}, ${from + batchSize - 1})`);
                     const { data, error } = await supabase
                         .from('monthly_tasks')
                         .select('*')
@@ -229,13 +230,20 @@ export class SupabaseAPI {
                         throw error;
                     }
 
-                    if (!data || data.length === 0) break;
+                    console.log(`📊 取得結果: ${data?.length || 0}件`);
+                    if (!data || data.length === 0) {
+                        console.log('📊 データなし、ループ終了');
+                        break;
+                    }
 
                     allData = allData.concat(data);
                     console.log(`月次タスクデータ取得中: ${allData.length}件`);
 
                     // 取得件数がバッチサイズより少ない場合は最後のバッチ
-                    if (data.length < batchSize) break;
+                    if (data.length < batchSize) {
+                        console.log(`📊 最後のバッチ (${data.length}件 < ${batchSize}件)`);
+                        break;
+                    }
 
                     from += batchSize;
                 }
