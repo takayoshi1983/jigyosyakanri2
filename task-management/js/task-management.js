@@ -95,33 +95,34 @@ class TaskManagement {
 
     async loadTemplates() {
         try {
-            // まず全てのテンプレートを取得してみる（デバッグ用）
-            const { data: allTemplates, error: allError } = await supabase
-                .from('task_templates')
-                .select('*');
+            console.log('🔍 Current user for templates:', this.currentUser);
 
-            console.log('All templates in DB:', allTemplates);
-
-            // グローバルテンプレート + 自分のテンプレートを取得
+            // シンプルに全てのテンプレートを取得してみる
             const { data: templatesData, error } = await supabase
                 .from('task_templates')
                 .select('*')
-                .or(`is_global.eq.true,staff_id.eq.${this.currentUser.id}`)
                 .order('template_name');
 
+            console.log('📋 Raw DB response:', { templatesData, error });
+
             if (error) {
-                console.error('Templates query error:', error);
-                // エラーの場合は全てのテンプレートを使用
-                this.templates = allTemplates || [];
+                console.error('❌ Templates query error:', error);
+                this.templates = [];
             } else {
-                this.templates = templatesData || [];
+                // 手動でフィルタリング（デバッグのため）
+                const globalTemplates = templatesData.filter(t => t.is_global === true);
+                const userTemplates = templatesData.filter(t => t.staff_id === this.currentUser.id);
+
+                console.log('📋 Global templates:', globalTemplates);
+                console.log('👤 User templates:', userTemplates);
+
+                this.templates = [...globalTemplates, ...userTemplates];
             }
 
-            console.log('Templates loaded:', this.templates.length, this.templates);
+            console.log('✅ Final templates array:', this.templates.length, this.templates);
 
         } catch (error) {
-            console.error('Templates loading error:', error);
-            // エラーの場合は空配列
+            console.error('💥 Templates loading error:', error);
             this.templates = [];
         }
     }
