@@ -95,10 +95,12 @@ class TaskManagement {
 
     async loadTemplates() {
         try {
+            // グローバルテンプレート + 自分のテンプレートを取得
             const { data: templatesData, error } = await supabase
                 .from('task_templates')
                 .select('*')
-                .order('template_name');
+                .or(`is_global.eq.true,staff_id.eq.${this.currentUser.id}`)
+                .order('is_global DESC, template_name');
 
             if (error) throw error;
 
@@ -599,8 +601,12 @@ class TaskManagement {
             templateItem.className = 'template-item';
             templateItem.dataset.templateId = template.id;
 
+            const templateType = template.is_global ? '📋 共通' : '👤 個人';
             templateItem.innerHTML = `
-                <div class="template-name">${template.template_name}</div>
+                <div class="template-name">
+                    <span class="template-type" style="font-size: 0.8rem; color: #6c757d; margin-right: 8px;">${templateType}</span>
+                    ${template.template_name}
+                </div>
                 <div class="template-task-name">${template.task_name || ''}</div>
                 <div class="template-description">${template.description || ''}</div>
                 <div class="template-hours">⏱️ 想定時間: ${template.estimated_time_hours || '未設定'}時間</div>
