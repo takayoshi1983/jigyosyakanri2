@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク管理 - 記帳依頼・タスク管理システム</title>
+    <!-- Favicon with cache busting -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=1">
+
+    <!-- 既存スタイルを継承 -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom-dropdown.css">
+    <link rel="stylesheet" href="toast.css">
+    <!-- タスク管理専用スタイル -->
+    <link rel="stylesheet" href="task-styles.css">
+
+    <!-- Preload resources -->
+    <link rel="modulepreload" href="supabase-client.js" crossorigin>
+    <link rel="modulepreload" href="utils.js" crossorigin>
+    <link rel="modulepreload" href="task-management.js" crossorigin>
+
+    <!-- SortableJS for drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 統一ナビゲーションタブ -->
+        <div class="tab-navigation">
+            <a href="analytics.html" class="nav-tab dashboard">
+                📈 進捗ダッシュボード
+            </a>
+            <a href="performance.html" class="nav-tab performance">
+                👥 担当者別進捗
+            </a>
+            <a href="task-management.html" class="nav-tab tasks active">
+                📋 タスク管理
+            </a>
+            <a href="index.html" class="nav-tab settings">
+                ⚙️ 設定画面
+            </a>
+        </div>
+
+        <!-- ヘッダー & フィルターエリア -->
+        <div class="analytics-filters" style="background: #55e8ff47; padding: 15px; border-radius: 8px; margin-bottom: 10px; overflow: visible; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
+            <!-- タイトル行 -->
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 14px; position: relative; overflow: visible;">
+                <h1 style="margin: 0;">📋 タスク管理システム</h1>
+
+                <!-- アクションボタン -->
+                <div style="display: flex; gap: 10px;">
+                    <button id="add-task-btn" class="btn btn-primary" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                        ➕ 新規タスク
+                    </button>
+                    <button id="template-btn" class="btn btn-secondary" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                        📝 テンプレート
+                    </button>
+                </div>
+            </div>
+
+            <!-- フィルター行 -->
+            <div class="filter-row" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <!-- 表示切替 -->
+                <div class="filter-group">
+                    <label>表示:</label>
+                    <div class="view-toggle" style="display: flex; gap: 5px;">
+                        <button id="view-all" class="view-btn active" data-view="all">全体</button>
+                        <button id="view-my" class="view-btn" data-view="my">自分</button>
+                    </div>
+                </div>
+
+                <!-- ステータスフィルター -->
+                <div class="filter-group">
+                    <label for="status-filter">ステータス:</label>
+                    <select id="status-filter" class="form-control" style="width: 120px;">
+                        <option value="">全て</option>
+                        <option value="依頼中">依頼中</option>
+                        <option value="作業完了">作業完了</option>
+                        <option value="確認完了">確認完了</option>
+                    </select>
+                </div>
+
+                <!-- 担当者フィルター -->
+                <div class="filter-group">
+                    <label for="assignee-filter">担当者:</label>
+                    <select id="assignee-filter" class="form-control" style="width: 120px;">
+                        <option value="">全て</option>
+                        <!-- JavaScript で動的に生成 -->
+                    </select>
+                </div>
+
+                <!-- 事業者フィルター -->
+                <div class="filter-group">
+                    <label for="client-filter">事業者:</label>
+                    <select id="client-filter" class="form-control" style="width: 120px;">
+                        <option value="">全て</option>
+                        <!-- JavaScript で動的に生成 -->
+                    </select>
+                </div>
+
+                <!-- 検索 -->
+                <div class="filter-group">
+                    <label for="search-input">検索:</label>
+                    <input id="search-input" type="text" class="form-control" placeholder="タスク名で検索" style="width: 150px;">
+                </div>
+
+                <!-- 表示形式切替 -->
+                <div class="filter-group">
+                    <label>表示形式:</label>
+                    <div class="display-toggle" style="display: flex; gap: 5px;">
+                        <button id="display-list" class="display-btn active" data-display="list">📋 リスト</button>
+                        <button id="display-card" class="display-btn" data-display="card">📊 カード</button>
+                        <button id="display-calendar" class="display-btn" data-display="calendar">📅 カレンダー</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- サマリー情報 -->
+        <div id="task-summary" class="summary-row" style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <div class="summary-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
+                <h3 id="total-tasks" style="margin: 0; color: #007bff;">0</h3>
+                <p style="margin: 5px 0 0 0; color: #6c757d;">総タスク数</p>
+            </div>
+            <div class="summary-card" style="background: #fff3cd; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
+                <h3 id="pending-tasks" style="margin: 0; color: #856404;">0</h3>
+                <p style="margin: 5px 0 0 0; color: #856404;">依頼中</p>
+            </div>
+            <div class="summary-card" style="background: #d1ecf1; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
+                <h3 id="working-tasks" style="margin: 0; color: #0c5460;">0</h3>
+                <p style="margin: 5px 0 0 0; color: #0c5460;">作業中</p>
+            </div>
+            <div class="summary-card" style="background: #d4edda; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
+                <h3 id="completed-tasks" style="margin: 0; color: #155724;">0</h3>
+                <p style="margin: 5px 0 0 0; color: #155724;">完了</p>
+            </div>
+        </div>
+
+        <!-- タスク表示エリア -->
+        <div id="task-display-area">
+            <!-- リスト表示 -->
+            <div id="list-view" class="task-view active">
+                <div class="table-responsive">
+                    <table id="tasks-table" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="cursor: pointer;" data-sort="task_name">タスク名 ↕</th>
+                                <th style="cursor: pointer;" data-sort="client_name">事業者 ↕</th>
+                                <th style="cursor: pointer;" data-sort="assignee_name">担当者 ↕</th>
+                                <th style="cursor: pointer;" data-sort="requester_name">依頼者 ↕</th>
+                                <th style="cursor: pointer;" data-sort="due_date">期限 ↕</th>
+                                <th style="cursor: pointer;" data-sort="status">ステータス ↕</th>
+                                <th>アクション</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tasks-tbody">
+                            <!-- JavaScript で動的に生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- カード表示 -->
+            <div id="card-view" class="task-view" style="display: none;">
+                <div id="kanban-board" class="kanban-container">
+                    <div class="kanban-column" data-status="依頼中">
+                        <h3>📝 依頼中</h3>
+                        <div class="kanban-tasks" id="tasks-pending"></div>
+                    </div>
+                    <div class="kanban-column" data-status="作業完了">
+                        <h3>⚙️ 作業完了</h3>
+                        <div class="kanban-tasks" id="tasks-working"></div>
+                    </div>
+                    <div class="kanban-column" data-status="確認完了">
+                        <h3>✅ 確認完了</h3>
+                        <div class="kanban-tasks" id="tasks-completed"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- カレンダー表示 -->
+            <div id="calendar-view" class="task-view" style="display: none;">
+                <div id="task-calendar">
+                    <!-- FullCalendar で実装予定 -->
+                    <p style="text-align: center; padding: 50px;">カレンダー表示は今後実装予定です</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- タスク作成/編集モーダル -->
+    <div id="task-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="modal-title">新規タスク作成</h2>
+                <span class="close" id="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="task-form">
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="task-name">タスク名 <span class="required">*</span></label>
+                            <input type="text" id="task-name" name="task_name" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1; margin-right: 10px;">
+                            <label for="client-select">事業者 <span class="required">*</span></label>
+                            <select id="client-select" name="client_id" class="form-control" required>
+                                <option value="">選択してください</option>
+                                <!-- JavaScript で動的に生成 -->
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; margin-left: 10px;">
+                            <label for="assignee-select">担当者 <span class="required">*</span></label>
+                            <select id="assignee-select" name="assignee_id" class="form-control" required>
+                                <option value="">選択してください</option>
+                                <!-- JavaScript で動的に生成 -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1; margin-right: 10px;">
+                            <label for="due-date">期限</label>
+                            <input type="date" id="due-date" name="due_date" class="form-control">
+                        </div>
+                        <div class="form-group" style="flex: 1; margin-left: 10px;">
+                            <label for="estimated-hours">想定時間（時間）</label>
+                            <input type="number" id="estimated-hours" name="estimated_time_hours" class="form-control" step="0.5" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-description">作業内容</label>
+                        <textarea id="task-description" name="description" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reference-url">参照URL</label>
+                        <input type="url" id="reference-url" name="reference_url" class="form-control" placeholder="https://example.com">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="cancel-btn" class="btn btn-secondary">キャンセル</button>
+                <button type="button" id="save-task-btn" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ローディング表示 -->
+    <div id="loading" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="supabase-client.js"></script>
+    <script type="module" src="utils.js"></script>
+    <script type="module" src="task-management.js"></script>
+</body>
+</html>

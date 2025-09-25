@@ -1563,13 +1563,15 @@ export class SupabaseAPI {
                             .from(tableName)
                             .select('*');
 
-                        // monthly_tasksテーブルの場合は複数ソート
+                        // テーブル別ソート条件
                         if (tableName === 'monthly_tasks') {
                             query = query
                                 .order('client_id', { ascending: true })
                                 .order('month', { ascending: false })
                                 .order('completed', { ascending: false })
                                 .order('id', { ascending: true });
+                        } else if (tableName === 'settings') {
+                            query = query.order('key', { ascending: true });
                         } else {
                             query = query.order('id', { ascending: true });
                         }
