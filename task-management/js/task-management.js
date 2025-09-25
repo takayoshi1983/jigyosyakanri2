@@ -302,6 +302,12 @@ class TaskManagement {
     updateDisplay() {
         const filteredTasks = this.getFilteredTasks();
 
+        // タスク数カウント更新
+        document.getElementById('total-task-count').textContent = `${filteredTasks.length}件`;
+
+        // マイタスクパネルの更新
+        this.updateMyTasks();
+
         if (this.currentDisplay === 'list') {
             this.updateListView(filteredTasks);
         } else if (this.currentDisplay === 'card') {
@@ -754,6 +760,87 @@ class TaskManagement {
             console.error('Delete task error:', error);
             showToast('削除に失敗しました', 'error');
         }
+    }
+
+    // マイタスクパネル関連メソッド
+    updateMyTasks() {
+        if (!this.currentUser) return;
+
+        // 受任タスク（自分が実行する）
+        const assignedTasks = this.tasks.filter(task => task.assignee_id === this.currentUser.id);
+
+        // 依頼タスク（自分が作成した）
+        const requestedTasks = this.tasks.filter(task => task.requester_id === this.currentUser.id);
+
+        // カウント更新
+        document.getElementById('assigned-count').textContent = assignedTasks.length;
+        document.getElementById('requested-count').textContent = requestedTasks.length;
+        document.getElementById('my-task-count').textContent = `${assignedTasks.length + requestedTasks.length}件`;
+
+        // 受任タスクリスト更新
+        this.updateCompactTaskList('assigned-task-list', assignedTasks);
+
+        // 依頼タスクリスト更新
+        this.updateCompactTaskList('requested-task-list', requestedTasks);
+    }
+
+    updateCompactTaskList(containerId, tasks) {
+        const container = document.getElementById(containerId);
+
+        if (tasks.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: #6c757d; font-size: 0.8rem; padding: 15px;">該当するタスクはありません</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        tasks.forEach(task => {
+            const taskItem = this.createCompactTaskItem(task);
+            container.appendChild(taskItem);
+        });
+    }
+
+    createCompactTaskItem(task) {
+        const item = document.createElement('div');
+        item.className = 'compact-task-item';
+        item.dataset.taskId = task.id;
+
+        const dueDateText = task.due_date ? formatDate(task.due_date) : '';
+        const dueDateClass = this.getDueDateClass(task.due_date);
+
+        const statusConfig = {
+            '依頼中': { class: 'compact-status-pending', text: '依頼中' },
+            '作業完了': { class: 'compact-status-working', text: '作業完了' },
+            '確認完了': { class: 'compact-status-completed', text: '確認完了' }
+        };
+
+        const statusBadge = statusConfig[task.status] || statusConfig['依頼中'];
+
+        item.innerHTML = `
+            <div class="compact-task-title">${task.task_name || 'Untitled Task'}</div>
+            <div class="compact-task-meta">
+                <span class="compact-task-client">${task.clients?.name || '-'}</span>
+                <span class="compact-task-status ${statusBadge.class}">${statusBadge.text}</span>
+            </div>
+            ${dueDateText ? `<div class="compact-task-due ${dueDateClass}">📅 ${dueDateText}</div>` : ''}
+        `;
+
+        // クリックイベント（詳細表示・編集）
+        item.addEventListener('click', () => {
+            this.editTask(task.id);
+        });
+
+        return item;
+    }
+
+    focusOnMyTasks() {
+        // 「自分」フィルターを有効化
+        document.getElementById('view-my').click();
+
+        // 左パネルにフォーカス
+        document.querySelector('.left-panel').scrollIntoView({ behavior: 'smooth' });
+
+        showToast('自分のタスクを表示中', 'info');
     }
 }
 

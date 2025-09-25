@@ -140,53 +140,110 @@
             </div>
         </div>
 
-        <!-- タスク表示エリア -->
-        <div id="task-display-area">
-            <!-- リスト表示 -->
-            <div id="list-view" class="task-view active">
-                <div class="table-responsive">
-                    <table id="tasks-table" class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th style="cursor: pointer;" data-sort="task_name">タスク名 ↕</th>
-                                <th style="cursor: pointer;" data-sort="client_name">事業者 ↕</th>
-                                <th style="cursor: pointer;" data-sort="assignee_name">受任者 ↕</th>
-                                <th style="cursor: pointer;" data-sort="requester_name">依頼者 ↕</th>
-                                <th style="cursor: pointer;" data-sort="due_date">期限 ↕</th>
-                                <th style="cursor: pointer;" data-sort="status">ステータス ↕</th>
-                                <th>アクション</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tasks-tbody">
+        <!-- メインコンテンツ：左右分割レイアウト -->
+        <div class="task-dashboard-container" style="display: flex; gap: 20px; min-height: 600px;">
+
+            <!-- 左側パネル：全体タスク管理 (2/3) -->
+            <div class="left-panel" style="flex: 2; min-width: 0;">
+                <div class="panel-header" style="background: #f8f9fa; padding: 15px; border-radius: 8px 8px 0 0; border-bottom: 2px solid #dee2e6; margin-bottom: 0;">
+                    <h3 style="margin: 0; color: #495057; display: flex; align-items: center; gap: 10px;">
+                        📋 全体タスク管理
+                        <span id="total-task-count" style="background: #007bff; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">0件</span>
+                    </h3>
+                </div>
+
+                <!-- タスク表示エリア -->
+                <div id="task-display-area" style="background: white; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 8px 8px;">
+                    <!-- リスト表示 -->
+                    <div id="list-view" class="task-view active">
+                        <div class="table-responsive">
+                            <table id="tasks-table" class="table table-hover" style="margin-bottom: 0;">
+                                <thead>
+                                    <tr>
+                                        <th style="cursor: pointer;" data-sort="task_name">タスク名 ↕</th>
+                                        <th style="cursor: pointer;" data-sort="client_name">事業者 ↕</th>
+                                        <th style="cursor: pointer;" data-sort="assignee_name">受任者 ↕</th>
+                                        <th style="cursor: pointer;" data-sort="requester_name">依頼者 ↕</th>
+                                        <th style="cursor: pointer;" data-sort="due_date">期限 ↕</th>
+                                        <th style="cursor: pointer;" data-sort="status">ステータス ↕</th>
+                                        <th>アクション</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tasks-tbody">
+                                    <!-- JavaScript で動的に生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- カード表示 -->
+                    <div id="card-view" class="task-view" style="display: none;">
+                        <div id="kanban-board" class="kanban-container">
+                            <div class="kanban-column" data-status="依頼中">
+                                <h3>📝 依頼中</h3>
+                                <div class="kanban-tasks" id="tasks-pending"></div>
+                            </div>
+                            <div class="kanban-column" data-status="作業完了">
+                                <h3>⚙️ 作業完了</h3>
+                                <div class="kanban-tasks" id="tasks-working"></div>
+                            </div>
+                            <div class="kanban-column" data-status="確認完了">
+                                <h3>✅ 確認完了</h3>
+                                <div class="kanban-tasks" id="tasks-completed"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- カレンダー表示 -->
+                    <div id="calendar-view" class="task-view" style="display: none;">
+                        <div id="task-calendar">
+                            <!-- FullCalendar で実装予定 -->
+                            <p style="text-align: center; padding: 50px;">カレンダー表示は今後実装予定です</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側パネル：マイタスク (1/3) -->
+            <div class="right-panel" style="flex: 1; min-width: 300px;">
+                <div class="panel-header" style="background: #e7f3ff; padding: 15px; border-radius: 8px 8px 0 0; border-bottom: 2px solid #007bff; margin-bottom: 0;">
+                    <h3 style="margin: 0; color: #0056b3; display: flex; align-items: center; justify-content: space-between;">
+                        👤 マイタスク
+                        <span id="my-task-count" style="background: #0056b3; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">0件</span>
+                    </h3>
+                </div>
+
+                <!-- マイタスク表示エリア -->
+                <div class="my-tasks-container" style="background: white; border: 1px solid #007bff; border-top: none; border-radius: 0 0 8px 8px; padding: 15px; max-height: 600px; overflow-y: auto;">
+
+                    <!-- 受任タスク（自分が実行する） -->
+                    <div class="my-assigned-tasks" style="margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #dc3545; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between;">
+                            🎯 受任中のタスク
+                            <span id="assigned-count" style="background: #dc3545; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
+                        </h4>
+                        <div id="assigned-task-list" class="compact-task-list">
                             <!-- JavaScript で動的に生成 -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                        </div>
+                    </div>
 
-            <!-- カード表示 -->
-            <div id="card-view" class="task-view" style="display: none;">
-                <div id="kanban-board" class="kanban-container">
-                    <div class="kanban-column" data-status="依頼中">
-                        <h3>📝 依頼中</h3>
-                        <div class="kanban-tasks" id="tasks-pending"></div>
+                    <!-- 依頼タスク（自分が作成した） -->
+                    <div class="my-requested-tasks">
+                        <h4 style="margin: 0 0 10px 0; color: #28a745; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between;">
+                            📤 依頼中のタスク
+                            <span id="requested-count" style="background: #28a745; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
+                        </h4>
+                        <div id="requested-task-list" class="compact-task-list">
+                            <!-- JavaScript で動的に生成 -->
+                        </div>
                     </div>
-                    <div class="kanban-column" data-status="作業完了">
-                        <h3>⚙️ 作業完了</h3>
-                        <div class="kanban-tasks" id="tasks-working"></div>
-                    </div>
-                    <div class="kanban-column" data-status="確認完了">
-                        <h3>✅ 確認完了</h3>
-                        <div class="kanban-tasks" id="tasks-completed"></div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- カレンダー表示 -->
-            <div id="calendar-view" class="task-view" style="display: none;">
-                <div id="task-calendar">
-                    <!-- FullCalendar で実装予定 -->
-                    <p style="text-align: center; padding: 50px;">カレンダー表示は今後実装予定です</p>
+                    <!-- マイタスク用アクション -->
+                    <div class="my-tasks-actions" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dee2e6;">
+                        <button class="btn btn-sm btn-primary" onclick="taskManager.focusOnMyTasks()" style="width: 100%; padding: 8px; font-size: 0.85rem;">
+                            🔍 自分のタスクのみ表示
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

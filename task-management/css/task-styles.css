@@ -445,6 +445,92 @@
     100% { transform: rotate(360deg); }
 }
 
+/* マイタスクパネル */
+.compact-task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.compact-task-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.compact-task-item:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+    transform: translateY(-1px);
+}
+
+.compact-task-title {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.compact-task-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.compact-task-client {
+    font-weight: 500;
+    color: #495057;
+}
+
+.compact-task-due {
+    font-weight: 500;
+}
+
+.compact-task-status {
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.compact-status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.compact-status-working {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.compact-status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* 左右分割レイアウトのレスポンシブ対応 */
+@media (max-width: 1024px) {
+    .task-dashboard-container {
+        flex-direction: column !important;
+    }
+
+    .left-panel {
+        flex: none !important;
+    }
+
+    .right-panel {
+        flex: none !important;
+        min-width: unset !important;
+    }
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
     .filter-row {
