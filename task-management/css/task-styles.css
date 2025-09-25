@@ -269,6 +269,57 @@
     margin-top: 5px;
 }
 
+/* テンプレート関連 */
+.template-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.template-item {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.template-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.template-item.selected {
+    border-color: #007bff;
+    background: #f8f9ff;
+}
+
+.template-name {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 5px;
+}
+
+.template-task-name {
+    color: #495057;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.template-description {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.template-hours {
+    color: #007bff;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
 /* モーダル */
 .modal {
     position: fixed;

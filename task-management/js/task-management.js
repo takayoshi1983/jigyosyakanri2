@@ -9,6 +9,7 @@ class TaskManagement {
         this.clients = [];
         this.staffs = [];
         this.tasks = [];
+        this.templates = [];
         this.currentFilters = {
             view: 'all',
             status: '',
@@ -43,6 +44,7 @@ class TaskManagement {
 
             // 基本データ読み込み
             await this.loadMasterData();
+            await this.loadTemplates();
             await this.loadTasks();
 
             // UI初期化
@@ -87,6 +89,24 @@ class TaskManagement {
 
         } catch (error) {
             console.error('Master data loading error:', error);
+            throw error;
+        }
+    }
+
+    async loadTemplates() {
+        try {
+            const { data: templatesData, error } = await supabase
+                .from('task_templates')
+                .select('*')
+                .order('template_name');
+
+            if (error) throw error;
+
+            this.templates = templatesData || [];
+            console.log('Templates loaded:', this.templates.length);
+
+        } catch (error) {
+            console.error('Templates loading error:', error);
             throw error;
         }
     }
@@ -220,7 +240,12 @@ class TaskManagement {
             this.openTaskModal();
         });
 
-        // モーダル関連
+        // テンプレートボタン
+        document.getElementById('template-btn').addEventListener('click', () => {
+            this.openTemplateModal();
+        });
+
+        // タスクモーダル関連
         document.getElementById('modal-close').addEventListener('click', () => {
             this.closeTaskModal();
         });
@@ -233,10 +258,25 @@ class TaskManagement {
             this.saveTask();
         });
 
+        // テンプレートモーダル関連
+        document.getElementById('template-modal-close').addEventListener('click', () => {
+            this.closeTemplateModal();
+        });
+
+        document.getElementById('template-cancel-btn').addEventListener('click', () => {
+            this.closeTemplateModal();
+        });
+
         // モーダル外クリックで閉じる
         document.getElementById('task-modal').addEventListener('click', (e) => {
             if (e.target.id === 'task-modal') {
                 this.closeTaskModal();
+            }
+        });
+
+        document.getElementById('template-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'template-modal') {
+                this.closeTemplateModal();
             }
         });
     }
@@ -502,7 +542,7 @@ class TaskManagement {
         document.getElementById('completed-tasks').textContent = completedTasks;
     }
 
-    openTaskModal(taskId = null) {
+    openTaskModal(taskId = null, template = null) {
         const modal = document.getElementById('task-modal');
         const title = document.getElementById('modal-title');
         const form = document.getElementById('task-form');
@@ -524,8 +564,15 @@ class TaskManagement {
             }
             form.dataset.taskId = taskId;
         } else {
-            title.textContent = '新規タスク作成';
+            title.textContent = template ? `テンプレートから作成: ${template.template_name}` : '新規タスク作成';
             form.dataset.taskId = '';
+
+            if (template) {
+                // テンプレートデータでフォームを埋める
+                document.getElementById('task-name').value = template.task_name || '';
+                document.getElementById('task-description').value = template.description || '';
+                document.getElementById('estimated-hours').value = template.estimated_time_hours || '';
+            }
 
             // デフォルト値設定
             if (this.currentUser) {
@@ -539,6 +586,47 @@ class TaskManagement {
     closeTaskModal() {
         const modal = document.getElementById('task-modal');
         modal.style.display = 'none';
+    }
+
+    openTemplateModal() {
+        const modal = document.getElementById('template-modal');
+        const templateList = document.getElementById('template-list');
+
+        // テンプレート一覧を生成
+        templateList.innerHTML = '';
+        this.templates.forEach(template => {
+            const templateItem = document.createElement('div');
+            templateItem.className = 'template-item';
+            templateItem.dataset.templateId = template.id;
+
+            templateItem.innerHTML = `
+                <div class="template-name">${template.template_name}</div>
+                <div class="template-task-name">${template.task_name || ''}</div>
+                <div class="template-description">${template.description || ''}</div>
+                <div class="template-hours">⏱️ 想定時間: ${template.estimated_time_hours || '未設定'}時間</div>
+            `;
+
+            templateItem.addEventListener('click', () => {
+                this.selectTemplate(template);
+            });
+
+            templateList.appendChild(templateItem);
+        });
+
+        modal.style.display = 'flex';
+    }
+
+    closeTemplateModal() {
+        const modal = document.getElementById('template-modal');
+        modal.style.display = 'none';
+    }
+
+    selectTemplate(template) {
+        // テンプレートモーダルを閉じる
+        this.closeTemplateModal();
+
+        // テンプレートデータでタスクモーダルを開く
+        this.openTaskModal(null, template);
     }
 
     async saveTask() {

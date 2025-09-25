@@ -44,17 +44,22 @@
         <div class="analytics-filters" style="background: #55e8ff47; padding: 15px; border-radius: 8px; margin-bottom: 10px; overflow: visible; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
             <!-- タイトル行 -->
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 14px; position: relative; overflow: visible;">
-                <h1 style="margin: 0;">📋 タスク管理システム</h1>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <h1 style="margin: 0;">📋 タスク管理システム</h1>
 
-                <!-- アクションボタン -->
-                <div style="display: flex; gap: 10px;">
-                    <button id="add-task-btn" class="btn btn-primary" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                        ➕ 新規タスク
-                    </button>
-                    <button id="template-btn" class="btn btn-secondary" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
-                        📝 テンプレート
-                    </button>
+                    <!-- アクションボタン（タイトルの右側、適度な距離） -->
+                    <div style="display: flex; gap: 10px;">
+                        <button id="add-task-btn" class="btn btn-primary" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            ➕ 新規タスク
+                        </button>
+                        <button id="template-btn" class="btn btn-secondary" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                            📝 テンプレート
+                        </button>
+                    </div>
                 </div>
+
+                <!-- 右側スペース（将来の拡張用） -->
+                <div style="min-width: 100px;"></div>
             </div>
 
             <!-- フィルター行 -->
@@ -183,6 +188,25 @@
                     <!-- FullCalendar で実装予定 -->
                     <p style="text-align: center; padding: 50px;">カレンダー表示は今後実装予定です</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- テンプレート選択モーダル -->
+    <div id="template-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>タスクテンプレート選択</h2>
+                <span class="close" id="template-modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>テンプレートを選択して新規タスクを作成します。</p>
+                <div id="template-list" class="template-list">
+                    <!-- JavaScriptで動的に生成 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="template-cancel-btn" class="btn btn-secondary">キャンセル</button>
             </div>
         </div>
     </div>
