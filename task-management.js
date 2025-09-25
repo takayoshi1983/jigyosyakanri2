@@ -1,6 +1,6 @@
 // タスク管理システム - メイン機能
 import { supabase } from './supabase-client.js';
-import { showToast, formatDate, formatDateTime } from './utils.js';
+import { showToast, formatDate } from './utils.js';
 
 class TaskManagement {
     constructor() {
