@@ -95,22 +95,34 @@ class TaskManagement {
 
     async loadTemplates() {
         try {
+            // まず全てのテンプレートを取得してみる（デバッグ用）
+            const { data: allTemplates, error: allError } = await supabase
+                .from('task_templates')
+                .select('*');
+
+            console.log('All templates in DB:', allTemplates);
+
             // グローバルテンプレート + 自分のテンプレートを取得
             const { data: templatesData, error } = await supabase
                 .from('task_templates')
                 .select('*')
                 .or(`is_global.eq.true,staff_id.eq.${this.currentUser.id}`)
-                .order('is_global', { ascending: false })
-                .order('template_name', { ascending: true });
+                .order('template_name');
 
-            if (error) throw error;
+            if (error) {
+                console.error('Templates query error:', error);
+                // エラーの場合は全てのテンプレートを使用
+                this.templates = allTemplates || [];
+            } else {
+                this.templates = templatesData || [];
+            }
 
-            this.templates = templatesData || [];
-            console.log('Templates loaded:', this.templates.length);
+            console.log('Templates loaded:', this.templates.length, this.templates);
 
         } catch (error) {
             console.error('Templates loading error:', error);
-            throw error;
+            // エラーの場合は空配列
+            this.templates = [];
         }
     }
 
@@ -123,7 +135,7 @@ class TaskManagement {
         const clientSelect = document.getElementById('client-select');
         const assigneeSelect = document.getElementById('assignee-select');
 
-        // フィルター - 担当者
+        // フィルター - 受任者
         assigneeFilter.innerHTML = '<option value="">全て</option>';
         this.staffs.forEach(staff => {
             assigneeFilter.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
@@ -141,7 +153,7 @@ class TaskManagement {
             clientSelect.innerHTML += `<option value="${client.id}">${client.name}</option>`;
         });
 
-        // モーダル - 担当者
+        // モーダル - 受任者
         assigneeSelect.innerHTML = '<option value="">選択してください</option>';
         this.staffs.forEach(staff => {
             assigneeSelect.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
@@ -327,7 +339,7 @@ class TaskManagement {
             filtered = filtered.filter(task => task.status === this.currentFilters.status);
         }
 
-        // 担当者フィルター
+        // 受任者フィルター
         if (this.currentFilters.assignee) {
             filtered = filtered.filter(task => task.assignee_id == this.currentFilters.assignee);
         }
@@ -664,7 +676,7 @@ class TaskManagement {
         }
 
         if (!taskData.assignee_id) {
-            showToast('担当者を選択してください', 'error');
+            showToast('受任者を選択してください', 'error');
             return;
         }
 
