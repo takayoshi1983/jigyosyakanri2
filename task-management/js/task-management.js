@@ -95,35 +95,22 @@ class TaskManagement {
 
     async loadTemplates() {
         try {
-            console.log('🔍 Current user for templates:', this.currentUser);
-
-            // シンプルに全てのテンプレートを取得してみる
+            // グローバルテンプレート + 自分のテンプレートを取得
             const { data: templatesData, error } = await supabase
                 .from('task_templates')
                 .select('*')
-                .order('template_name');
+                .or(`is_global.eq.true,staff_id.eq.${this.currentUser.id}`)
+                .order('is_global', { ascending: false })
+                .order('template_name', { ascending: true });
 
-            console.log('📋 Raw DB response:', { templatesData, error });
+            if (error) throw error;
 
-            if (error) {
-                console.error('❌ Templates query error:', error);
-                this.templates = [];
-            } else {
-                // 手動でフィルタリング（デバッグのため）
-                const globalTemplates = templatesData.filter(t => t.is_global === true);
-                const userTemplates = templatesData.filter(t => t.staff_id === this.currentUser.id);
-
-                console.log('📋 Global templates:', globalTemplates);
-                console.log('👤 User templates:', userTemplates);
-
-                this.templates = [...globalTemplates, ...userTemplates];
-            }
-
-            console.log('✅ Final templates array:', this.templates.length, this.templates);
+            this.templates = templatesData || [];
+            console.log('Templates loaded:', this.templates.length);
 
         } catch (error) {
-            console.error('💥 Templates loading error:', error);
-            this.templates = [];
+            console.error('Templates loading error:', error);
+            throw error;
         }
     }
 
