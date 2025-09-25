@@ -100,7 +100,8 @@ class TaskManagement {
                 .from('task_templates')
                 .select('*')
                 .or(`is_global.eq.true,staff_id.eq.${this.currentUser.id}`)
-                .order('is_global DESC, template_name');
+                .order('is_global', { ascending: false })
+                .order('template_name', { ascending: true });
 
             if (error) throw error;
 
