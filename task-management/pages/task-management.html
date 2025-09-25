@@ -8,16 +8,16 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico?v=1">
 
     <!-- 既存スタイルを継承 -->
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="custom-dropdown.css">
-    <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="../../custom-dropdown.css">
+    <link rel="stylesheet" href="../../toast.css">
     <!-- タスク管理専用スタイル -->
-    <link rel="stylesheet" href="task-styles.css">
+    <link rel="stylesheet" href="../css/task-styles.css">
 
     <!-- Preload resources -->
-    <link rel="modulepreload" href="supabase-client.js" crossorigin>
-    <link rel="modulepreload" href="utils.js" crossorigin>
-    <link rel="modulepreload" href="task-management.js" crossorigin>
+    <link rel="modulepreload" href="../../supabase-client.js" crossorigin>
+    <link rel="modulepreload" href="../../utils.js" crossorigin>
+    <link rel="modulepreload" href="../js/task-management.js" crossorigin>
 
     <!-- SortableJS for drag and drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -26,16 +26,16 @@
     <div class="container">
         <!-- 統一ナビゲーションタブ -->
         <div class="tab-navigation">
-            <a href="analytics.html" class="nav-tab dashboard">
+            <a href="../../analytics.html" class="nav-tab dashboard">
                 📈 進捗ダッシュボード
             </a>
-            <a href="performance.html" class="nav-tab performance">
+            <a href="../../performance.html" class="nav-tab performance">
                 👥 担当者別進捗
             </a>
             <a href="task-management.html" class="nav-tab tasks active">
                 📋 タスク管理
             </a>
-            <a href="index.html" class="nav-tab settings">
+            <a href="../../index.html" class="nav-tab settings">
                 ⚙️ 設定画面
             </a>
         </div>
@@ -255,8 +255,8 @@
     </div>
 
     <!-- Scripts -->
-    <script type="module" src="supabase-client.js"></script>
-    <script type="module" src="utils.js"></script>
-    <script type="module" src="task-management.js"></script>
+    <script type="module" src="../../supabase-client.js"></script>
+    <script type="module" src="../../utils.js"></script>
+    <script type="module" src="../js/task-management.js"></script>
 </body>
 </html>
