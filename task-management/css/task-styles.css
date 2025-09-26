@@ -547,18 +547,6 @@
         padding: 4px 8px !important;
     }
 }
-    .task-dashboard-container {
-        flex-direction: column !important;
-    }
-
-    .left-panel {
-        flex: none !important;
-    }
-
-    .right-panel {
-        flex: none !important;
-        min-width: unset !important;
-    }
 }
 
 /* レスポンシブ対応 */
