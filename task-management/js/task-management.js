@@ -415,25 +415,46 @@ class TaskManagement {
 
     createTaskRow(task) {
         const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+
+        // 重要度表示
+        const priorityStars = this.getPriorityDisplay(task.priority);
 
         // 期限の色分け
         const dueDateClass = this.getDueDateClass(task.due_date);
         const dueDateText = task.due_date ? formatDate(task.due_date) : '-';
+        const workDateText = task.work_date ? formatDate(task.work_date) : '-';
+        const createdDateText = task.created_at ? formatDate(task.created_at) : '-';
 
-        // ステータスバッジ
-        const statusBadge = this.createStatusBadge(task.status);
+        // ステータスバッジ（クリック可能）
+        const statusBadge = this.createClickableStatusBadge(task);
 
-        // アクションボタン
-        const actionButtons = this.createActionButtons(task);
+        // 短縮表示のヘルパー関数
+        const truncate = (text, maxLength) => {
+            if (!text) return '-';
+            return text.length > maxLength ? text.substring(0, maxLength) + '…' : text;
+        };
+
+        // 参照URLアイコン
+        const urlIcon = task.reference_url ?
+            `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()">🔗</a>` : '-';
+
+        // 事業者名（クリック可能）
+        const clientName = task.clients?.name ?
+            `<a href="details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none;">${truncate(task.clients.name, 8)}</a>` : '-';
 
         tr.innerHTML = `
-            <td><strong>${task.task_name}</strong>${task.description ? `<br><small class="text-muted">${task.description}</small>` : ''}</td>
-            <td>${task.clients?.name || '-'}</td>
-            <td>${task.assignee?.name || '-'}</td>
-            <td>${task.requester?.name || '-'}</td>
-            <td><span class="due-date ${dueDateClass}">${dueDateText}</span></td>
-            <td>${statusBadge}</td>
-            <td>${actionButtons}</td>
+            <td style="text-align: center; padding: 4px 6px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</td>
+            <td style="padding: 4px 6px;" title="${task.clients?.name || ''}">${clientName}</td>
+            <td style="padding: 4px 6px;" title="${task.task_name || ''}">${truncate(task.task_name, 15)}</td>
+            <td style="padding: 4px 6px;" title="${task.description || ''}">${truncate(task.description, 12)}</td>
+            <td style="text-align: center; padding: 4px 6px;">${urlIcon}</td>
+            <td style="padding: 4px 6px;" title="${task.requester?.name || ''}">${truncate(task.requester?.name, 8)}</td>
+            <td style="padding: 4px 6px;" title="${task.assignee?.name || ''}">${truncate(task.assignee?.name, 8)}</td>
+            <td style="padding: 4px 6px;" title="${createdDateText}">${createdDateText}</td>
+            <td style="padding: 4px 6px;" title="${dueDateText}"><span class="due-date ${dueDateClass}">${dueDateText}</span></td>
+            <td style="padding: 4px 6px;" title="${workDateText}">${workDateText}</td>
+            <td style="padding: 4px 6px;">${statusBadge}</td>
         `;
 
         // 完了済みタスクにグレーアウトクラスを追加
@@ -441,7 +462,47 @@ class TaskManagement {
             tr.classList.add('task-completed');
         }
 
+        // 行クリックでモーダル表示
+        tr.addEventListener('click', (e) => {
+            // ステータスバッジやリンククリック時は無視
+            if (e.target.closest('.status-badge') || e.target.closest('a')) {
+                return;
+            }
+            this.editTask(task.id);
+        });
+
         return tr;
+    }
+
+    getPriorityDisplay(priority) {
+        switch(priority) {
+            case 3: return '⭐⭐⭐';
+            case 2: return '⭐⭐';
+            case 1: return '⭐';
+            default: return '⭐⭐';
+        }
+    }
+
+    getPriorityText(priority) {
+        switch(priority) {
+            case 3: return '高重要度';
+            case 2: return '中重要度';
+            case 1: return '低重要度';
+            default: return '中重要度';
+        }
+    }
+
+    createClickableStatusBadge(task) {
+        const statusConfig = {
+            '依頼中': { class: 'status-pending', text: '📝 依頼中', next: '作業完了' },
+            '作業完了': { class: 'status-working', text: '⚙️ 作業完了', next: '確認完了' },
+            '確認完了': { class: 'status-completed', text: '✅ 確認完了', next: '依頼中' }
+        };
+
+        const config = statusConfig[task.status] || statusConfig['依頼中'];
+        return `<span class="status-badge ${config.class}" style="cursor: pointer;"
+                      title="クリックで「${config.next}」に変更"
+                      onclick="event.stopPropagation(); taskManager.cycleTaskStatus(${task.id})">${config.text}</span>`;
     }
 
     createStatusBadge(status) {
@@ -597,7 +658,9 @@ class TaskManagement {
                 document.getElementById('task-name').value = task.task_name || '';
                 document.getElementById('client-select').value = task.client_id || '';
                 document.getElementById('assignee-select').value = task.assignee_id || '';
+                document.getElementById('priority-select').value = task.priority || '2';
                 document.getElementById('due-date').value = task.due_date || '';
+                document.getElementById('work-date').value = task.work_date || '';
                 document.getElementById('estimated-hours').value = task.estimated_time_hours || '';
                 document.getElementById('task-description').value = task.description || '';
                 document.getElementById('reference-url').value = task.reference_url || '';
@@ -721,7 +784,9 @@ class TaskManagement {
             task_name: document.getElementById('task-name').value.trim(),
             client_id: parseInt(document.getElementById('client-select').value) || null,
             assignee_id: parseInt(document.getElementById('assignee-select').value) || null,
+            priority: parseInt(document.getElementById('priority-select').value) || 2,
             due_date: document.getElementById('due-date').value || null,
+            work_date: document.getElementById('work-date').value || null,
             estimated_time_hours: parseFloat(document.getElementById('estimated-hours').value) || null,
             description: document.getElementById('task-description').value.trim() || null,
             reference_url: document.getElementById('reference-url').value.trim() || null
@@ -803,6 +868,21 @@ class TaskManagement {
             console.error('Update status error:', error);
             showToast('ステータス更新に失敗しました', 'error');
         }
+    }
+
+    async cycleTaskStatus(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // ステータスサイクル：依頼中 → 作業完了 → 確認完了 → 依頼中
+        const statusCycle = {
+            '依頼中': '作業完了',
+            '作業完了': '確認完了',
+            '確認完了': '依頼中'
+        };
+
+        const nextStatus = statusCycle[task.status] || '作業完了';
+        await this.updateTaskStatus(taskId, nextStatus);
     }
 
     editTask(taskId) {

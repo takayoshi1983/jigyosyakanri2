@@ -162,13 +162,17 @@
                             <table id="tasks-table" class="table table-hover" style="margin-bottom: 0;">
                                 <thead>
                                     <tr>
-                                        <th style="cursor: pointer; padding: 6px 17px" data-sort="task_name">タスク名 ↕</th>
-                                        <th style="cursor: pointer; padding: 6px 17px" data-sort="client_name">事業者 ↕</th>
-                                        <th style="cursor: pointer; padding: 6px 17px" data-sort="assignee_name">受任者 ↕</th>
-                                        <th style="cursor: pointer; padding: 6px 17px" data-sort="requester_name">依頼者 ↕</th>
-                                        <th style="cursor: pointer; padding: 6px 17px" data-sort="due_date">期限 ↕</th>
-                                        <th style="cursor: pointer; padding: 6px 17px" data-sort="status">ステータス ↕</th>
-                                        <th>アクション</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 50px; text-align: center;" data-sort="priority">重要度</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 80px;" data-sort="client_name">事業者</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 120px;" data-sort="task_name">タスク名</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 100px;" data-sort="description">内容</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 50px; text-align: center;" data-sort="reference_url">参照</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 70px;" data-sort="requester_name">依頼者</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 70px;" data-sort="assignee_name">受任者</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 70px;" data-sort="created_at">依頼日</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 70px;" data-sort="due_date">期限日</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 80px;" data-sort="work_date">作業予定日</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 80px;" data-sort="status">ステータス</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tasks-tbody">
@@ -305,12 +309,27 @@
 
                     <div class="form-row">
                         <div class="form-group" style="flex: 1; margin-right: 10px;">
-                            <label for="due-date">期限</label>
-                            <input type="date" id="due-date" name="due_date" class="form-control">
+                            <label for="priority-select">重要度</label>
+                            <select id="priority-select" name="priority" class="form-control">
+                                <option value="1">⭐ 低</option>
+                                <option value="2" selected>⭐⭐ 中</option>
+                                <option value="3">⭐⭐⭐ 高</option>
+                            </select>
                         </div>
                         <div class="form-group" style="flex: 1; margin-left: 10px;">
                             <label for="estimated-hours">想定時間（時間）</label>
                             <input type="number" id="estimated-hours" name="estimated_time_hours" class="form-control" step="0.5" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1; margin-right: 10px;">
+                            <label for="due-date">期限日</label>
+                            <input type="date" id="due-date" name="due_date" class="form-control">
+                        </div>
+                        <div class="form-group" style="flex: 1; margin-left: 10px;">
+                            <label for="work-date">作業予定日</label>
+                            <input type="date" id="work-date" name="work_date" class="form-control">
                         </div>
                     </div>
 
