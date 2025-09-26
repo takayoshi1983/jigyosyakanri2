@@ -838,13 +838,19 @@ class TaskManagement {
         // 受任タスク（自分が実行する）
         const assignedTasks = this.tasks.filter(task => task.assignee_id === this.currentUser.id);
 
-        // 依頼タスク（自分が作成した）
-        const requestedTasks = this.tasks.filter(task => task.requester_id === this.currentUser.id);
+        // 依頼タスク（自分が作成した、ただし自分自身のタスクは除く）
+        const requestedTasks = this.tasks.filter(task =>
+            task.requester_id === this.currentUser.id &&
+            task.assignee_id !== this.currentUser.id
+        );
+
+        // 総タスク数（重複なし）
+        const totalMyTasks = assignedTasks.length + requestedTasks.length;
 
         // カウント更新
         document.getElementById('assigned-count').textContent = assignedTasks.length;
         document.getElementById('requested-count').textContent = requestedTasks.length;
-        document.getElementById('my-task-count').textContent = `${assignedTasks.length + requestedTasks.length}件`;
+        document.getElementById('my-task-count').textContent = `${totalMyTasks}件`;
 
         // 受任タスクリスト更新
         this.updateCompactTaskList('assigned-task-list', assignedTasks);
