@@ -988,7 +988,7 @@ class TaskManagement {
 
         // 事業者リンク
         const clientLink = task.clients?.name ?
-            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name.length > 8 ? task.clients.name.substring(0, 8) + '…' : task.clients.name}</a>` : '-';
+            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name}</a>` : '-';
 
         // 参照URLアイコン
         const urlIcon = task.reference_url ?
@@ -1008,18 +1008,29 @@ class TaskManagement {
         const workDateDisplay = task.work_date ? `予定：${this.formatMonthDay(task.work_date)}` : '予定：-';
 
         item.innerHTML = `
-            <div class="my-task-row-1" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-                <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
-                <span style="font-size: 0.75rem; flex: 0 0 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${clientLink}</span>
-                <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${(task.task_name || 'Untitled Task').length > 15 ? (task.task_name || 'Untitled Task').substring(0, 15) + '…' : (task.task_name || 'Untitled Task')}</span>
-                <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.description || ''}">${truncatedDescription}</span>
-            </div>
-            <div class="my-task-row-2" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #495057; white-space: nowrap;">
-                <span style="flex: 0 0 30px; text-align: center; white-space: nowrap;">${urlIcon}</span>
-                <span style="flex: 0 0 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
-                <span style="flex: 0 0 65px; color: ${dueDateClass ? '#dc3545' : '#495057'}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>
-                <span style="flex: 0 0 65px; white-space: nowrap;" title="${task.work_date || ''}">${workDateDisplay}</span>
-                <span style="flex: 1; white-space: nowrap;">${clickableStatus}</span>
+            <div style="display: flex; position: relative;">
+                <!-- 左側：メイン情報エリア -->
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+                    <!-- 上段 -->
+                    <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                        <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
+                        <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${task.clients?.name || ''}">${clientLink}</span>
+                        <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
+                        <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.description || ''}">${truncatedDescription}</span>
+                    </div>
+                    <!-- 下段 -->
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #495057; white-space: nowrap;">
+                        <span style="flex: 0 0 30px; text-align: center; white-space: nowrap;">${urlIcon}</span>
+                        <span style="flex: 0 0 auto; white-space: nowrap; min-width: 80px; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
+                        <span style="flex: 0 0 65px; color: ${dueDateClass ? '#dc3545' : '#495057'}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                        <span style="flex: 0 0 65px; white-space: nowrap;" title="${task.work_date || ''}">${workDateDisplay}</span>
+                    </div>
+                </div>
+
+                <!-- 右側：ステータス（上下段をまたがって表示） -->
+                <div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; height: 100%;">
+                    ${clickableStatus}
+                </div>
             </div>
         `;
 
@@ -1037,13 +1048,13 @@ class TaskManagement {
 
     createCompactClickableStatus(task) {
         const statusConfig = {
-            '依頼中': { class: 'my-task-status-pending', text: '依頼中', next: '作業完了' },
-            '作業完了': { class: 'my-task-status-working', text: '作業完了', next: '確認完了' },
-            '確認完了': { class: 'my-task-status-completed', text: '確認完了', next: '依頼中' }
+            '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '作業完了' },
+            '作業完了': { class: 'my-task-status-working', text: '⚙️ 作業完了', next: '確認完了' },
+            '確認完了': { class: 'my-task-status-completed', text: '✅ 確認完了', next: '依頼中' }
         };
 
         const config = statusConfig[task.status] || statusConfig['依頼中'];
-        return `<span class="my-task-status ${config.class}" style="cursor: pointer; padding: 2px 6px; border-radius: 8px; font-size: 0.7rem; font-weight: 500;"
+        return `<span class="my-task-status ${config.class}" style="cursor: pointer; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; min-width: 70px; text-align: center;"
                       title="クリックで「${config.next}」に変更"
                       onclick="event.stopPropagation(); taskManager.cycleTaskStatus(${task.id})">${config.text}</span>`;
     }
