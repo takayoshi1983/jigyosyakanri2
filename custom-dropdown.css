@@ -3,7 +3,7 @@
 .custom-select-wrapper {
     position: relative;
     display: inline-block;
-    width: auto; /* Adjust as needed */
+    width: fit-content; /* Adjust as needed */
     min-width: 150px; /* Ensure a minimum width */
 }
 
@@ -12,12 +12,12 @@
     display: flex;
     align-items: center;
     justify-content: center; /* Horizontally center the text */
-    padding: 17px 30px 8px 12px; /* Adjust padding for arrow */
+    padding: 6px 30px 8px 12px; /* Adjust padding for arrow */
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #fff;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 21px;
     color: #333;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }

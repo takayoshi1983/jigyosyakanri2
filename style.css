@@ -1319,13 +1319,13 @@ th[data-sort-key].active-sort {
 }
 
 #edit-tasks-button, #finalize-year-button, #save-changes-button {
-    padding: 10px 20px; /* パディングを調整してボタンを大きくする */
+    padding: 9px 23px; /* パディングを調整してボタンを大きくする */
     font-size: 20px; /* フォントサイズを調整 */
     border: 1px solid #ccc; /* この行を追加 */
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-left: 10px; /* 必要に応じてマージンを調整 */
+    margin-left: 2px; /* 必要に応じてマージンを調整 */
 }
 
 #save-changes-button {
