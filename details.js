@@ -2032,7 +2032,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         accordionContainer.style.cssText = `
             position: absolute;
             top: 20px;
-            right: 20px;
+            right: 250px;
             width: 280px;
             z-index: 1000;
             border: 1px solid #ddd;
