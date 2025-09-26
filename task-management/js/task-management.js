@@ -261,6 +261,27 @@ class TaskManagement {
             this.saveTask();
         });
 
+        // 閲覧モードボタン
+        document.getElementById('close-view-btn').addEventListener('click', () => {
+            this.closeTaskModal();
+        });
+
+        document.getElementById('edit-mode-btn').addEventListener('click', () => {
+            this.setModalMode('edit');
+        });
+
+        // 編集モードボタン
+        document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+            this.closeTaskModal();
+        });
+
+        document.getElementById('delete-task-btn').addEventListener('click', () => {
+            const taskId = document.getElementById('task-form').dataset.taskId;
+            if (taskId) {
+                this.deleteTask(parseInt(taskId));
+            }
+        });
+
         // テンプレートモーダル関連
         document.getElementById('template-modal-close').addEventListener('click', () => {
             this.closeTemplateModal();
@@ -414,6 +435,11 @@ class TaskManagement {
             <td>${actionButtons}</td>
         `;
 
+        // 完了済みタスクにグレーアウトクラスを追加
+        if (task.status === '確認完了') {
+            tr.classList.add('task-completed');
+        }
+
         return tr;
     }
 
@@ -431,19 +457,20 @@ class TaskManagement {
     createActionButtons(task) {
         let buttons = [];
 
-        // ステータスに応じたボタン
+        // ステータスに応じたボタン（3段階フロー）
         if (task.status === '依頼中' && task.assignee_id === this.currentUser.id) {
-            buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">完了</button>`);
+            // 受任者：作業完了ボタン
+            buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">作業完了</button>`);
         } else if (task.status === '作業完了' && task.requester_id === this.currentUser.id) {
-            buttons.push(`<button class="btn btn-sm btn-confirm" onclick="taskManager.updateTaskStatus(${task.id}, '確認完了')">確認</button>`);
+            // 依頼者：確認完了ボタン
+            buttons.push(`<button class="btn btn-sm btn-confirm" onclick="taskManager.updateTaskStatus(${task.id}, '確認完了')">確認完了</button>`);
+        } else if (task.status === '確認完了' && task.requester_id === this.currentUser.id) {
+            // 依頼者：完了取消ボタン
+            buttons.push(`<button class="btn btn-sm btn-cancel-complete" onclick="taskManager.updateTaskStatus(${task.id}, '依頼中')">完了取消</button>`);
         }
 
-        // 編集・削除ボタン
+        // 編集ボタン
         buttons.push(`<button class="btn btn-sm btn-edit" onclick="taskManager.editTask(${task.id})">編集</button>`);
-
-        if (task.requester_id === this.currentUser.id) {
-            buttons.push(`<button class="btn btn-sm btn-delete" onclick="taskManager.deleteTask(${task.id})">削除</button>`);
-        }
 
         return `<div class="action-buttons">${buttons.join('')}</div>`;
     }
@@ -551,18 +578,18 @@ class TaskManagement {
         document.getElementById('completed-tasks').textContent = completedTasks;
     }
 
-    openTaskModal(taskId = null, template = null) {
+    openTaskModal(taskId = null, template = null, viewMode = false) {
         const modal = document.getElementById('task-modal');
         const title = document.getElementById('modal-title');
         const form = document.getElementById('task-form');
 
         form.reset();
+        this.setModalMode(viewMode ? 'view' : 'edit');
 
         if (taskId) {
-            title.textContent = 'タスク編集';
-            // タスクデータを読み込んで編集モード
             const task = this.tasks.find(t => t.id === taskId);
             if (task) {
+                title.textContent = viewMode ? 'タスク詳細' : 'タスク編集';
                 document.getElementById('task-name').value = task.task_name || '';
                 document.getElementById('client-select').value = task.client_id || '';
                 document.getElementById('assignee-select').value = task.assignee_id || '';
@@ -570,11 +597,18 @@ class TaskManagement {
                 document.getElementById('estimated-hours').value = task.estimated_time_hours || '';
                 document.getElementById('task-description').value = task.description || '';
                 document.getElementById('reference-url').value = task.reference_url || '';
+
+                // 削除ボタンの表示制御（自分が作成したタスクのみ）
+                const deleteBtn = document.getElementById('delete-task-btn');
+                if (deleteBtn) {
+                    deleteBtn.style.display = task.requester_id === this.currentUser.id ? 'inline-block' : 'none';
+                }
             }
             form.dataset.taskId = taskId;
         } else {
             title.textContent = template ? `テンプレートから作成: ${template.template_name}` : '新規タスク作成';
             form.dataset.taskId = '';
+            this.setModalMode('edit'); // 新規作成は常に編集モード
 
             if (template) {
                 // テンプレートデータでフォームを埋める
@@ -587,9 +621,40 @@ class TaskManagement {
             if (this.currentUser) {
                 document.getElementById('assignee-select').value = this.currentUser.id;
             }
+
+            // 新規作成時は削除ボタンを隠す
+            const deleteBtn = document.getElementById('delete-task-btn');
+            if (deleteBtn) {
+                deleteBtn.style.display = 'none';
+            }
         }
 
         modal.style.display = 'flex';
+    }
+
+    setModalMode(mode) {
+        const form = document.getElementById('task-form');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        const viewModeButtons = document.getElementById('view-mode-buttons');
+        const editModeButtons = document.getElementById('edit-mode-buttons');
+
+        if (mode === 'view') {
+            // 閲覧モード
+            inputs.forEach(input => {
+                input.disabled = true;
+                input.style.backgroundColor = '#f8f9fa';
+            });
+            viewModeButtons.style.display = 'flex';
+            editModeButtons.style.display = 'none';
+        } else {
+            // 編集モード
+            inputs.forEach(input => {
+                input.disabled = false;
+                input.style.backgroundColor = '';
+            });
+            viewModeButtons.style.display = 'none';
+            editModeButtons.style.display = 'flex';
+        }
     }
 
     closeTaskModal() {
@@ -737,7 +802,7 @@ class TaskManagement {
     }
 
     editTask(taskId) {
-        this.openTaskModal(taskId);
+        this.openTaskModal(taskId, null, true); // 閲覧モードで開く
     }
 
     async deleteTask(taskId) {
@@ -816,8 +881,15 @@ class TaskManagement {
 
         const statusBadge = statusConfig[task.status] || statusConfig['依頼中'];
 
+        // 内容を10文字に制限して省略表示
+        const truncatedDescription = task.description ?
+            (task.description.length > 10 ? task.description.substring(0, 10) + '…' : task.description) : '';
+
         item.innerHTML = `
-            <div class="compact-task-title" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</div>
+            <div class="compact-task-title">
+                <div class="compact-task-name" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</div>
+                ${truncatedDescription ? `<div class="compact-task-description" title="${task.description}">${truncatedDescription}</div>` : ''}
+            </div>
             <span class="compact-task-client">${task.clients?.name || '-'}</span>
             <span class="compact-task-status ${statusBadge.class}">${statusBadge.text}</span>
             ${dueDateText ? `<span class="compact-task-due ${dueDateClass}">${dueDateText}</span>` : '<span class="compact-task-due">-</span>'}

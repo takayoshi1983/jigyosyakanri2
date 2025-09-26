@@ -326,8 +326,18 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" id="cancel-btn" class="btn btn-secondary">キャンセル</button>
-                <button type="button" id="save-task-btn" class="btn btn-primary">保存</button>
+                <!-- 閲覧モード時のボタン -->
+                <div id="view-mode-buttons" style="display: none;">
+                    <button type="button" id="close-view-btn" class="btn btn-secondary">閉じる</button>
+                    <button type="button" id="edit-mode-btn" class="btn btn-primary">編集</button>
+                </div>
+
+                <!-- 編集モード時のボタン -->
+                <div id="edit-mode-buttons" style="display: none;">
+                    <button type="button" id="delete-task-btn" class="btn btn-danger" style="margin-right: auto;">削除</button>
+                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary">キャンセル</button>
+                    <button type="button" id="save-task-btn" class="btn btn-primary">保存</button>
+                </div>
             </div>
         </div>
     </div>

@@ -182,6 +182,22 @@
     border: none;
 }
 
+.btn-cancel-complete {
+    background: #6c757d;
+    color: white;
+    border: none;
+}
+
+/* 完了済みタスクのスタイル */
+.task-completed {
+    opacity: 0.6;
+    background-color: #f8f9fa !important;
+}
+
+.task-completed td {
+    color: #6c757d !important;
+}
+
 /* カンバンボード */
 .kanban-container {
     display: flex;
@@ -481,6 +497,27 @@
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.compact-task-name {
+    font-weight: 600;
+    color: #212529;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.compact-task-description {
+    font-size: 0.7rem;
+    color: #6c757d;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
 .compact-task-client {
