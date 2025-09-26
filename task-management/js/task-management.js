@@ -458,20 +458,23 @@ class TaskManagement {
     createActionButtons(task) {
         let buttons = [];
 
-        // ステータスに応じたボタン（3段階フロー）
-        if (task.status === '依頼中' && task.assignee_id === this.currentUser.id) {
-            // 受任者：作業完了ボタン
-            buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">作業完了</button>`);
-        } else if (task.status === '作業完了' && task.requester_id === this.currentUser.id) {
-            // 依頼者：確認完了ボタン
-            buttons.push(`<button class="btn btn-sm btn-confirm" onclick="taskManager.updateTaskStatus(${task.id}, '確認完了')">確認完了</button>`);
-        } else if (task.status === '確認完了' && task.requester_id === this.currentUser.id) {
-            // 依頼者：完了取消ボタン
-            buttons.push(`<button class="btn btn-sm btn-cancel-complete" onclick="taskManager.updateTaskStatus(${task.id}, '依頼中')">完了取消</button>`);
-        }
-
-        // 編集ボタン
+        // 編集ボタンを最初に配置（常に左端）
         buttons.push(`<button class="btn btn-sm btn-edit" onclick="taskManager.editTask(${task.id})">編集</button>`);
+
+        // ステータスに応じたボタン（委任者は全て操作可能）
+        if (task.status === '依頼中') {
+            if (task.assignee_id === this.currentUser.id || task.requester_id === this.currentUser.id) {
+                buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">作業完了</button>`);
+            }
+        } else if (task.status === '作業完了') {
+            if (task.requester_id === this.currentUser.id) {
+                buttons.push(`<button class="btn btn-sm btn-confirm" onclick="taskManager.updateTaskStatus(${task.id}, '確認完了')">確認完了</button>`);
+            }
+        } else if (task.status === '確認完了') {
+            if (task.requester_id === this.currentUser.id) {
+                buttons.push(`<button class="btn btn-sm btn-cancel-complete" onclick="taskManager.updateTaskStatus(${task.id}, '依頼中')">完了取消</button>`);
+            }
+        }
 
         return `<div class="action-buttons">${buttons.join('')}</div>`;
     }
