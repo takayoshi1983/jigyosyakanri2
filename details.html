@@ -63,15 +63,15 @@
 
             <!-- 左右分割レイアウト -->
             <div style="display: flex; gap: 20px; align-items: flex-start;">
-                <!-- 左側：事業者情報テーブル -->
-                <div style="flex: 1;">
+                <!-- 左側：事業者情報テーブル (2/6の幅) -->
+                <div style="flex: 0 0 33.33%; max-width: 33.33%;">
                     <div id="client-info-area">
                         <!-- JavaScriptでテーブルを生成 -->
                     </div>
                 </div>
 
                 <!-- 右側：年度選択と操作ボタン -->
-                <div style="min-width: 300px; display: flex; flex-direction: column; gap: 10px;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 300px;">
                     <!-- 年度選択 -->
                     <div class="custom-select-wrapper">
                         <div class="custom-select-trigger"></div>
