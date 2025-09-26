@@ -253,9 +253,10 @@ class TaskManagement {
             this.closeTaskModal();
         });
 
-        document.getElementById('cancel-btn').addEventListener('click', () => {
-            this.closeTaskModal();
-        });
+        // 古いcancel-btnは削除されているため、コメントアウト
+        // document.getElementById('cancel-btn').addEventListener('click', () => {
+        //     this.closeTaskModal();
+        // });
 
         document.getElementById('save-task-btn').addEventListener('click', () => {
             this.saveTask();
