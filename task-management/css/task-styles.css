@@ -522,8 +522,31 @@
     color: #155724;
 }
 
+/* コンパクトサマリーのスタイル */
+.compact-summary .summary-compact {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.compact-summary .summary-compact:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 /* 左右分割レイアウトのレスポンシブ対応 */
 @media (max-width: 1024px) {
+    .compact-summary {
+        position: static !important;
+        transform: none !important;
+        margin-top: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .summary-compact {
+        min-width: 60px !important;
+        padding: 4px 8px !important;
+    }
+}
     .task-dashboard-container {
         flex-direction: column !important;
     }
@@ -552,8 +575,17 @@
         justify-content: space-between;
     }
 
-    .summary-row {
-        flex-direction: column;
+    .compact-summary {
+        position: static !important;
+        transform: none !important;
+        justify-content: center !important;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    .summary-compact {
+        min-width: 50px !important;
+        padding: 3px 6px !important;
     }
 
     .kanban-container {

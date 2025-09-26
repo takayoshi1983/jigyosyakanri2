@@ -42,12 +42,13 @@
 
         <!-- ヘッダー & フィルターエリア -->
         <div class="analytics-filters" style="background: #55e8ff47; padding: 15px; border-radius: 8px; margin-bottom: 10px; overflow: visible; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
-            <!-- タイトル行 -->
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 14px; position: relative; overflow: visible;">
+            <!-- タイトル行 + サマリー情報 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; position: relative; overflow: visible;">
+                <!-- 左側：タイトル + ボタン -->
                 <div style="display: flex; align-items: center; gap: 20px;">
                     <h1 style="margin: 0;">📋 タスク管理システム</h1>
 
-                    <!-- アクションボタン（タイトルの右側、適度な距離） -->
+                    <!-- アクションボタン -->
                     <div style="display: flex; gap: 10px;">
                         <button id="add-task-btn" class="btn btn-primary" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
                             ➕ 新規タスク
@@ -58,7 +59,27 @@
                     </div>
                 </div>
 
-                <!-- 右側スペース（将来の拡張用） -->
+                <!-- 中央：コンパクトサマリー -->
+                <div class="compact-summary" style="display: flex; gap: 8px; align-items: center; position: absolute; left: 50%; transform: translateX(-50%);">
+                    <div class="summary-compact" style="background: #f8f9fa; border: 2px solid #dee2e6; padding: 6px 12px; border-radius: 6px; text-align: center; min-width: 70px;">
+                        <div id="total-tasks" style="font-weight: bold; font-size: 1.1rem; color: #007bff; margin: 0;">0</div>
+                        <div style="font-size: 0.7rem; color: #6c757d; margin: 0;">総数</div>
+                    </div>
+                    <div class="summary-compact" style="background: #fff3cd; border: 2px solid #ffeaa7; padding: 6px 12px; border-radius: 6px; text-align: center; min-width: 70px;">
+                        <div id="pending-tasks" style="font-weight: bold; font-size: 1.1rem; color: #856404; margin: 0;">0</div>
+                        <div style="font-size: 0.7rem; color: #856404; margin: 0;">依頼中</div>
+                    </div>
+                    <div class="summary-compact" style="background: #d1ecf1; border: 2px solid #bee5eb; padding: 6px 12px; border-radius: 6px; text-align: center; min-width: 70px;">
+                        <div id="working-tasks" style="font-weight: bold; font-size: 1.1rem; color: #0c5460; margin: 0;">0</div>
+                        <div style="font-size: 0.7rem; color: #0c5460; margin: 0;">作業中</div>
+                    </div>
+                    <div class="summary-compact" style="background: #d4edda; border: 2px solid #c3e6cb; padding: 6px 12px; border-radius: 6px; text-align: center; min-width: 70px;">
+                        <div id="completed-tasks" style="font-weight: bold; font-size: 1.1rem; color: #155724; margin: 0;">0</div>
+                        <div style="font-size: 0.7rem; color: #155724; margin: 0;">完了</div>
+                    </div>
+                </div>
+
+                <!-- 右側スペース -->
                 <div style="min-width: 100px;"></div>
             </div>
 
@@ -120,25 +141,6 @@
             </div>
         </div>
 
-        <!-- サマリー情報 -->
-        <div id="task-summary" class="summary-row" style="display: flex; gap: 15px; margin-bottom: 12px;">
-            <div class="summary-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
-                <h3 id="total-tasks" style="margin: 0; color: #007bff;">0</h3>
-                <p style="margin: 5px 0 0 0; color: #6c757d;">総タスク数</p>
-            </div>
-            <div class="summary-card" style="background: #fff3cd; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
-                <h3 id="pending-tasks" style="margin: 0; color: #856404;">0</h3>
-                <p style="margin: 5px 0 0 0; color: #856404;">依頼中</p>
-            </div>
-            <div class="summary-card" style="background: #d1ecf1; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
-                <h3 id="working-tasks" style="margin: 0; color: #0c5460;">0</h3>
-                <p style="margin: 5px 0 0 0; color: #0c5460;">作業中</p>
-            </div>
-            <div class="summary-card" style="background: #d4edda; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
-                <h3 id="completed-tasks" style="margin: 0; color: #155724;">0</h3>
-                <p style="margin: 5px 0 0 0; color: #155724;">完了</p>
-            </div>
-        </div>
 
         <!-- メインコンテンツ：左右分割レイアウト -->
         <div class="task-dashboard-container" style="display: flex; gap: 20px; min-height: 600px;">
