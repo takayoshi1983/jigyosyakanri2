@@ -1008,15 +1008,14 @@ class TaskManagement {
         const workDateDisplay = task.work_date ? `予定：${this.formatMonthDay(task.work_date)}` : '予定：-';
 
         item.innerHTML = `
-            <div class="my-task-row-1" style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
-                <span style="font-size: 0.7rem;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
+            <div class="my-task-row-1" style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                <span style="font-size: 0.7rem; flex: 0 0 30px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
                 <span style="font-size: 0.75rem; flex: 0 0 70px;">${clientLink}</span>
                 <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${(task.task_name || 'Untitled Task').length > 15 ? (task.task_name || 'Untitled Task').substring(0, 15) + '…' : (task.task_name || 'Untitled Task')}</span>
-                <span style="font-size: 0.7rem; flex: 0 0 80px; color: #6c757d;" title="${task.description || ''}">${truncatedDescription}</span>
-                <span style="font-size: 0.8rem; flex: 0 0 25px; text-align: center;">${urlIcon}</span>
+                <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d;" title="${task.description || ''}">${truncatedDescription}</span>
             </div>
             <div class="my-task-row-2" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #495057;">
-                <span style="flex: 0 0 25px; text-align: center;">${urlIcon}</span>
+                <span style="flex: 0 0 30px; text-align: center;">${urlIcon}</span>
                 <span style="flex: 0 0 90px;">${personDisplay}</span>
                 <span style="flex: 0 0 65px; color: ${dueDateClass ? '#dc3545' : '#495057'};" title="${task.due_date || ''}">${dueDateDisplay}</span>
                 <span style="flex: 0 0 65px;" title="${task.work_date || ''}">${workDateDisplay}</span>
