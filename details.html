@@ -60,23 +60,36 @@
                 <h1>顧客進捗管理 - 詳細</h1>
                 <h2 id="client-name-display" class="client-name-large"><!-- 事業者名がここに表示されます --></h2>
             </div>
-            <div class="nav-links">
-                <!-- 「年度を選択してください」のラベルを削除 -->
-                <div class="custom-select-wrapper">
-                    <div class="custom-select-trigger"></div>
-                    <div class="custom-options" style="display: block; position: absolute;"></div>
-                    <select id="year-filter" class="custom-select-target" style="display: none;">
-                        <!-- JavaScriptでオプションを生成 -->
-                    </select>
+
+            <!-- 左右分割レイアウト -->
+            <div style="display: flex; gap: 20px; align-items: flex-start;">
+                <!-- 左側：事業者情報テーブル -->
+                <div style="flex: 1;">
+                    <div id="client-info-area">
+                        <!-- JavaScriptでテーブルを生成 -->
+                    </div>
                 </div>
-                <!-- save-changes-button をここに移動 -->
-                <button id="save-changes-button" disabled>変更を保存</button>
-                <button id="edit-tasks-button">項目の変更</button>
-                <!-- client-info-area をここに移動 -->
-                <div id="client-info-area">
-                    <!-- JavaScriptでテーブルを生成 -->
+
+                <!-- 右側：年度選択と操作ボタン -->
+                <div style="min-width: 300px; display: flex; flex-direction: column; gap: 10px;">
+                    <!-- 年度選択 -->
+                    <div class="custom-select-wrapper">
+                        <div class="custom-select-trigger"></div>
+                        <div class="custom-options" style="display: block; position: absolute;"></div>
+                        <select id="year-filter" class="custom-select-target" style="display: none;">
+                            <!-- JavaScriptでオプションを生成 -->
+                        </select>
+                    </div>
+
+                    <!-- 操作ボタン -->
+                    <div style="display: flex; gap: 10px;">
+                        <button id="save-changes-button" disabled>変更を保存</button>
+                        <button id="edit-tasks-button">項目の変更</button>
+                    </div>
+
+                    <!-- ステータス表示 -->
+                    <span id="finalized-status" style="display: none; color: green; font-weight: bold;"></span>
                 </div>
-                <span id="finalized-status" style="display: none; color: green; font-weight: bold; margin-left: 10px;"></span>
             </div>
         </div>
 
