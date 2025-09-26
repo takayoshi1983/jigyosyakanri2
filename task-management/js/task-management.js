@@ -1008,18 +1008,18 @@ class TaskManagement {
         const workDateDisplay = task.work_date ? `予定：${this.formatMonthDay(task.work_date)}` : '予定：-';
 
         item.innerHTML = `
-            <div class="my-task-row-1" style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-                <span style="font-size: 0.7rem; flex: 0 0 30px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
-                <span style="font-size: 0.75rem; flex: 0 0 70px;">${clientLink}</span>
+            <div class="my-task-row-1" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
+                <span style="font-size: 0.75rem; flex: 0 0 70px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${clientLink}</span>
                 <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${(task.task_name || 'Untitled Task').length > 15 ? (task.task_name || 'Untitled Task').substring(0, 15) + '…' : (task.task_name || 'Untitled Task')}</span>
-                <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d;" title="${task.description || ''}">${truncatedDescription}</span>
+                <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.description || ''}">${truncatedDescription}</span>
             </div>
-            <div class="my-task-row-2" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #495057;">
-                <span style="flex: 0 0 30px; text-align: center;">${urlIcon}</span>
-                <span style="flex: 0 0 90px;">${personDisplay}</span>
-                <span style="flex: 0 0 65px; color: ${dueDateClass ? '#dc3545' : '#495057'};" title="${task.due_date || ''}">${dueDateDisplay}</span>
-                <span style="flex: 0 0 65px;" title="${task.work_date || ''}">${workDateDisplay}</span>
-                <span style="flex: 1;">${clickableStatus}</span>
+            <div class="my-task-row-2" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #495057; white-space: nowrap;">
+                <span style="flex: 0 0 30px; text-align: center; white-space: nowrap;">${urlIcon}</span>
+                <span style="flex: 0 0 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
+                <span style="flex: 0 0 65px; color: ${dueDateClass ? '#dc3545' : '#495057'}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                <span style="flex: 0 0 65px; white-space: nowrap;" title="${task.work_date || ''}">${workDateDisplay}</span>
+                <span style="flex: 1; white-space: nowrap;">${clickableStatus}</span>
             </div>
         `;
 
