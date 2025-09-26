@@ -981,26 +981,71 @@ class TaskManagement {
 
         const statusBadge = statusConfig[task.status] || statusConfig['依頼中'];
 
-        // 内容を10文字に制限して省略表示
+        // 2行レイアウト用のデータ準備
+        const priorityStars = this.getPriorityDisplay(task.priority);
         const truncatedDescription = task.description ?
-            (task.description.length > 10 ? task.description.substring(0, 10) + '…' : task.description) : '';
+            (task.description.length > 10 ? task.description.substring(0, 10) + '…' : task.description) : '-';
+
+        // 事業者リンク
+        const clientLink = task.clients?.name ?
+            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name.length > 8 ? task.clients.name.substring(0, 8) + '…' : task.clients.name}</a>` : '-';
+
+        // 参照URLアイコン
+        const urlIcon = task.reference_url ?
+            `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()" style="font-size: 0.8rem;">🔗</a>` : '-';
+
+        // ステータス（クリック可能）
+        const clickableStatus = this.createCompactClickableStatus(task);
+
+        // 委任者/受任者の表示（ラベル付き）
+        const isAssigned = task.assignee_id === this.currentUser.id;
+        const personLabel = isAssigned ? '委任者' : '受任者';
+        const personName = isAssigned ? (task.requester?.name || '-') : (task.assignee?.name || '-');
+        const personDisplay = personName !== '-' ? `${personLabel}：${personName.length > 6 ? personName.substring(0, 6) + '…' : personName}` : `${personLabel}：-`;
+
+        // 日付表示（ラベル付き）
+        const dueDateDisplay = dueDateText !== '-' ? `期限：${dueDateText}` : '期限：-';
+        const workDateDisplay = task.work_date ? `予定：${this.formatMonthDay(task.work_date)}` : '予定：-';
 
         item.innerHTML = `
-            <div class="compact-task-title">
-                <div class="compact-task-name" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</div>
-                ${truncatedDescription ? `<div class="compact-task-description" title="${task.description}">${truncatedDescription}</div>` : ''}
+            <div class="my-task-row-1" style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
+                <span style="font-size: 0.7rem;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
+                <span style="font-size: 0.75rem; flex: 0 0 60px;">${clientLink}</span>
+                <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${(task.task_name || 'Untitled Task').length > 12 ? (task.task_name || 'Untitled Task').substring(0, 12) + '…' : (task.task_name || 'Untitled Task')}</span>
+                <span style="font-size: 0.7rem; flex: 0 0 70px; color: #6c757d;" title="${task.description || ''}">${truncatedDescription}</span>
+                <span style="font-size: 0.8rem; flex: 0 0 20px; text-align: center;">${urlIcon}</span>
             </div>
-            <span class="compact-task-client">${task.clients?.name || '-'}</span>
-            <span class="compact-task-status ${statusBadge.class}">${statusBadge.text}</span>
-            ${dueDateText ? `<span class="compact-task-due ${dueDateClass}">${dueDateText}</span>` : '<span class="compact-task-due">-</span>'}
+            <div class="my-task-row-2" style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #495057;">
+                <span style="flex: 0 0 80px;">${personDisplay}</span>
+                <span style="flex: 0 0 60px; color: ${dueDateClass ? '#dc3545' : '#495057'};" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                <span style="flex: 0 0 60px;" title="${task.work_date || ''}">${workDateDisplay}</span>
+                <span style="flex: 1;">${clickableStatus}</span>
+            </div>
         `;
 
-        // クリックイベント（詳細表示・編集）
-        item.addEventListener('click', () => {
+        // 行クリックイベント（詳細表示・編集）
+        item.addEventListener('click', (e) => {
+            // リンクやステータスクリック時は無視
+            if (e.target.closest('a') || e.target.closest('.my-task-status')) {
+                return;
+            }
             this.editTask(task.id);
         });
 
         return item;
+    }
+
+    createCompactClickableStatus(task) {
+        const statusConfig = {
+            '依頼中': { class: 'my-task-status-pending', text: '依頼中', next: '作業完了' },
+            '作業完了': { class: 'my-task-status-working', text: '作業完了', next: '確認完了' },
+            '確認完了': { class: 'my-task-status-completed', text: '確認完了', next: '依頼中' }
+        };
+
+        const config = statusConfig[task.status] || statusConfig['依頼中'];
+        return `<span class="my-task-status ${config.class}" style="cursor: pointer; padding: 2px 6px; border-radius: 8px; font-size: 0.7rem; font-weight: 500;"
+                      title="クリックで「${config.next}」に変更"
+                      onclick="event.stopPropagation(); taskManager.cycleTaskStatus(${task.id})">${config.text}</span>`;
     }
 
     focusOnMyTasks() {

@@ -559,6 +559,27 @@
     color: #155724;
 }
 
+/* マイタスク専用ステータススタイル */
+.my-task-status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.my-task-status-working {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.my-task-status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.my-task-status:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
 /* コンパクトサマリーのスタイル */
 .compact-summary .summary-compact {
     transition: transform 0.2s, box-shadow 0.2s;
