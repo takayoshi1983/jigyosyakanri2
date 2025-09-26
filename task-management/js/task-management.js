@@ -422,9 +422,9 @@ class TaskManagement {
 
         // 期限の色分け
         const dueDateClass = this.getDueDateClass(task.due_date);
-        const dueDateText = task.due_date ? formatDate(task.due_date) : '-';
-        const workDateText = task.work_date ? formatDate(task.work_date) : '-';
-        const createdDateText = task.created_at ? formatDate(task.created_at) : '-';
+        const dueDateText = task.due_date ? this.formatMonthDay(task.due_date) : '-';
+        const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
+        const createdDateText = task.created_at ? this.formatMonthDay(task.created_at) : '-';
 
         // ステータスバッジ（クリック可能）
         const statusBadge = this.createClickableStatusBadge(task);
@@ -441,7 +441,7 @@ class TaskManagement {
 
         // 事業者名（クリック可能）
         const clientName = task.clients?.name ?
-            `<a href="details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none;">${truncate(task.clients.name, 8)}</a>` : '-';
+            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none;">${truncate(task.clients.name, 10)}</a>` : '-';
 
         tr.innerHTML = `
             <td style="text-align: center; padding: 4px 6px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</td>
@@ -538,6 +538,16 @@ class TaskManagement {
         }
 
         return `<div class="action-buttons">${buttons.join('')}</div>`;
+    }
+
+    formatMonthDay(dateString) {
+        if (!dateString) return '-';
+
+        const date = new Date(dateString);
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+
+        return `${month}/${day}`;
     }
 
     getDueDateClass(dueDate) {
