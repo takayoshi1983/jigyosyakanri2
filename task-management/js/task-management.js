@@ -817,12 +817,10 @@ class TaskManagement {
         const statusBadge = statusConfig[task.status] || statusConfig['依頼中'];
 
         item.innerHTML = `
-            <div class="compact-task-title">${task.task_name || 'Untitled Task'}</div>
-            <div class="compact-task-meta">
-                <span class="compact-task-client">${task.clients?.name || '-'}</span>
-                <span class="compact-task-status ${statusBadge.class}">${statusBadge.text}</span>
-            </div>
-            ${dueDateText ? `<div class="compact-task-due ${dueDateClass}">📅 ${dueDateText}</div>` : ''}
+            <div class="compact-task-title" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</div>
+            <span class="compact-task-client">${task.clients?.name || '-'}</span>
+            <span class="compact-task-status ${statusBadge.class}">${statusBadge.text}</span>
+            ${dueDateText ? `<span class="compact-task-due ${dueDateClass}">${dueDateText}</span>` : '<span class="compact-task-due">-</span>'}
         `;
 
         // クリックイベント（詳細表示・編集）

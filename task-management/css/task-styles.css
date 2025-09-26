@@ -449,17 +449,22 @@
 .compact-task-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 2px;
 }
 
 .compact-task-item {
     background: #f8f9fa;
     border: 1px solid #e9ecef;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 0.85rem;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 0.8rem;
     transition: all 0.2s;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    margin-bottom: 3px;
 }
 
 .compact-task-item:hover {
@@ -471,26 +476,28 @@
 .compact-task-title {
     font-weight: 600;
     color: #212529;
-    margin-bottom: 4px;
-    line-height: 1.2;
-}
-
-.compact-task-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.75rem;
-    color: #6c757d;
-    margin-bottom: 4px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 .compact-task-client {
     font-weight: 500;
     color: #495057;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: center;
 }
 
 .compact-task-due {
     font-weight: 500;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    min-width: 50px;
+    text-align: right;
 }
 
 .compact-task-status {
