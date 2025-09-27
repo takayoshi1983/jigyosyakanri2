@@ -618,10 +618,18 @@ class TaskManagement {
                 hideDropdown();
             },
             setValue: (value) => {
+                console.log('setValue called with:', value);
+                console.log('allOptions length:', allOptions.length);
+                console.log('Looking for value:', value.toString());
+
+                updateOptions(); // オプションを最新に更新
                 const option = allOptions.find(opt => opt.value === value.toString());
+                console.log('Found option:', option);
+
                 if (option) {
                     selectItem(option.value, option.text);
                 } else {
+                    console.log('Option not found, clearing');
                     this.searchableSelect.clear();
                 }
             }
