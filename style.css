@@ -2543,7 +2543,7 @@ body.hide-inactive-clients .inactive-client {
     right: 0px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0px;
     z-index: 1500;
 }
 
