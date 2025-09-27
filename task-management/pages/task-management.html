@@ -194,7 +194,7 @@
                                 <div class="kanban-tasks" id="tasks-working"></div>
                             </div>
                             <div class="kanban-column" data-status="確認完了" style =" border-left: solid #00c92e;">
-                                <h3>✅ 確認完了</h3>
+                                <h3>☑️ 確認完了</h3>
                                 <div class="kanban-tasks" id="tasks-completed"></div>
                             </div>
                         </div>
@@ -250,7 +250,7 @@
                     <!-- 確認完了したタスク -->
                     <div class="my-completed-tasks">
                         <h4 style="margin: 0 0 6px 0; color: #6c757d; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">
-                            ✅ 確認完了したタスク
+                            ☑️ 確認完了したタスク
                             <span id="completed-count" style="background: #6c757d; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
                         </h4>
                         <div id="completed-task-list" class="compact-task-list">
@@ -361,14 +361,14 @@
             </div>
             <div class="modal-footer">
                 <!-- 閲覧モード時のボタン -->
-                <div id="view-mode-buttons" style="display: none;">
+                <div id="view-mode-buttons" style="display: flex;gap: inherit;">
                     <button type="button" id="close-view-btn" class="btn btn-secondary">閉じる</button>
                     <button type="button" id="edit-mode-btn" class="btn btn-primary">編集</button>
                 </div>
 
                 <!-- 編集モード時のボタン -->
                 <div id="edit-mode-buttons" style="display: flex;gap: inherit;">
-                    <button type="button" id="delete-task-btn" class="btn btn-danger" style="margin-right: auto;">削除</button>
+                    <button type="button" id="delete-task-btn" class="btn btn-danger" style="margin-right: 31px;display: inline-block;background-color: #ff3434cc;color: #ffffff;border-radius: 5px;font-size: 20px;">削除</button>
                     <button type="button" id="cancel-edit-btn" class="btn btn-secondary">キャンセル</button>
                     <button type="button" id="save-task-btn" class="btn btn-primary">保存</button>
                 </div>

@@ -819,7 +819,7 @@ class TaskManagement {
         const statusConfig = {
             '依頼中': { class: 'status-pending', text: '📝 依頼中', next: '作業完了' },
             '作業完了': { class: 'status-working', text: '⚙️ 作業完了', next: '確認完了' },
-            '確認完了': { class: 'status-completed', text: '✅ 確認完了', next: '依頼中' }
+            '確認完了': { class: 'status-completed', text: '☑️ 確認完了', next: '依頼中' }
         };
 
         const config = statusConfig[task.status] || statusConfig['依頼中'];
@@ -832,7 +832,7 @@ class TaskManagement {
         const statusConfig = {
             '依頼中': { class: 'status-pending', text: '📝 依頼中' },
             '作業完了': { class: 'status-working', text: '⚙️ 作業完了' },
-            '確認完了': { class: 'status-completed', text: '✅ 確認完了' }
+            '確認完了': { class: 'status-completed', text: '☑️ 確認完了' }
         };
 
         const config = statusConfig[status] || { class: 'status-pending', text: status };
@@ -910,7 +910,7 @@ class TaskManagement {
         const statusLabels = {
             '依頼中': '📝 依頼中',
             '作業完了': '⚙️ 作業完了',
-            '確認完了': '✅ 確認完了'
+            '確認完了': '☑️ 確認完了'
         };
 
         // 各列にタスクカードを追加
@@ -1662,7 +1662,7 @@ class TaskManagement {
         const statusConfig = {
             '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '作業完了' },
             '作業完了': { class: 'my-task-status-working', text: '⚙️ 作業完了', next: '確認完了' },
-            '確認完了': { class: 'my-task-status-completed', text: '✅ 確認完了', next: '依頼中' }
+            '確認完了': { class: 'my-task-status-completed', text: '☑️ 確認完了', next: '依頼中' }
         };
 
         const config = statusConfig[task.status] || statusConfig['依頼中'];
@@ -1672,7 +1672,7 @@ class TaskManagement {
     }
 
     createStaticStatus(task) {
-        return `<span style="padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; min-width: 70px; text-align: center; background: #e9ecef; color: #6c757d; border: 1px solid #ced4da;">✅ 確認完了</span>`;
+        return `<span style="padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; min-width: 70px; text-align: center; background: #e9ecef; color: #6c757d; border: 1px solid #ced4da;">☑️ 確認完了</span>`;
     }
 
 
