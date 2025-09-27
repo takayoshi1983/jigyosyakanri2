@@ -228,7 +228,7 @@ class TaskManagement {
         });
 
         // フィルター（client-filterは検索可能プルダウンで処理）
-        ['status-filter', 'assignee-filter'].forEach(id => {
+        ['status-filter'].forEach(id => {
             document.getElementById(id).addEventListener('change', (e) => {
                 const filterType = id.replace('-filter', '');
                 this.currentFilters[filterType] = e.target.value;
