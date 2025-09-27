@@ -126,6 +126,13 @@
                         <button id="display-calendar" class="display-btn" data-display="calendar">📅 カレンダー</button>
                     </div>
                 </div>
+
+                <!-- フィルターリセット -->
+                <div class="filter-group">
+                    <button id="reset-filters-btn" class="btn btn-outline-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">
+                        🔄 リセット
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -217,7 +224,7 @@
 
                     <!-- 受任タスク（自分が実行する） -->
                     <div class="my-assigned-tasks" style="margin-bottom: 15px;">
-                        <h4 style="margin: 0 0 6px 0; color: #dc3545; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">
+                        <h4 style="margin: 0 0 6px 0; color: #dc3545; font-size: 0.9rem; display: flex; align-items: center; justify-content: flex-start; gap: 10px;">
                             🎯 受任中のタスク
                             <span id="assigned-count" style="background: #dc3545; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
                         </h4>
@@ -228,7 +235,7 @@
 
                     <!-- 依頼タスク（自分が作成した） -->
                     <div class="my-requested-tasks" style="margin-bottom: 15px;">
-                        <h4 style="margin: 0 0 6px 0; color: #28a745; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">
+                        <h4 style="margin: 0 0 6px 0; color: #28a745; font-size: 0.9rem; display: flex; align-items: center; justify-content: flex-start; gap: 10px;">
                             📤 依頼中のタスク
                             <span id="requested-count" style="background: #28a745; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
                         </h4>
@@ -242,7 +249,7 @@
 
                     <!-- 確認完了したタスク -->
                     <div class="my-completed-tasks">
-                        <h4 style="margin: 0 0 6px 0; color: #6c757d; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">
+                        <h4 style="margin: 0 0 6px 0; color: #6c757d; font-size: 0.9rem; display: flex; align-items: center; justify-content: flex-start; gap: 10px;">
                             ☑️ 確認完了したタスク
                             <span id="completed-count" style="background: #6c757d; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
                         </h4>

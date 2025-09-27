@@ -207,13 +207,17 @@ class TaskManagement {
     }
 
     initializeUI() {
-        // 表示形式ボタンの状態設定
-        document.querySelectorAll('.display-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.display === this.currentDisplay);
-        });
+        // 保存されたフィルター状態を復元
+        this.updateFilterUI();
 
-        // 表示切替
-        this.switchDisplay(this.currentDisplay);
+        // 表示切替（状態保存を避けるため直接実行）
+        document.querySelectorAll('.task-view').forEach(view => {
+            view.style.display = 'none';
+        });
+        const targetView = document.getElementById(`${this.currentDisplay}-view`);
+        if (targetView) {
+            targetView.style.display = 'block';
+        }
     }
 
     setupEventListeners() {
@@ -233,6 +237,7 @@ class TaskManagement {
                 const filterType = id.replace('-filter', '');
                 this.currentFilters[filterType] = e.target.value;
                 this.updateDisplay();
+                this.saveFilterState(); // 状態を保存
             });
         });
 
@@ -240,6 +245,24 @@ class TaskManagement {
         document.getElementById('search-input').addEventListener('input', (e) => {
             this.currentFilters.search = e.target.value;
             this.updateDisplay();
+            this.saveFilterState(); // 状態を保存
+        });
+
+        // フィルターリセットボタン
+        document.getElementById('reset-filters-btn').addEventListener('click', () => {
+            this.resetFilters();
+        });
+
+        // タブ切り替え時の状態維持（ページが非表示になる前に保存）
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                this.saveFilterState();
+            }
+        });
+
+        // ページ離脱時の状態保存
+        window.addEventListener('beforeunload', () => {
+            this.saveFilterState();
         });
 
         // ソート（テーブルヘッダー）
@@ -731,6 +754,7 @@ class TaskManagement {
             // フィルター変更イベントを発火
             this.currentFilters.client = value;
             this.updateDisplay();
+            this.saveFilterState(); // 状態を保存
         };
 
         // ハイライトを更新
@@ -775,6 +799,7 @@ class TaskManagement {
                         hiddenSelect.value = '';
                         this.currentFilters.client = '';
                         this.updateDisplay();
+                        this.saveFilterState(); // 状態を保存
                     }
                 }
             }, 150);
@@ -882,8 +907,94 @@ class TaskManagement {
     }
 
     initializeAssigneeSidebar() {
-        this.currentAssigneeFilter = null; // 現在選択中の担当者フィルター
+        // フィルター状態を復元（または初期値設定）
+        const savedState = this.loadFilterState();
+        if (savedState) {
+            this.currentAssigneeFilter = savedState.assigneeFilter;
+            this.currentFilters = { ...this.currentFilters, ...savedState.filters };
+            this.currentDisplay = savedState.display || 'list';
+        } else {
+            this.currentAssigneeFilter = null; // 全担当者を表示
+        }
+
         this.renderAssigneeSidebar();
+    }
+
+    // フィルター状態をローカルストレージに保存
+    saveFilterState() {
+        const filterState = {
+            assigneeFilter: this.currentAssigneeFilter,
+            filters: {
+                status: this.currentFilters.status,
+                client: this.currentFilters.client,
+                search: this.currentFilters.search
+            },
+            display: this.currentDisplay,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('taskManagement_filters', JSON.stringify(filterState));
+    }
+
+    // フィルター状態をローカルストレージから復元
+    loadFilterState() {
+        try {
+            const saved = localStorage.getItem('taskManagement_filters');
+            if (saved) {
+                const state = JSON.parse(saved);
+                // 24時間以内の状態のみ復元
+                if (Date.now() - state.timestamp < 24 * 60 * 60 * 1000) {
+                    return state;
+                }
+                // 期限切れの場合は削除
+                localStorage.removeItem('taskManagement_filters');
+            }
+        } catch (error) {
+            console.error('Filter state loading error:', error);
+            localStorage.removeItem('taskManagement_filters');
+        }
+        return null;
+    }
+
+    // フィルターを初期状態にリセット
+    resetFilters() {
+        this.currentAssigneeFilter = null;
+        this.currentFilters = {
+            status: '',
+            client: '',
+            search: ''
+        };
+        this.currentDisplay = 'list';
+
+        // UIを更新
+        this.renderAssigneeSidebar();
+        this.updateFilterUI();
+        this.updateDisplay();
+
+        // ローカルストレージをクリア
+        localStorage.removeItem('taskManagement_filters');
+
+        showToast('フィルターをリセットしました', 'success');
+    }
+
+    // フィルターUIの状態を更新
+    updateFilterUI() {
+        // ステータスフィルター
+        const statusFilter = document.getElementById('status-filter');
+        if (statusFilter) statusFilter.value = this.currentFilters.status;
+
+        // 検索フィールド
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) searchInput.value = this.currentFilters.search;
+
+        // 事業者フィルター（検索可能プルダウン）
+        if (this.filterSearchableSelect) {
+            this.filterSearchableSelect.setValue(this.currentFilters.client);
+        }
+
+        // 表示形式ボタン
+        document.querySelectorAll('.display-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.display === this.currentDisplay);
+        });
     }
 
     renderAssigneeSidebar() {
@@ -955,6 +1066,7 @@ class TaskManagement {
         this.currentAssigneeFilter = assigneeId;
         this.renderAssigneeSidebar(); // ボタンの状態を更新
         this.updateDisplay(); // タスク表示を更新
+        this.saveFilterState(); // 状態を保存
     }
 
     switchDisplay(displayType) {
@@ -970,6 +1082,7 @@ class TaskManagement {
         }
 
         this.updateDisplay();
+        this.saveFilterState(); // 状態を保存
     }
 
     updateDisplay() {
@@ -1989,7 +2102,7 @@ class TaskManagement {
                 </div>
 
                 <!-- 右側：ステータス（上下段をまたがって表示） -->
-                <div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; height: 100%;">
+                <div style="position: absolute; right: -5%; top: 50%; transform: translateY(-50%); display: flex; align-items: center; height: 100%;">
                     ${clickableStatus}
                 </div>
             </div>
