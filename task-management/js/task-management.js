@@ -984,7 +984,7 @@ class TaskManagement {
         // 2行レイアウト用のデータ準備
         const priorityStars = this.getPriorityDisplay(task.priority);
         const truncatedDescription = task.description ?
-            (task.description.length > 10 ? task.description.substring(0, 10) + '…' : task.description) : '-';
+            (task.description.length > 15 ? task.description.substring(0, 15) + '…' : task.description) : '-';
 
         // 事業者リンク
         const clientLink = task.clients?.name ?
@@ -1016,7 +1016,7 @@ class TaskManagement {
                         <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
                         <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${task.clients?.name || ''}">${clientLink}</span>
                         <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
-                        <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.description || ''}">${truncatedDescription}</span>
+                        <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
                     </div>
                     <!-- 下段 -->
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #495057; white-space: nowrap;">
