@@ -1010,7 +1010,7 @@ class TaskManagement {
         item.innerHTML = `
             <div style="display: flex; position: relative;">
                 <!-- 左側：メイン情報エリア -->
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding-right: 80px;">
                     <!-- 上段 -->
                     <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                         <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
