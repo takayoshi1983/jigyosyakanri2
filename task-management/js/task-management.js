@@ -95,12 +95,10 @@ class TaskManagement {
 
     async loadTemplates() {
         try {
-            // グローバルテンプレート + 自分のテンプレートを取得
+            // 全テンプレートを取得（is_globalフィールドがない場合に備えて）
             const { data: templatesData, error } = await supabase
                 .from('task_templates')
                 .select('*')
-                .or(`is_global.eq.true,staff_id.eq.${this.currentUser.id}`)
-                .order('is_global', { ascending: false })
                 .order('template_name', { ascending: true });
 
             if (error) throw error;
@@ -110,7 +108,8 @@ class TaskManagement {
 
         } catch (error) {
             console.error('Templates loading error:', error);
-            throw error;
+            // エラーが発生しても初期化は続行
+            this.templates = [];
         }
     }
 
@@ -595,8 +594,10 @@ class TaskManagement {
             });
         });
 
-        // ドラッグ&ドロップ初期化（今後実装）
-        this.initializeSortable();
+        // ドラッグ&ドロップ初期化
+        setTimeout(() => {
+            this.initializeSortable();
+        }, 100); // DOM更新後に初期化
     }
 
     createTaskCard(task) {
@@ -626,8 +627,56 @@ class TaskManagement {
     }
 
     initializeSortable() {
-        // SortableJSを使用したドラッグ&ドロップ（今後実装）
-        // 現在は基本表示のみ
+        // SortableJSを使用したドラッグ&ドロップ
+        const kanbanColumns = document.querySelectorAll('.kanban-tasks');
+
+        kanbanColumns.forEach(column => {
+            new Sortable(column, {
+                group: 'kanban',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                onStart: (evt) => {
+                    // ドラッグ開始時：全ドロップエリアをハイライト
+                    document.querySelectorAll('.kanban-tasks').forEach(col => {
+                        if (col !== evt.from) {
+                            col.classList.add('sortable-drag-over');
+                        }
+                    });
+                },
+                onEnd: async (evt) => {
+                    // ドラッグ終了時：ハイライト解除
+                    document.querySelectorAll('.kanban-tasks').forEach(col => {
+                        col.classList.remove('sortable-drag-over');
+                    });
+
+                    const taskId = parseInt(evt.item.dataset.taskId);
+                    const newStatus = evt.to.parentElement.dataset.status;
+
+                    // 元の位置と同じ場合は何もしない
+                    if (evt.from === evt.to) {
+                        return;
+                    }
+
+                    console.log(`Moving task ${taskId} to status: ${newStatus}`);
+
+                    try {
+                        // ステータス更新
+                        await this.updateTaskStatus(taskId, newStatus);
+                    } catch (error) {
+                        console.error('Failed to update task status:', error);
+                        // エラー時は元の位置に戻す
+                        evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
+                        showToast('タスクの移動に失敗しました', 'error');
+                    }
+                },
+                onMove: (evt) => {
+                    // ドラッグ中の視覚的フィードバック
+                    return true;
+                }
+            });
+        });
     }
 
     updateCalendarView(tasks) {
@@ -653,13 +702,33 @@ class TaskManagement {
         document.getElementById('completed-tasks').textContent = completedTasks;
     }
 
-    openTaskModal(taskId = null, template = null, viewMode = false) {
+    openTaskModal(taskId = null, template = null, viewMode = false, templateMode = false, templateName = '') {
         const modal = document.getElementById('task-modal');
         const title = document.getElementById('modal-title');
         const form = document.getElementById('task-form');
+        const saveBtn = document.getElementById('save-task-btn');
 
         form.reset();
         this.setModalMode(viewMode ? 'view' : 'edit');
+
+        // テンプレート保存モード
+        if (templateMode) {
+            title.textContent = `テンプレート作成: ${templateName}`;
+            form.dataset.templateMode = 'true';
+            form.dataset.templateName = templateName;
+            saveBtn.textContent = 'テンプレートとして保存';
+
+            // テンプレート保存時は事業者・受任者選択を不要にする
+            document.getElementById('client-select').removeAttribute('required');
+            document.getElementById('assignee-select').removeAttribute('required');
+        } else {
+            form.dataset.templateMode = 'false';
+            saveBtn.textContent = '保存';
+
+            // 通常のタスク保存時は必須項目を復元
+            document.getElementById('client-select').setAttribute('required', 'required');
+            document.getElementById('assignee-select').setAttribute('required', 'required');
+        }
 
         if (taskId) {
             const task = this.tasks.find(t => t.id === taskId);
@@ -682,7 +751,7 @@ class TaskManagement {
                 }
             }
             form.dataset.taskId = taskId;
-        } else {
+        } else if (!templateMode) {
             title.textContent = template ? `テンプレートから作成: ${template.template_name}` : '新規タスク作成';
             form.dataset.taskId = '';
             this.setModalMode('edit'); // 新規作成は常に編集モード
@@ -745,15 +814,27 @@ class TaskManagement {
 
         // テンプレート一覧を生成
         templateList.innerHTML = '';
+
+        if (this.templates.length === 0) {
+            templateList.innerHTML = `
+                <div style="text-align: center; padding: 30px; color: #6c757d;">
+                    <p>📝 テンプレートがありません</p>
+                    <button class="btn btn-primary" onclick="taskManager.createTemplate()">
+                        新しいテンプレートを作成
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
         this.templates.forEach(template => {
             const templateItem = document.createElement('div');
             templateItem.className = 'template-item';
             templateItem.dataset.templateId = template.id;
 
-            const templateType = template.is_global ? '📋 共通' : '👤 個人';
             templateItem.innerHTML = `
                 <div class="template-name">
-                    <span class="template-type" style="font-size: 0.8rem; color: #6c757d; margin-right: 8px;">${templateType}</span>
+                    <span class="template-type" style="font-size: 0.8rem; color: #6c757d; margin-right: 8px;">📋</span>
                     ${template.template_name}
                 </div>
                 <div class="template-task-name">${template.task_name || ''}</div>
@@ -767,6 +848,23 @@ class TaskManagement {
 
             templateList.appendChild(templateItem);
         });
+
+        // 新規テンプレート作成ボタンを追加
+        const createTemplateBtn = document.createElement('div');
+        createTemplateBtn.className = 'template-item template-create';
+        createTemplateBtn.style.cssText = 'border: 2px dashed #007bff; color: #007bff; text-align: center; font-weight: 500;';
+        createTemplateBtn.innerHTML = `
+            <div style="padding: 20px;">
+                <div style="font-size: 1.2rem; margin-bottom: 5px;">➕</div>
+                <div>新しいテンプレートを作成</div>
+            </div>
+        `;
+
+        createTemplateBtn.addEventListener('click', () => {
+            this.createTemplate();
+        });
+
+        templateList.appendChild(createTemplateBtn);
 
         modal.style.display = 'flex';
     }
@@ -788,6 +886,8 @@ class TaskManagement {
         const form = document.getElementById('task-form');
         const taskId = form.dataset.taskId;
         const isEdit = !!taskId;
+        const isTemplateMode = form.dataset.templateMode === 'true';
+        const templateName = form.dataset.templateName;
 
         // フォームデータ取得
         const taskData = {
@@ -802,7 +902,19 @@ class TaskManagement {
             reference_url: document.getElementById('reference-url').value.trim() || null
         };
 
-        // バリデーション
+        // テンプレート保存モード
+        if (isTemplateMode) {
+            if (!taskData.task_name) {
+                showToast('タスク名を入力してください', 'error');
+                return;
+            }
+
+            await this.saveTemplate(templateName, taskData);
+            this.closeTaskModal();
+            return;
+        }
+
+        // 通常のタスク保存のバリデーション
         if (!taskData.task_name) {
             showToast('タスク名を入力してください', 'error');
             return;
@@ -1067,6 +1179,42 @@ class TaskManagement {
         document.querySelector('.left-panel').scrollIntoView({ behavior: 'smooth' });
 
         showToast('自分のタスクを表示中', 'info');
+    }
+
+    // テンプレート作成機能
+    createTemplate() {
+        const templateName = prompt('テンプレート名を入力してください:');
+        if (!templateName) return;
+
+        // テンプレートモーダルを閉じる
+        this.closeTemplateModal();
+
+        // 新規タスクモーダルを開く（テンプレート保存モード）
+        this.openTaskModal(null, null, false, true, templateName);
+    }
+
+    async saveTemplate(templateName, taskData) {
+        try {
+            const templateData = {
+                template_name: templateName,
+                task_name: taskData.task_name,
+                description: taskData.description,
+                estimated_time_hours: taskData.estimated_time_hours
+            };
+
+            const { error } = await supabase
+                .from('task_templates')
+                .insert([templateData]);
+
+            if (error) throw error;
+
+            showToast('テンプレートを保存しました', 'success');
+            await this.loadTemplates(); // テンプレート再読み込み
+
+        } catch (error) {
+            console.error('Save template error:', error);
+            showToast('テンプレートの保存に失敗しました', 'error');
+        }
     }
 }
 

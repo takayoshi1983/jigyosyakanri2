@@ -232,6 +232,25 @@
 
 .kanban-tasks {
     min-height: 400px;
+    transition: background-color 0.2s;
+    border-radius: 4px;
+    border: 2px dashed transparent;
+}
+
+.kanban-tasks:empty::after {
+    content: 'ここにタスクをドロップ';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: #adb5bd;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.kanban-tasks.sortable-drag-over {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
 }
 
 /* タスクカード */
@@ -253,10 +272,19 @@
 
 .task-card.sortable-ghost {
     opacity: 0.5;
+    background: #f8f9fa;
+    border-left-color: #6c757d;
+}
+
+.task-card.sortable-chosen {
+    box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    transform: rotate(2deg);
 }
 
 .task-card.sortable-drag {
     cursor: grabbing;
+    transform: rotate(5deg);
+    z-index: 1000;
 }
 
 .task-card-title {
