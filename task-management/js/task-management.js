@@ -489,8 +489,16 @@ class TaskManagement {
 
         // アイテムを選択
         const selectItem = (value, text) => {
+            console.log('selectItem called with:', value, text);
+            console.log('hiddenSelect element:', hiddenSelect);
+            console.log('hiddenSelect.id:', hiddenSelect?.id);
+
             hiddenSelect.value = value;
             searchInput.value = text;
+
+            console.log('After setting - hiddenSelect.value:', hiddenSelect.value);
+            console.log('After setting - searchInput.value:', searchInput.value);
+
             hideDropdown();
 
             // カスタムイベントを発火（バリデーション等のため）
