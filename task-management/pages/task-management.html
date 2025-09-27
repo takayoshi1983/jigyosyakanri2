@@ -299,10 +299,16 @@
                         </div>
                         <div class="compact-form-row">
                             <label for="client-select">事業者 <span class="required">*</span>:</label>
-                            <select id="client-select" name="client_id" class="form-control" required>
-                                <option value="">選択してください</option>
-                                <!-- JavaScript で動的に生成 -->
-                            </select>
+                            <div class="searchable-select-wrapper">
+                                <input type="text" id="client-search" class="form-control searchable-select-input" placeholder="事業者名を入力または選択..." autocomplete="off">
+                                <div class="searchable-select-arrow">▼</div>
+                                <div id="client-dropdown" class="searchable-select-dropdown" style="display: none;">
+                                    <!-- JavaScript で動的に生成 -->
+                                </div>
+                                <select id="client-select" name="client_id" style="display: none;" required>
+                                    <!-- 隠しselect（フォーム送信用） -->
+                                </select>
+                            </div>
                         </div>
                         <div class="compact-form-row">
                             <label for="assignee-select">受任者 <span class="required">*</span>:</label>

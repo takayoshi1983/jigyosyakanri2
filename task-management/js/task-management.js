@@ -165,8 +165,7 @@ class TaskManagement {
         const assigneeFilter = document.getElementById('assignee-filter');
         const clientFilter = document.getElementById('client-filter');
 
-        // モーダル用ドロップダウン
-        const clientSelect = document.getElementById('client-select');
+        // モーダル用ドロップダウン（従来の受任者のみ）
         const assigneeSelect = document.getElementById('assignee-select');
 
         // フィルター - 受任者
@@ -177,21 +176,21 @@ class TaskManagement {
 
         // フィルター - 事業者
         clientFilter.innerHTML = '<option value="">全て</option>';
+        clientFilter.innerHTML += '<option value="0">その他業務</option>';
         this.clients.forEach(client => {
             clientFilter.innerHTML += `<option value="${client.id}">${client.name}</option>`;
         });
 
-        // モーダル - 事業者
-        clientSelect.innerHTML = '<option value="">選択してください</option>';
-        this.clients.forEach(client => {
-            clientSelect.innerHTML += `<option value="${client.id}">${client.name}</option>`;
-        });
-
-        // モーダル - 受任者
+        // モーダル - 受任者（従来通り）
         assigneeSelect.innerHTML = '<option value="">選択してください</option>';
         this.staffs.forEach(staff => {
             assigneeSelect.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
         });
+
+        // 検索可能プルダウンのオプションを更新（後で実行）
+        if (this.searchableSelect) {
+            this.searchableSelect.updateOptions();
+        }
     }
 
     async loadTasks() {
@@ -353,6 +352,9 @@ class TaskManagement {
 
         // URL自動リンク化機能の初期化
         this.initializeLinkedTextDisplay();
+
+        // 検索可能プルダウンの初期化
+        this.initializeSearchableSelect();
     }
 
     initializeLinkedTextDisplay() {
@@ -360,6 +362,177 @@ class TaskManagement {
         if (taskDescriptionTextarea) {
             this.linkedTextDisplay = createLinkedTextDisplay(taskDescriptionTextarea);
         }
+    }
+
+    initializeSearchableSelect() {
+        const searchInput = document.getElementById('client-search');
+        const dropdown = document.getElementById('client-dropdown');
+        const hiddenSelect = document.getElementById('client-select');
+        const wrapper = searchInput.parentElement;
+
+        let highlightedIndex = -1;
+        let allOptions = [];
+
+        // オプションデータを準備
+        const updateOptions = () => {
+            allOptions = [
+                { value: '0', text: 'その他業務', searchText: 'その他業務' },
+                ...this.clients.map(client => ({
+                    value: client.id.toString(),
+                    text: client.name,
+                    searchText: client.name
+                }))
+            ];
+        };
+
+        // ドロップダウンを表示
+        const showDropdown = () => {
+            dropdown.style.display = 'block';
+            wrapper.classList.add('open');
+            renderOptions();
+        };
+
+        // ドロップダウンを非表示
+        const hideDropdown = () => {
+            dropdown.style.display = 'none';
+            wrapper.classList.remove('open');
+            highlightedIndex = -1;
+        };
+
+        // オプションをレンダリング
+        const renderOptions = (searchTerm = '') => {
+            const filtered = allOptions.filter(option =>
+                option.searchText.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="searchable-select-no-results">該当する事業者が見つかりません</div>';
+                return;
+            }
+
+            dropdown.innerHTML = filtered.map((option, index) => {
+                const isSelected = hiddenSelect.value === option.value;
+                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}">${option.text}</div>`;
+            }).join('');
+
+            // 現在選択されているアイテムがあればハイライト
+            const selectedItem = dropdown.querySelector('.searchable-select-item.selected');
+            if (selectedItem) {
+                highlightedIndex = parseInt(selectedItem.dataset.index);
+                selectedItem.classList.add('highlighted');
+            }
+        };
+
+        // アイテムを選択
+        const selectItem = (value, text) => {
+            hiddenSelect.value = value;
+            searchInput.value = text;
+            hideDropdown();
+
+            // カスタムイベントを発火（バリデーション等のため）
+            const changeEvent = new Event('change', { bubbles: true });
+            hiddenSelect.dispatchEvent(changeEvent);
+        };
+
+        // ハイライトを更新
+        const updateHighlight = () => {
+            dropdown.querySelectorAll('.searchable-select-item').forEach((item, index) => {
+                item.classList.toggle('highlighted', index === highlightedIndex);
+            });
+        };
+
+        // イベントリスナー
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value;
+            if (searchTerm === '') {
+                hiddenSelect.value = '';
+            }
+            showDropdown();
+            renderOptions(searchTerm);
+            highlightedIndex = -1;
+        });
+
+        searchInput.addEventListener('focus', () => {
+            updateOptions();
+            showDropdown();
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = dropdown.querySelectorAll('.searchable-select-item:not(.searchable-select-no-results)');
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                    updateHighlight();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                    updateHighlight();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (highlightedIndex >= 0 && items[highlightedIndex]) {
+                        const item = items[highlightedIndex];
+                        selectItem(item.dataset.value, item.textContent);
+                    }
+                    break;
+                case 'Escape':
+                    hideDropdown();
+                    searchInput.blur();
+                    break;
+            }
+        });
+
+        // クリックイベント
+        dropdown.addEventListener('click', (e) => {
+            const item = e.target.closest('.searchable-select-item');
+            if (item && !item.classList.contains('searchable-select-no-results')) {
+                selectItem(item.dataset.value, item.textContent);
+            }
+        });
+
+        // 外部クリックで閉じる
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) {
+                hideDropdown();
+            }
+        });
+
+        // 矢印クリックでドロップダウン切り替え
+        wrapper.addEventListener('click', (e) => {
+            if (e.target.classList.contains('searchable-select-arrow') ||
+                e.target === searchInput) {
+                if (dropdown.style.display === 'block') {
+                    hideDropdown();
+                } else {
+                    searchInput.focus();
+                }
+            }
+        });
+
+        // 初期化
+        updateOptions();
+
+        // this.searchableSelect として保存
+        this.searchableSelect = {
+            updateOptions,
+            selectItem,
+            clear: () => {
+                hiddenSelect.value = '';
+                searchInput.value = '';
+                hideDropdown();
+            },
+            setValue: (value) => {
+                const option = allOptions.find(opt => opt.value === value.toString());
+                if (option) {
+                    selectItem(option.value, option.text);
+                } else {
+                    this.searchableSelect.clear();
+                }
+            }
+        };
     }
 
     switchDisplay(displayType) {
@@ -424,11 +597,12 @@ class TaskManagement {
         // 検索フィルター
         if (this.currentFilters.search) {
             const search = this.currentFilters.search.toLowerCase();
-            filtered = filtered.filter(task =>
-                task.task_name.toLowerCase().includes(search) ||
-                (task.clients?.name || '').toLowerCase().includes(search) ||
-                (task.description || '').toLowerCase().includes(search)
-            );
+            filtered = filtered.filter(task => {
+                const clientName = task.client_id === 0 ? 'その他業務' : (task.clients?.name || '');
+                return task.task_name.toLowerCase().includes(search) ||
+                       clientName.toLowerCase().includes(search) ||
+                       (task.description || '').toLowerCase().includes(search);
+            });
         }
 
         // ソート
@@ -439,8 +613,8 @@ class TaskManagement {
 
             // 特別な処理が必要なフィールド
             if (field === 'client_name') {
-                aVal = a.clients?.name || '';
-                bVal = b.clients?.name || '';
+                aVal = a.client_id === 0 ? 'その他業務' : (a.clients?.name || '');
+                bVal = b.client_id === 0 ? 'その他業務' : (b.clients?.name || '');
             } else if (field === 'assignee_name') {
                 aVal = a.assignee?.name || '';
                 bVal = b.assignee?.name || '';
@@ -496,12 +670,13 @@ class TaskManagement {
             `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()">🔗</a>` : '-';
 
         // 事業者名（クリック可能）
-        const clientName = task.clients?.name ?
+        const clientName = task.client_id === 0 ? 'その他業務' :
+            task.clients?.name ?
             `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none;">${truncate(task.clients.name, 10)}</a>` : '-';
 
         tr.innerHTML = `
             <td style="text-align: center; padding: 4px 6px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</td>
-            <td style="padding: 4px 6px;" title="${task.clients?.name || ''}">${clientName}</td>
+            <td style="padding: 4px 6px;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientName}</td>
             <td style="padding: 4px 6px;" title="${task.task_name || ''}">${truncate(task.task_name, 15)}</td>
             <td style="padding: 4px 6px;" title="${task.description || ''}">${truncate(task.description, 12)}</td>
             <td style="text-align: center; padding: 4px 6px;">${urlIcon}</td>
@@ -747,7 +922,9 @@ class TaskManagement {
             (task.description.length > 12 ? task.description.substring(0, 12) + '…' : task.description) : '-';
 
         // 事業者リンク（省略なし、完了済みの場合は通常テキスト）
-        const clientLink = task.clients?.name ?
+        const clientLink = task.client_id === 0 ?
+            `<span style="color: ${isCompleted ? '#6c757d' : '#495057'}; font-size: 0.75rem;">その他業務</span>` :
+            task.clients?.name ?
             (isCompleted ?
                 `<span style="color: #6c757d; font-size: 0.75rem;">${task.clients.name}</span>` :
                 `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name}</a>`
@@ -778,7 +955,7 @@ class TaskManagement {
             <div style="display: flex; flex-direction: column; gap: 3px; padding: 6px;">
                 <!-- 上段：事業者名とタスク名を最大限活用 -->
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap;" title="${task.clients?.name || ''}">${clientLink}</span>
+                    <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
                     <span style="font-size: 0.8rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                     <span style="font-size: 0.7rem; flex: 0 0 auto; color: #6c757d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60px;" title="${task.description || ''}">${truncatedDescription}</span>
                 </div>
@@ -911,7 +1088,14 @@ class TaskManagement {
             if (task) {
                 title.textContent = viewMode ? 'タスク詳細' : 'タスク編集';
                 document.getElementById('task-name').value = task.task_name || '';
-                document.getElementById('client-select').value = task.client_id || '';
+
+                // 検索可能プルダウンに値を設定
+                if (this.searchableSelect) {
+                    this.searchableSelect.setValue(task.client_id || '');
+                } else {
+                    document.getElementById('client-select').value = task.client_id || '';
+                }
+
                 document.getElementById('assignee-select').value = task.assignee_id || '';
                 document.getElementById('priority-select').value = task.priority || '2';
                 document.getElementById('due-date').value = task.due_date || '';
@@ -936,6 +1120,11 @@ class TaskManagement {
             title.textContent = template ? `テンプレートから作成: ${template.template_name}` : '新規タスク作成';
             form.dataset.taskId = '';
             this.setModalMode('edit'); // 新規作成は常に編集モード
+
+            // 検索可能プルダウンをクリア
+            if (this.searchableSelect) {
+                this.searchableSelect.clear();
+            }
 
             if (template) {
                 // テンプレートデータでフォームを埋める
@@ -1106,7 +1295,7 @@ class TaskManagement {
             return;
         }
 
-        if (!taskData.client_id) {
+        if (taskData.client_id === null || taskData.client_id === undefined) {
             showToast('事業者を選択してください', 'error');
             return;
         }
@@ -1304,7 +1493,9 @@ class TaskManagement {
             (task.description.length > 15 ? task.description.substring(0, 15) + '…' : task.description) : '-';
 
         // 事業者リンク（完了済みの場合は通常テキスト）
-        const clientLink = task.clients?.name ?
+        const clientLink = task.client_id === 0 ?
+            `<span style="color: ${isCompleted ? '#6c757d' : '#495057'}; font-size: 0.75rem;">その他業務</span>` :
+            task.clients?.name ?
             (isCompleted ?
                 `<span style="color: #6c757d; font-size: 0.75rem;">${task.clients.name}</span>` :
                 `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name}</a>`
@@ -1343,7 +1534,7 @@ class TaskManagement {
                     <!-- 上段 -->
                     <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
                         <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap; color: ${textColor};" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
-                        <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${task.clients?.name || ''}">${clientLink}</span>
+                        <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
                         <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                         <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
                     </div>
