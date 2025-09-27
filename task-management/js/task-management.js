@@ -1028,7 +1028,7 @@ class TaskManagement {
                 </div>
 
                 <!-- 右側：ステータス（上下段をまたがって表示） -->
-                <div style="position: relative; right: -20; top: 46%; transform: translateY(20%); display: flex; align-items: center; height: 100%;">
+                <div style="position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; height: 100%;">
                     ${clickableStatus}
                 </div>
             </div>
