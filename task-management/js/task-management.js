@@ -447,14 +447,26 @@ class TaskManagement {
             if (searchTerm === '') {
                 hiddenSelect.value = '';
             }
+            updateOptions();
             showDropdown();
             renderOptions(searchTerm);
             highlightedIndex = -1;
         });
 
-        searchInput.addEventListener('focus', () => {
+        searchInput.addEventListener('focus', (e) => {
             updateOptions();
-            showDropdown();
+            setTimeout(() => {
+                showDropdown();
+            }, 10); // 少し遅延させて外部クリックイベントとの競合を避ける
+        });
+
+        searchInput.addEventListener('blur', (e) => {
+            // ドロップダウン内をクリックした場合は閉じない
+            setTimeout(() => {
+                if (!wrapper.contains(document.activeElement)) {
+                    hideDropdown();
+                }
+            }, 150);
         });
 
         searchInput.addEventListener('keydown', (e) => {
@@ -463,11 +475,17 @@ class TaskManagement {
             switch (e.key) {
                 case 'ArrowDown':
                     e.preventDefault();
+                    if (dropdown.style.display === 'none') {
+                        showDropdown();
+                    }
                     highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
                     updateHighlight();
                     break;
                 case 'ArrowUp':
                     e.preventDefault();
+                    if (dropdown.style.display === 'none') {
+                        showDropdown();
+                    }
                     highlightedIndex = Math.max(highlightedIndex - 1, 0);
                     updateHighlight();
                     break;
@@ -486,29 +504,40 @@ class TaskManagement {
         });
 
         // クリックイベント
-        dropdown.addEventListener('click', (e) => {
+        dropdown.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // ブラーイベントを防ぐ
             const item = e.target.closest('.searchable-select-item');
             if (item && !item.classList.contains('searchable-select-no-results')) {
                 selectItem(item.dataset.value, item.textContent);
             }
         });
 
-        // 外部クリックで閉じる
-        document.addEventListener('click', (e) => {
+        // 外部クリックで閉じる（改良版）
+        document.addEventListener('mousedown', (e) => {
             if (!wrapper.contains(e.target)) {
-                hideDropdown();
+                setTimeout(() => hideDropdown(), 10);
             }
         });
 
-        // 矢印クリックでドロップダウン切り替え
-        wrapper.addEventListener('click', (e) => {
-            if (e.target.classList.contains('searchable-select-arrow') ||
-                e.target === searchInput) {
+        // 矢印または入力フィールドクリック
+        wrapper.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('searchable-select-arrow')) {
+                e.preventDefault();
                 if (dropdown.style.display === 'block') {
                     hideDropdown();
                 } else {
+                    updateOptions();
+                    showDropdown();
                     searchInput.focus();
                 }
+            }
+        });
+
+        // 入力フィールドクリック時の処理
+        searchInput.addEventListener('click', (e) => {
+            if (dropdown.style.display === 'none') {
+                updateOptions();
+                showDropdown();
             }
         });
 
