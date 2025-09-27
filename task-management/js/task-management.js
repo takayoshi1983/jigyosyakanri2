@@ -1624,14 +1624,14 @@ class TaskManagement {
                 <!-- 左側：メイン情報エリア -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding-right: 80px;">
                     <!-- 上段 -->
-                    <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-                        <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap; color: ${textColor};" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
+                    <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
                         <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
                         <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                         <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
                     </div>
                     <!-- 下段 -->
                     <div style="display: flex; align-items: center; gap: 14px; font-size: 0.7rem; color: ${textColor}; white-space: nowrap;">
+                        <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap; color: ${textColor};" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
                         <span style="flex: 0 0 30px; text-align: center; white-space: nowrap;">${urlIcon}</span>
                         <span style="flex: 0 0 auto; white-space: nowrap; min-width: 80px; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
                         <span style="flex: 0 0 65px; color: ${linkColor}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>

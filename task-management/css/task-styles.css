@@ -236,7 +236,7 @@
     overflow-y: auto;
     transition: background-color 0.2s;
     border-radius: 4px;
-    border: 2px dashed transparent;
+    border: 11px dashed transparent;
     scrollbar-width: thin;
     scrollbar-color: #007bff #f8f9fa;
 }
@@ -503,7 +503,7 @@
     background: #f8f9fa;
     border: groove #0083ff3d;
     border-radius: 4px;
-    padding: 0px 1px;
+    padding: 0px 26px;
     font-size: 0.8rem;
     transition: all 0.2s;
     cursor: pointer;
@@ -822,7 +822,7 @@
 }
 
 .searchable-select-input {
-    padding-right: 30px;
+    padding-right: 146px;
     cursor: text;
 }
 

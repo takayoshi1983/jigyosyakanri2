@@ -2539,7 +2539,7 @@ body.hide-inactive-clients .inactive-client {
 /* === 統一ナビゲーションタブ === */
 .tab-navigation {
     position: absolute;
-    top: 20px;
+    top: 5px;
     right: 0px;
     display: flex;
     flex-direction: column;
