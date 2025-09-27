@@ -1017,6 +1017,7 @@ class TaskManagement {
         const buttons = allStaffs.map(staff => {
             const taskCount = this.getTaskCountForAssignee(staff.id);
             const hasUrgentTasks = this.hasUrgentTasksForAssignee(staff.id);
+            const hasOverdueTasks = this.hasOverdueTasksForAssignee(staff.id);
             const isActive = this.currentAssigneeFilter === staff.id;
 
             return `
@@ -1025,7 +1026,7 @@ class TaskManagement {
                         onclick="taskManager.filterByAssignee(${staff.id})">
                     <span class="initial">${staff.initial || staff.name.charAt(0)}</span>
                     <span class="full-name">${staff.name}</span>
-                    <span class="task-badge ${hasUrgentTasks ? 'urgent' : ''} ${taskCount === 0 ? 'zero' : ''}">${taskCount}</span>
+                    <span class="task-badge ${hasUrgentTasks ? 'urgent' : ''} ${taskCount === 0 ? 'zero' : ''}">${hasOverdueTasks ? '⚠️' + taskCount : taskCount}</span>
                 </button>
             `;
         }).join('');
@@ -1063,6 +1064,25 @@ class TaskManagement {
             if (task.due_date) {
                 const dueDate = new Date(task.due_date);
                 return dueDate <= tomorrow;
+            }
+
+            return false;
+        });
+    }
+
+    hasOverdueTasksForAssignee(assigneeId) {
+        // 期限切れタスクがあるかチェック
+        const today = new Date();
+
+        return this.tasks.some(task => {
+            if (assigneeId !== null && task.assignee_id !== assigneeId) return false;
+            if (task.status === '確認完了') return false;
+
+            // 期限切れチェック
+            if (task.due_date) {
+                const dueDate = new Date(task.due_date);
+                const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                return diffDays < 0;
             }
 
             return false;
@@ -1319,7 +1339,7 @@ class TaskManagement {
     createClickableStatusBadge(task) {
         const statusConfig = {
             '依頼中': { class: 'status-pending', text: '📝 依頼中', next: '作業完了' },
-            '作業完了': { class: 'status-working', text: '⚠️ 確認待ち', next: '確認完了' },
+            '作業完了': { class: 'status-working', text: '✅ 確認待ち', next: '確認完了' },
             '確認完了': { class: 'status-completed', text: '☑️ 確認完了', next: '依頼中' }
         };
 
@@ -1332,7 +1352,7 @@ class TaskManagement {
     createStatusBadge(status) {
         const statusConfig = {
             '依頼中': { class: 'status-pending', text: '📝 依頼中' },
-            '作業完了': { class: 'status-working', text: '⚠️ 確認待ち' },
+            '作業完了': { class: 'status-working', text: '✅ 確認待ち' },
             '確認完了': { class: 'status-completed', text: '☑️ 確認完了' }
         };
 
@@ -1426,7 +1446,7 @@ class TaskManagement {
         // カンバン列のヘッダーにタスク数を表示
         const statusLabels = {
             '依頼中': '📝 依頼中',
-            '作業完了': '⚠️ 確認待ち',
+            '作業完了': '✅ 確認待ち',
             '確認完了': '☑️ 確認完了'
         };
 
@@ -2194,7 +2214,7 @@ class TaskManagement {
     createCompactClickableStatus(task) {
         const statusConfig = {
             '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '作業完了' },
-            '作業完了': { class: 'my-task-status-working', text: '⚠️ 確認待ち', next: '確認完了' },
+            '作業完了': { class: 'my-task-status-working', text: '✅ 確認待ち', next: '確認完了' },
             '確認完了': { class: 'my-task-status-completed', text: '☑️ 確認完了', next: '依頼中' }
         };
 
