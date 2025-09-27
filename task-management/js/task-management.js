@@ -58,9 +58,7 @@ class TaskManagement {
         this.tasks = [];
         this.templates = [];
         this.currentFilters = {
-            view: 'all',
             status: '',
-            assignee: '',
             client: '',
             search: ''
         };
@@ -226,11 +224,7 @@ class TaskManagement {
     }
 
     initializeUI() {
-        // 表示切替ボタンの状態設定
-        document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.view === this.currentFilters.view);
-        });
-
+        // 表示形式ボタンの状態設定
         document.querySelectorAll('.display-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.display === this.currentDisplay);
         });
@@ -240,16 +234,6 @@ class TaskManagement {
     }
 
     setupEventListeners() {
-        // 表示切替ボタン
-        document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.currentFilters.view = e.target.dataset.view;
-                this.updateDisplay();
-            });
-        });
-
         // 表示形式切替ボタン
         document.querySelectorAll('.display-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1031,22 +1015,9 @@ class TaskManagement {
             filtered = filtered.filter(task => task.assignee_id === this.currentAssigneeFilter);
         }
 
-        // 表示切替（全体 vs 自分）- 担当者フィルターがない場合のみ適用
-        if (this.currentAssigneeFilter === null && this.currentFilters.view === 'my') {
-            filtered = filtered.filter(task =>
-                task.assignee_id === this.currentUser.id ||
-                task.requester_id === this.currentUser.id
-            );
-        }
-
         // ステータスフィルター
         if (this.currentFilters.status) {
             filtered = filtered.filter(task => task.status === this.currentFilters.status);
-        }
-
-        // 受任者フィルター（担当者サイドバーがない場合のみ適用）
-        if (this.currentAssigneeFilter === null && this.currentFilters.assignee) {
-            filtered = filtered.filter(task => task.assignee_id == this.currentFilters.assignee);
         }
 
         // 事業者フィルター

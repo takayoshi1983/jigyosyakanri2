@@ -85,15 +85,6 @@
 
             <!-- フィルター行 -->
             <div class="filter-row" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                <!-- 表示切替 -->
-                <div class="filter-group">
-                    <label>表示:</label>
-                    <div class="view-toggle" style="display: flex; gap: 5px;">
-                        <button id="view-all" class="view-btn active" data-view="all">全体</button>
-                        <button id="view-my" class="view-btn" data-view="my">自分</button>
-                    </div>
-                </div>
-
                 <!-- ステータスフィルター -->
                 <div class="filter-group">
                     <label for="status-filter">ステータス:</label>
@@ -102,15 +93,6 @@
                         <option value="依頼中">依頼中</option>
                         <option value="作業完了">作業完了</option>
                         <option value="確認完了">確認完了</option>
-                    </select>
-                </div>
-
-                <!-- 受任者フィルター -->
-                <div class="filter-group">
-                    <label for="assignee-filter">受任者:</label>
-                    <select id="assignee-filter" class="form-control" style="width: 120px;">
-                        <option value="">全て</option>
-                        <!-- JavaScript で動的に生成 -->
                     </select>
                 </div>
 
