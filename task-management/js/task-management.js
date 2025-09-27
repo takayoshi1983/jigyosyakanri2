@@ -1,6 +1,6 @@
 // タスク管理システム - メイン機能
 import { supabase } from '../../supabase-client.js';
-import { formatDate } from '../../utils.js';
+import { formatDate, normalizeText } from '../../utils.js';
 import '../../toast.js'; // showToastはwindow.showToastとしてグローバルに利用可能
 
 // URL自動リンク化機能
@@ -373,14 +373,20 @@ class TaskManagement {
         let highlightedIndex = -1;
         let allOptions = [];
 
-        // オプションデータを準備
+        // オプションデータを準備（正規化キャッシュ付き）
         const updateOptions = () => {
             allOptions = [
-                { value: '0', text: 'その他業務', searchText: 'その他業務' },
+                {
+                    value: '0',
+                    text: 'その他業務',
+                    searchText: 'その他業務',
+                    normalizedText: normalizeText('その他業務')
+                },
                 ...this.clients.map(client => ({
                     value: client.id.toString(),
                     text: client.name,
-                    searchText: client.name
+                    searchText: client.name,
+                    normalizedText: normalizeText(client.name) // 正規化済みテキストをキャッシュ
                 }))
             ];
         };
@@ -399,20 +405,66 @@ class TaskManagement {
             highlightedIndex = -1;
         };
 
-        // オプションをレンダリング
-        const renderOptions = (searchTerm = '') => {
-            const filtered = allOptions.filter(option =>
-                option.searchText.toLowerCase().includes(searchTerm.toLowerCase())
+        // スマート検索機能（正規化対応）
+        const smartSearch = (searchTerm, option) => {
+            if (!searchTerm) return true;
+
+            const normalizedSearchTerm = normalizeText(searchTerm);
+
+            // 複数の検索方式を試行
+            return (
+                // 1. 原文での部分マッチ（従来通り）
+                option.searchText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                // 2. 正規化後の部分マッチ（全角半角、ひらがなカタカナ統一）
+                option.normalizedText.includes(normalizedSearchTerm) ||
+                // 3. 先頭マッチ（優先表示のため）
+                option.normalizedText.startsWith(normalizedSearchTerm) ||
+                // 4. 単語境界でのマッチ（スペース区切りや記号区切り）
+                option.normalizedText.split(/[\s\-_.()（）]/g).some(word =>
+                    word.startsWith(normalizedSearchTerm)
+                )
             );
+        };
+
+        // オプションをレンダリング（スマート検索対応）
+        const renderOptions = (searchTerm = '') => {
+            const filtered = allOptions.filter(option => smartSearch(searchTerm, option));
+
+            // 検索結果を関連度でソート
+            if (searchTerm) {
+                const normalizedSearchTerm = normalizeText(searchTerm);
+                filtered.sort((a, b) => {
+                    // 1. 完全一致が最優先
+                    const aExact = a.normalizedText === normalizedSearchTerm;
+                    const bExact = b.normalizedText === normalizedSearchTerm;
+                    if (aExact !== bExact) return bExact - aExact;
+
+                    // 2. 先頭マッチが次に優先
+                    const aStarts = a.normalizedText.startsWith(normalizedSearchTerm);
+                    const bStarts = b.normalizedText.startsWith(normalizedSearchTerm);
+                    if (aStarts !== bStarts) return bStarts - aStarts;
+
+                    // 3. 短い名前が優先（より具体的）
+                    return a.text.length - b.text.length;
+                });
+            }
 
             if (filtered.length === 0) {
-                dropdown.innerHTML = '<div class="searchable-select-no-results">該当する事業者が見つかりません</div>';
+                dropdown.innerHTML = `<div class="searchable-select-no-results">「${searchTerm}」に該当する事業者が見つかりません</div>`;
                 return;
             }
 
             dropdown.innerHTML = filtered.map((option, index) => {
                 const isSelected = hiddenSelect.value === option.value;
-                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}">${option.text}</div>`;
+                let displayText = option.text;
+
+                // 検索語をハイライト表示
+                if (searchTerm) {
+                    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    displayText = option.text.replace(regex, '<mark style="background: #fff3cd; padding: 0;">$1</mark>');
+                }
+
+                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}">${displayText}</div>`;
             }).join('');
 
             // 現在選択されているアイテムがあればハイライト
@@ -623,14 +675,25 @@ class TaskManagement {
             filtered = filtered.filter(task => task.client_id == this.currentFilters.client);
         }
 
-        // 検索フィルター
+        // 検索フィルター（正規化対応）
         if (this.currentFilters.search) {
             const search = this.currentFilters.search.toLowerCase();
+            const normalizedSearch = normalizeText(this.currentFilters.search);
+
             filtered = filtered.filter(task => {
                 const clientName = task.client_id === 0 ? 'その他業務' : (task.clients?.name || '');
-                return task.task_name.toLowerCase().includes(search) ||
-                       clientName.toLowerCase().includes(search) ||
-                       (task.description || '').toLowerCase().includes(search);
+
+                // 従来の検索
+                const basicMatch = task.task_name.toLowerCase().includes(search) ||
+                                   clientName.toLowerCase().includes(search) ||
+                                   (task.description || '').toLowerCase().includes(search);
+
+                // 正規化検索（全角半角、ひらがなカタカナ対応）
+                const normalizedMatch = normalizeText(task.task_name).includes(normalizedSearch) ||
+                                        normalizeText(clientName).includes(normalizedSearch) ||
+                                        normalizeText(task.description || '').includes(normalizedSearch);
+
+                return basicMatch || normalizedMatch;
             });
         }
 
