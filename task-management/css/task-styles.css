@@ -3,9 +3,9 @@
 /* 担当者サイドバー */
 .assignee-sidebar {
     position: absolute;
-    left: 0;
+    left: -25px;
     top: 0;
-    width: 40px;
+    width: 70px;
     height: 100%;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 8px 0 0 8px;
@@ -16,7 +16,7 @@
 }
 
 .assignee-sidebar:hover {
-    width: 200px;
+    width: 150px;
 }
 
 .assignee-btn {
@@ -51,7 +51,7 @@
 .assignee-btn .initial {
     min-width: 20px;
     text-align: center;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
 }
 
@@ -67,7 +67,7 @@
 
 .assignee-btn .task-badge {
     position: absolute;
-    right: 8px;
+    right: 1px;
     top: 50%;
     transform: translateY(-50%);
     background: #fff;
@@ -88,7 +88,7 @@
 }
 
 .assignee-btn .task-badge.zero {
-    background: #6c757d;
+    background: #444c54db;
     color: white;
 }
 
