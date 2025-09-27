@@ -159,27 +159,10 @@ class TaskManagement {
     }
 
     updateDropdowns() {
-        // フィルター用ドロップダウン
-        const assigneeFilter = document.getElementById('assignee-filter');
-        const clientFilter = document.getElementById('client-filter');
-
-        // モーダル用ドロップダウン（従来の受任者のみ）
+        // モーダル用ドロップダウン（受任者のみ）
         const assigneeSelect = document.getElementById('assignee-select');
 
-        // フィルター - 受任者
-        assigneeFilter.innerHTML = '<option value="">全て</option>';
-        this.staffs.forEach(staff => {
-            assigneeFilter.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
-        });
-
-        // フィルター - 事業者（検索可能プルダウンで処理するためコメントアウト）
-        // clientFilter.innerHTML = '<option value="">全て</option>';
-        // clientFilter.innerHTML += '<option value="0">その他業務</option>';
-        // this.clients.forEach(client => {
-        //     clientFilter.innerHTML += `<option value="${client.id}">${client.name}</option>`;
-        // });
-
-        // モーダル - 受任者（従来通り）
+        // モーダル - 受任者
         assigneeSelect.innerHTML = '<option value="">選択してください</option>';
         this.staffs.forEach(staff => {
             assigneeSelect.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;

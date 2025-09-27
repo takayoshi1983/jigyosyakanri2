@@ -1,20 +1,20 @@
-task-management.js:90 Current user: Object
-task-management.js:129 Master data loaded: Object
-task-management.js:154 Templates loaded: 4
-task-management.js:216 Tasks loaded: 5
-task-management.js:101 Task Management System initialized successfully
-task-management.js:1477 Setting client value: 319
-task-management.js:1479 Using searchableSelect setValue
-task-management.js:629 setValue called with: 319
-task-management.js:630 allOptions length: 96
-task-management.js:631 Looking for value: 319
-task-management.js:635 Found option: {value: '319', text: '㈱アイパートナーズ', searchText: '㈱アイパートナーズ', normalizedText: '㈱ｱｲﾊﾟｰﾄﾅｰｽﾞ'}
-task-management.js:492 selectItem called with: 319 ㈱アイパートナーズ
-task-management.js:493 hiddenSelect element: <select id=​"client-select" name=​"client_id" style=​"display:​ none;​ background-color:​ rgb(248, 249, 250)​;​" required=​"required" disabled>​…​</select>​
-task-management.js:494 hiddenSelect.id: client-select
-task-management.js:499 After setting - hiddenSelect.value: 
-task-management.js:500 After setting - searchInput.value: ㈱アイパートナーズ
-task-management.js:1489 Final client-select value: 
-task-management.js:1674 saveTask - client-select value: 
-task-management.js:1675 saveTask - client-search value: ㈱アイパートナーズ
-task-management.js:1676 saveTask - parsed client_id: null
+task-management.js:88 Current user: {id: 7, name: '吉冨', email: 'takaoyaji14@gmail.com', role: 'admin', created_at: '2025-09-08T07:10:14', …}
+task-management.js:127 Master data loaded: {clients: 95, staffs: 11}
+task-management.js:136 Master data loading error: TypeError: Cannot set properties of null (setting 'innerHTML')
+    at TaskManagement.updateDropdowns (task-management.js:170:34)
+    at TaskManagement.loadMasterData (task-management.js:133:18)
+    at async TaskManagement.init (task-management.js:91:13)
+loadMasterData @ task-management.js:136
+await in loadMasterData
+init @ task-management.js:91
+await in init
+TaskManagement @ task-management.js:68
+(anonymous) @ task-management.js:2083
+task-management.js:101 Initialization error: TypeError: Cannot set properties of null (setting 'innerHTML')
+    at TaskManagement.updateDropdowns (task-management.js:170:34)
+    at TaskManagement.loadMasterData (task-management.js:133:18)
+    at async TaskManagement.init (task-management.js:91:13)
+init @ task-management.js:101
+await in init
+TaskManagement @ task-management.js:68
+(anonymous) @ task-management.js:2083
