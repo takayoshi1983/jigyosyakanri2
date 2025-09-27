@@ -217,6 +217,7 @@ class TaskManagement {
 
             this.updateDisplay();
             this.updateSummary();
+            this.renderAssigneeSidebar(); // サイドバーのタスク数を更新
 
         } catch (error) {
             console.error('Tasks loading error:', error);
@@ -361,6 +362,9 @@ class TaskManagement {
         // 検索可能プルダウンの初期化
         this.initializeSearchableSelect();
         this.initializeFilterSearchableSelect();
+
+        // 担当者サイドバーの初期化
+        this.initializeAssigneeSidebar();
     }
 
     initializeLinkedTextDisplay() {
@@ -910,6 +914,82 @@ class TaskManagement {
         searchInput.value = '全て';
     }
 
+    initializeAssigneeSidebar() {
+        this.currentAssigneeFilter = null; // 現在選択中の担当者フィルター
+        this.renderAssigneeSidebar();
+    }
+
+    renderAssigneeSidebar() {
+        const sidebar = document.getElementById('assignee-sidebar');
+        if (!sidebar) return;
+
+        // 全体ボタン + スタッフごとのボタンを生成
+        const allStaffs = [
+            { id: null, name: '全担当者', initial: '全' },
+            ...this.staffs.sort((a, b) => a.id - b.id) // ID順でソート
+        ];
+
+        const buttons = allStaffs.map(staff => {
+            const taskCount = this.getTaskCountForAssignee(staff.id);
+            const hasUrgentTasks = this.hasUrgentTasksForAssignee(staff.id);
+            const isActive = this.currentAssigneeFilter === staff.id;
+
+            return `
+                <button class="assignee-btn ${isActive ? 'active' : ''}"
+                        data-assignee-id="${staff.id || ''}"
+                        onclick="taskManager.filterByAssignee(${staff.id})">
+                    <span class="initial">${staff.initial || staff.name.charAt(0)}</span>
+                    <span class="full-name">${staff.name}</span>
+                    <span class="task-badge ${hasUrgentTasks ? 'urgent' : ''} ${taskCount === 0 ? 'zero' : ''}">${taskCount}</span>
+                </button>
+            `;
+        }).join('');
+
+        sidebar.innerHTML = buttons;
+    }
+
+    getTaskCountForAssignee(assigneeId) {
+        // 未完了タスク（確認完了以外）の数を計算
+        return this.tasks.filter(task => {
+            if (assigneeId === null) {
+                // 全担当者の場合は全ての未完了タスク
+                return task.status !== '確認完了';
+            } else {
+                // 特定担当者の未完了タスク
+                return task.assignee_id === assigneeId && task.status !== '確認完了';
+            }
+        }).length;
+    }
+
+    hasUrgentTasksForAssignee(assigneeId) {
+        // 高重要度かつ期限切れまたは期限間近のタスクがあるかチェック
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        return this.tasks.some(task => {
+            if (assigneeId !== null && task.assignee_id !== assigneeId) return false;
+            if (task.status === '確認完了') return false;
+
+            // 高重要度チェック
+            if (task.priority === 3) return true;
+
+            // 期限切れ・期限間近チェック
+            if (task.due_date) {
+                const dueDate = new Date(task.due_date);
+                return dueDate <= tomorrow;
+            }
+
+            return false;
+        });
+    }
+
+    filterByAssignee(assigneeId) {
+        this.currentAssigneeFilter = assigneeId;
+        this.renderAssigneeSidebar(); // ボタンの状態を更新
+        this.updateDisplay(); // タスク表示を更新
+    }
+
     switchDisplay(displayType) {
         // 全ての表示を非表示
         document.querySelectorAll('.task-view').forEach(view => {
@@ -946,8 +1026,13 @@ class TaskManagement {
     getFilteredTasks() {
         let filtered = [...this.tasks];
 
-        // 表示切替（全体 vs 自分）
-        if (this.currentFilters.view === 'my') {
+        // 担当者サイドバーフィルター（最優先）
+        if (this.currentAssigneeFilter !== null) {
+            filtered = filtered.filter(task => task.assignee_id === this.currentAssigneeFilter);
+        }
+
+        // 表示切替（全体 vs 自分）- 担当者フィルターがない場合のみ適用
+        if (this.currentAssigneeFilter === null && this.currentFilters.view === 'my') {
             filtered = filtered.filter(task =>
                 task.assignee_id === this.currentUser.id ||
                 task.requester_id === this.currentUser.id
@@ -959,8 +1044,8 @@ class TaskManagement {
             filtered = filtered.filter(task => task.status === this.currentFilters.status);
         }
 
-        // 受任者フィルター
-        if (this.currentFilters.assignee) {
+        // 受任者フィルター（担当者サイドバーがない場合のみ適用）
+        if (this.currentAssigneeFilter === null && this.currentFilters.assignee) {
             filtered = filtered.filter(task => task.assignee_id == this.currentFilters.assignee);
         }
 

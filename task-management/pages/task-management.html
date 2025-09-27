@@ -149,10 +149,15 @@
 
 
         <!-- メインコンテンツ：左右分割レイアウト -->
-        <div class="task-dashboard-container" style="display: flex; gap: 20px; min-height: 600px;">
+        <div class="task-dashboard-container" style="display: flex; gap: 20px; min-height: 600px; position: relative;">
+
+            <!-- 担当者サイドバー（固定配置） -->
+            <div class="assignee-sidebar" id="assignee-sidebar">
+                <!-- JavaScript で動的に生成 -->
+            </div>
 
             <!-- 左側パネル：全体タスク管理 (2/3) -->
-            <div class="left-panel" style="flex: 2; min-width: 0;">
+            <div class="left-panel" style="flex: 2; min-width: 0; margin-left: 50px;">
                 <div class="panel-header" style="background: #f8f9fa; padding: 15px; border-radius: 8px 8px 0 0; border-bottom: 2px solid #dee2e6; margin-bottom: 0;border: groove #a5a0a045;">
                     <h3 style="margin: -8px; color: #495057; display: flex; align-items: center; gap: 10px;">
                         📋 全体タスク管理
