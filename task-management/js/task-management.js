@@ -3,6 +3,53 @@ import { supabase } from '../../supabase-client.js';
 import { formatDate } from '../../utils.js';
 import '../../toast.js'; // showToastはwindow.showToastとしてグローバルに利用可能
 
+// URL自動リンク化機能
+function autoLinkifyText(text) {
+    const urlRegex = /(https?:\/\/[^\s\n]+)/g;
+    return text.replace(urlRegex, '<a href="$1" target="_blank" style="color: #007bff; text-decoration: underline; cursor: pointer;">$1</a>');
+}
+
+function createLinkedTextDisplay(textarea) {
+    // 表示用のdivを作成
+    const displayDiv = document.createElement('div');
+    displayDiv.className = 'linked-text-display';
+    displayDiv.style.display = 'none'; // 初期は非表示
+
+    // テキストエリアの後に表示用divを挿入
+    textarea.parentNode.insertBefore(displayDiv, textarea.nextSibling);
+
+    function updateDisplay() {
+        const text = textarea.value;
+        if (text.trim()) {
+            displayDiv.innerHTML = autoLinkifyText(text);
+        } else {
+            displayDiv.innerHTML = '';
+        }
+    }
+
+    // 表示div をクリックしたらテキストエリアに切り替え
+    displayDiv.addEventListener('click', (e) => {
+        // リンクをクリックした場合は編集モードに入らない
+        if (e.target.tagName !== 'A') {
+            displayDiv.style.display = 'none';
+            textarea.style.display = 'block';
+            textarea.focus();
+        }
+    });
+
+    // テキストエリアからフォーカスが外れたら表示モードに切り替え
+    textarea.addEventListener('blur', () => {
+        updateDisplay();
+        textarea.style.display = 'none';
+        displayDiv.style.display = 'block';
+    });
+
+    // 初期化時に表示を更新
+    updateDisplay();
+
+    return { displayDiv, updateDisplay };
+}
+
 class TaskManagement {
     constructor() {
         this.currentUser = null;
@@ -303,6 +350,16 @@ class TaskManagement {
                 this.closeTemplateModal();
             }
         });
+
+        // URL自動リンク化機能の初期化
+        this.initializeLinkedTextDisplay();
+    }
+
+    initializeLinkedTextDisplay() {
+        const taskDescriptionTextarea = document.getElementById('task-description');
+        if (taskDescriptionTextarea) {
+            this.linkedTextDisplay = createLinkedTextDisplay(taskDescriptionTextarea);
+        }
     }
 
     switchDisplay(displayType) {
@@ -863,6 +920,11 @@ class TaskManagement {
                 document.getElementById('task-description').value = task.description || '';
                 document.getElementById('reference-url').value = task.reference_url || '';
 
+                // URL自動リンク表示を更新
+                if (this.linkedTextDisplay) {
+                    this.linkedTextDisplay.updateDisplay();
+                }
+
                 // 削除ボタンの表示制御（自分が作成したタスクのみ）
                 const deleteBtn = document.getElementById('delete-task-btn');
                 if (deleteBtn) {
@@ -880,6 +942,11 @@ class TaskManagement {
                 document.getElementById('task-name').value = template.task_name || '';
                 document.getElementById('task-description').value = template.description || '';
                 document.getElementById('estimated-hours').value = template.estimated_time_hours || '';
+
+                // URL自動リンク表示を更新
+                if (this.linkedTextDisplay) {
+                    this.linkedTextDisplay.updateDisplay();
+                }
             }
 
             // デフォルト値設定

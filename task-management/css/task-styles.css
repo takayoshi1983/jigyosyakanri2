@@ -722,3 +722,108 @@
         margin: 10px;
     }
 }
+
+/* コンパクトモーダルレイアウト */
+.modal-section {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 15px;
+}
+
+.modal-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.section-title {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #007bff;
+    display: inline-block;
+}
+
+.compact-form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 12px;
+}
+
+.compact-form-row label {
+    flex: 0 0 120px;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    text-align: right;
+}
+
+.compact-form-row .form-control {
+    flex: 1;
+    min-width: 0;
+}
+
+.content-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.content-form-group label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #495057;
+    margin: 0;
+}
+
+.content-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* URL自動リンク表示用 */
+.linked-text-display {
+    min-height: 100px;
+    background: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    cursor: text;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.linked-text-display:empty::before {
+    content: 'クリックして編集';
+    color: #6c757d;
+    font-style: italic;
+}
+
+.linked-text-display a {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.linked-text-display a:hover {
+    color: #0056b3;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+    .compact-form-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+
+    .compact-form-row label {
+        flex: none;
+        text-align: left;
+    }
+}

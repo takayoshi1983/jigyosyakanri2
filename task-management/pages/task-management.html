@@ -163,9 +163,9 @@
                                 <thead>
                                     <tr>
                                         <th style="cursor: pointer; padding: 4px 6px; width: 40px; text-align: center;" data-sort="priority">重要度</th>
-                                        <th style="cursor: pointer; padding: 4px 6px; width: 170px;" data-sort="client_name">事業者</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 150px;" data-sort="client_name">事業者</th>
                                         <th style="cursor: pointer; padding: 4px 6px; width: 120px;" data-sort="task_name">タスク名</th>
-                                        <th style="cursor: pointer; padding: 4px 6px; width: 100px;" data-sort="description">内容</th>
+                                        <th style="cursor: pointer; padding: 4px 6px; width: 170px;" data-sort="description">内容</th>
                                         <th style="cursor: pointer; padding: 4px 6px; width: 30px; text-align: center;" data-sort="reference_url">参照</th>
                                         <th style="cursor: pointer; padding: 4px 6px; width: 45px;" data-sort="requester_name">依頼者</th>
                                         <th style="cursor: pointer; padding: 4px 6px; width: 45px;" data-sort="assignee_name">受任者</th>
@@ -283,30 +283,29 @@
 
     <!-- タスク作成/編集モーダル -->
     <div id="task-modal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h2 id="modal-title">新規タスク作成</h2>
                 <span class="close" id="modal-close">&times;</span>
             </div>
             <div class="modal-body">
                 <form id="task-form">
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1;">
-                            <label for="task-name">タスク名 <span class="required">*</span></label>
+                    <!-- 基本情報セクション -->
+                    <div class="modal-section">
+                        <div class="section-title">基本情報</div>
+                        <div class="compact-form-row">
+                            <label for="task-name">タスク名 <span class="required">*</span>:</label>
                             <input type="text" id="task-name" name="task_name" class="form-control" required>
                         </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1; margin-right: 10px;">
-                            <label for="client-select">事業者 <span class="required">*</span></label>
+                        <div class="compact-form-row">
+                            <label for="client-select">事業者 <span class="required">*</span>:</label>
                             <select id="client-select" name="client_id" class="form-control" required>
                                 <option value="">選択してください</option>
                                 <!-- JavaScript で動的に生成 -->
                             </select>
                         </div>
-                        <div class="form-group" style="flex: 1; margin-left: 10px;">
-                            <label for="assignee-select">受任者 <span class="required">*</span></label>
+                        <div class="compact-form-row">
+                            <label for="assignee-select">受任者 <span class="required">*</span>:</label>
                             <select id="assignee-select" name="assignee_id" class="form-control" required>
                                 <option value="">選択してください</option>
                                 <!-- JavaScript で動的に生成 -->
@@ -314,40 +313,43 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1; margin-right: 10px;">
-                            <label for="priority-select">重要度</label>
+                    <!-- 詳細情報セクション -->
+                    <div class="modal-section">
+                        <div class="section-title">詳細情報</div>
+                        <div class="compact-form-row">
+                            <label for="priority-select">重要度:</label>
                             <select id="priority-select" name="priority" class="form-control">
                                 <option value="1">⭐ 低</option>
                                 <option value="2" selected>⭐⭐ 中</option>
                                 <option value="3">⭐⭐⭐ 高</option>
                             </select>
                         </div>
-                        <div class="form-group" style="flex: 1; margin-left: 10px;">
-                            <label for="estimated-hours">想定時間（時間）</label>
+                        <div class="compact-form-row">
+                            <label for="estimated-hours">想定時間（時間）:</label>
                             <input type="number" id="estimated-hours" name="estimated_time_hours" class="form-control" step="0.5" min="0">
                         </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1; margin-right: 10px;">
-                            <label for="due-date">期限日</label>
+                        <div class="compact-form-row">
+                            <label for="due-date">期限日:</label>
                             <input type="date" id="due-date" name="due_date" class="form-control">
                         </div>
-                        <div class="form-group" style="flex: 1; margin-left: 10px;">
-                            <label for="work-date">作業予定日</label>
+                        <div class="compact-form-row">
+                            <label for="work-date">作業予定日:</label>
                             <input type="date" id="work-date" name="work_date" class="form-control">
+                        </div>
+                        <div class="compact-form-row">
+                            <label for="reference-url">参照URL:</label>
+                            <input type="url" id="reference-url" name="reference_url" class="form-control" placeholder="https://example.com">
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="task-description">作業内容</label>
-                        <textarea id="task-description" name="description" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="reference-url">参照URL</label>
-                        <input type="url" id="reference-url" name="reference_url" class="form-control" placeholder="https://example.com">
+                    <!-- 作業内容セクション -->
+                    <div class="modal-section">
+                        <div class="section-title">作業内容</div>
+                        <div class="content-form-group">
+                            <label for="task-description">作業内容:</label>
+                            <textarea id="task-description" name="description" class="form-control content-textarea" rows="4" placeholder="作業の詳細を記入してください。URLを含む場合は自動的にリンクが生成されます。"></textarea>
+                            <div id="task-description-display" class="linked-text-display" style="display: none;"></div>
+                        </div>
                     </div>
                 </form>
             </div>
