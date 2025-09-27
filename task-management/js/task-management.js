@@ -1270,7 +1270,7 @@ class TaskManagement {
     createClickableStatusBadge(task) {
         const statusConfig = {
             '依頼中': { class: 'status-pending', text: '📝 依頼中', next: '作業完了' },
-            '作業完了': { class: 'status-working', text: '⚙️ 作業完了', next: '確認完了' },
+            '作業完了': { class: 'status-working', text: '⚠️ 確認待ち', next: '確認完了' },
             '確認完了': { class: 'status-completed', text: '☑️ 確認完了', next: '依頼中' }
         };
 
@@ -1283,7 +1283,7 @@ class TaskManagement {
     createStatusBadge(status) {
         const statusConfig = {
             '依頼中': { class: 'status-pending', text: '📝 依頼中' },
-            '作業完了': { class: 'status-working', text: '⚙️ 作業完了' },
+            '作業完了': { class: 'status-working', text: '⚠️ 確認待ち' },
             '確認完了': { class: 'status-completed', text: '☑️ 確認完了' }
         };
 
@@ -1300,7 +1300,7 @@ class TaskManagement {
         // ステータスに応じたボタン（委任者は全て操作可能）
         if (task.status === '依頼中') {
             if (task.assignee_id === this.currentUser.id || task.requester_id === this.currentUser.id) {
-                buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">作業完了</button>`);
+                buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">確認待ち</button>`);
             }
         } else if (task.status === '作業完了') {
             if (task.requester_id === this.currentUser.id) {
@@ -1361,7 +1361,7 @@ class TaskManagement {
         // カンバン列のヘッダーにタスク数を表示
         const statusLabels = {
             '依頼中': '📝 依頼中',
-            '作業完了': '⚙️ 作業完了',
+            '作業完了': '⚠️ 確認待ち',
             '確認完了': '☑️ 確認完了'
         };
 
@@ -2041,7 +2041,7 @@ class TaskManagement {
 
         const statusConfig = {
             '依頼中': { class: 'compact-status-pending', text: '依頼中' },
-            '作業完了': { class: 'compact-status-working', text: '作業完了' },
+            '作業完了': { class: 'compact-status-working', text: '確認待ち' },
             '確認完了': { class: 'compact-status-completed', text: '確認完了' }
         };
 
@@ -2129,7 +2129,7 @@ class TaskManagement {
     createCompactClickableStatus(task) {
         const statusConfig = {
             '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '作業完了' },
-            '作業完了': { class: 'my-task-status-working', text: '⚙️ 作業完了', next: '確認完了' },
+            '作業完了': { class: 'my-task-status-working', text: '⚠️ 確認待ち', next: '確認完了' },
             '確認完了': { class: 'my-task-status-completed', text: '☑️ 確認完了', next: '依頼中' }
         };
 

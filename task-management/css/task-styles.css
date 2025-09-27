@@ -220,15 +220,77 @@
 }
 
 .status-working {
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
 }
 
 .status-completed {
     background: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
+}
+
+/* コンパクトステータス表示 */
+.compact-status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.compact-status-working {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.compact-status-completed {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+/* マイタスクステータス表示 */
+.my-task-status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.my-task-status-working {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.my-task-status-completed {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
 }
 
 /* 期限表示 */
@@ -688,8 +750,8 @@
 }
 
 .compact-status-working {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: #f8d7da;
+    color: #721c24;
 }
 
 .compact-status-completed {
@@ -704,8 +766,8 @@
 }
 
 .my-task-status-working {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: #f8d7da;
+    color: #721c24;
 }
 
 .my-task-status-completed {
@@ -1011,6 +1073,74 @@
     font-size: 0.85rem;
 }
 
+/* モダンリセットボタン */
+.modern-reset-btn {
+    background: linear-gradient(135deg, #fff4b3 0%, #ffeb4f 25%, #ffd700 50%, #ffbf00 75%, #ff9500 100%);
+    border: 2px solid #e6c200;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #7d5f00;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-reset-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.modern-reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    background: linear-gradient(135deg, #fff8c4 0%, #fef060 25%, #ffdc00 50%, #ffca00 75%, #ffa500 100%);
+    border-color: #cc9e00;
+}
+
+.modern-reset-btn:hover::before {
+    left: 100%;
+}
+
+.modern-reset-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+}
+
+.reset-icon {
+    font-size: 1rem;
+    animation: none;
+    transition: transform 0.3s ease;
+}
+
+.modern-reset-btn:hover .reset-icon {
+    animation: resetSpin 0.8s ease-in-out;
+    transform: rotate(180deg);
+}
+
+.reset-text {
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(125, 95, 0, 0.1);
+}
+
+@keyframes resetSpin {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    100% { transform: rotate(360deg); }
+}
+
 /* モバイル対応 */
 @media (max-width: 768px) {
     .compact-form-row {
@@ -1026,5 +1156,10 @@
 
     .searchable-select-dropdown {
         max-height: 150px;
+    }
+
+    .modern-reset-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
     }
 }
