@@ -1309,15 +1309,6 @@ class TaskManagement {
         return `<span style="padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; min-width: 70px; text-align: center; background: #e9ecef; color: #6c757d; border: 1px solid #ced4da;">✅ 確認完了</span>`;
     }
 
-    focusOnMyTasks() {
-        // 「自分」フィルターを有効化
-        document.getElementById('view-my').click();
-
-        // 左パネルにフォーカス
-        document.querySelector('.left-panel').scrollIntoView({ behavior: 'smooth' });
-
-        showToast('自分のタスクを表示中', 'info');
-    }
 
     // テンプレート作成機能
     createTemplate() {
