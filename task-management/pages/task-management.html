@@ -185,15 +185,15 @@
                     <!-- カード表示 -->
                     <div id="card-view" class="task-view" style="display: none;">
                         <div id="kanban-board" class="kanban-container">
-                            <div class="kanban-column" data-status="依頼中">
+                            <div class="kanban-column" data-status="依頼中" style=" border-left: solid #ffd100;">
                                 <h3>📝 依頼中</h3>
                                 <div class="kanban-tasks" id="tasks-pending"></div>
                             </div>
-                            <div class="kanban-column" data-status="作業完了">
+                            <div class="kanban-column" data-status="作業完了" style=" border-left: solid #5299ff;">
                                 <h3>⚙️ 作業完了</h3>
                                 <div class="kanban-tasks" id="tasks-working"></div>
                             </div>
-                            <div class="kanban-column" data-status="確認完了">
+                            <div class="kanban-column" data-status="確認完了" style =" border-left: solid #00c92e;">
                                 <h3>✅ 確認完了</h3>
                                 <div class="kanban-tasks" id="tasks-completed"></div>
                             </div>
