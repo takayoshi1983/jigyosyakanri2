@@ -1458,11 +1458,20 @@ class TaskManagement {
                 document.getElementById('task-name').value = task.task_name || '';
 
                 // 検索可能プルダウンに値を設定
+                console.log('Setting client value:', task.client_id);
                 if (this.searchableSelect) {
+                    console.log('Using searchableSelect setValue');
                     this.searchableSelect.setValue(task.client_id || '');
                 } else {
+                    console.log('Using fallback direct set');
                     document.getElementById('client-select').value = task.client_id || '';
                 }
+
+                // 設定後の値を確認
+                setTimeout(() => {
+                    const finalValue = document.getElementById('client-select').value;
+                    console.log('Final client-select value:', finalValue);
+                }, 100);
 
                 document.getElementById('assignee-select').value = task.assignee_id || '';
                 document.getElementById('priority-select').value = task.priority || '2';
@@ -1644,6 +1653,11 @@ class TaskManagement {
 
         // フォームデータ取得
         const clientSelectValue = document.getElementById('client-select').value;
+        const clientSearchValue = document.getElementById('client-search').value;
+
+        console.log('saveTask - client-select value:', clientSelectValue);
+        console.log('saveTask - client-search value:', clientSearchValue);
+        console.log('saveTask - parsed client_id:', clientSelectValue !== '' ? parseInt(clientSelectValue) : null);
 
         const taskData = {
             task_name: document.getElementById('task-name').value.trim(),
