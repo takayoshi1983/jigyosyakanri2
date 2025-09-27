@@ -582,16 +582,37 @@ class TaskManagement {
             }
         });
 
+        // カンバン列のヘッダーにタスク数を表示
+        const statusLabels = {
+            '依頼中': '📝 依頼中',
+            '作業完了': '⚙️ 作業完了',
+            '確認完了': '✅ 確認完了'
+        };
+
         // 各列にタスクカードを追加
         Object.entries(tasksByStatus).forEach(([status, statusTasks]) => {
             const containerId = status === '依頼中' ? 'tasks-pending' :
                                status === '作業完了' ? 'tasks-working' : 'tasks-completed';
 
             const container = document.getElementById(containerId);
+            const column = container.parentElement;
+            const header = column.querySelector('h3');
+
+            // ヘッダーにタスク数を表示
+            if (header) {
+                header.innerHTML = `${statusLabels[status]} <span style="background: #007bff; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.75rem; margin-left: 8px;">${statusTasks.length}</span>`;
+            }
+
+            // タスクカードを追加
             statusTasks.forEach(task => {
                 const card = this.createTaskCard(task);
                 container.appendChild(card);
             });
+
+            // 10件以上の場合は「もっと見る」機能を追加
+            if (statusTasks.length > 10) {
+                this.addShowMoreButton(container, statusTasks.slice(10), status);
+            }
         });
 
         // ドラッグ&ドロップ初期化
@@ -600,22 +621,104 @@ class TaskManagement {
         }, 100); // DOM更新後に初期化
     }
 
+    addShowMoreButton(container, hiddenTasks, status) {
+        // 最初は10件まで表示
+        const visibleTasks = Array.from(container.children).slice(0, 10);
+        const hiddenTaskElements = Array.from(container.children).slice(10);
+
+        // 隠すタスクを非表示に
+        hiddenTaskElements.forEach(card => {
+            card.style.display = 'none';
+        });
+
+        // 「もっと見る」ボタン追加
+        const showMoreBtn = document.createElement('div');
+        showMoreBtn.className = 'show-more-btn';
+        showMoreBtn.style.cssText = `
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border: 1px dashed #007bff;
+            border-radius: 4px;
+            color: #007bff;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        `;
+        showMoreBtn.innerHTML = `▼ さらに${hiddenTasks.length}件を表示`;
+
+        let isExpanded = false;
+        showMoreBtn.addEventListener('click', () => {
+            if (!isExpanded) {
+                // 展開
+                hiddenTaskElements.forEach(card => {
+                    card.style.display = 'flex';
+                });
+                showMoreBtn.innerHTML = `▲ 折りたたみ`;
+                isExpanded = true;
+            } else {
+                // 折りたたみ
+                hiddenTaskElements.forEach(card => {
+                    card.style.display = 'none';
+                });
+                showMoreBtn.innerHTML = `▼ さらに${hiddenTasks.length}件を表示`;
+                isExpanded = false;
+            }
+        });
+
+        container.appendChild(showMoreBtn);
+    }
+
     createTaskCard(task) {
         const card = document.createElement('div');
         card.className = 'task-card';
         card.dataset.taskId = task.id;
 
-        const dueDateText = task.due_date ? formatDate(task.due_date) : '';
+        const dueDateText = task.due_date ? this.formatMonthDay(task.due_date) : '-';
+        const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
         const dueDateClass = this.getDueDateClass(task.due_date);
 
+        // 2行レイアウト用のデータ準備（マイタスクと同じ方式）
+        const priorityStars = this.getPriorityDisplay(task.priority);
+        const truncatedDescription = task.description ?
+            (task.description.length > 12 ? task.description.substring(0, 12) + '…' : task.description) : '-';
+
+        // 事業者リンク
+        const clientLink = task.clients?.name ?
+            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name.length > 8 ? task.clients.name.substring(0, 8) + '…' : task.clients.name}</a>` : '-';
+
+        // 参照URLアイコン
+        const urlIcon = task.reference_url ?
+            `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()" style="font-size: 0.8rem;">🔗</a>` : '-';
+
+        // 委任者/受任者の表示
+        const requesterName = task.requester?.name ?
+            (task.requester.name.length > 6 ? task.requester.name.substring(0, 6) + '…' : task.requester.name) : '-';
+        const assigneeName = task.assignee?.name ?
+            (task.assignee.name.length > 6 ? task.assignee.name.substring(0, 6) + '…' : task.assignee.name) : '-';
+
+        // 日付表示
+        const dueDateDisplay = dueDateText !== '-' ? `期限：${dueDateText}` : '期限：-';
+        const workDateDisplay = workDateText !== '-' ? `予定：${workDateText}` : '予定：-';
+
         card.innerHTML = `
-            <div class="task-card-title">${task.task_name}</div>
-            <div class="task-card-meta">
-                <span class="task-card-client">${task.clients?.name || '-'}</span>
-                <span class="task-card-assignee">${task.assignee?.name || '-'}</span>
+            <div style="display: flex; flex-direction: column; gap: 3px; padding: 6px;">
+                <!-- 上段 -->
+                <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                    <span style="font-size: 0.7rem; flex: 0 0 25px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
+                    <span style="font-size: 0.75rem; flex: 0 0 auto; min-width: 60px;" title="${task.clients?.name || ''}">${clientLink}</span>
+                    <span style="font-size: 0.8rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
+                    <span style="font-size: 0.7rem; flex: 0 0 65px; color: #6c757d; overflow: hidden; text-overflow: ellipsis;" title="${task.description || ''}">${truncatedDescription}</span>
+                </div>
+                <!-- 下段 -->
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; color: #495057;">
+                    <span style="flex: 0 0 25px; text-align: center;">${urlIcon}</span>
+                    <span style="flex: 0 0 60px; overflow: hidden; text-overflow: ellipsis;" title="${task.requester?.name || ''}">依頼：${requesterName}</span>
+                    <span style="flex: 0 0 60px; overflow: hidden; text-overflow: ellipsis;" title="${task.assignee?.name || ''}">受任：${assigneeName}</span>
+                    <span style="flex: 0 0 50px; color: ${dueDateClass ? '#dc3545' : '#495057'};" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                    <span style="flex: 1; text-align: right;" title="${task.work_date || ''}">${workDateDisplay}</span>
+                </div>
             </div>
-            ${task.description ? `<div class="task-card-description" style="font-size: 0.8rem; color: #6c757d; margin-top: 8px;">${task.description}</div>` : ''}
-            ${dueDateText ? `<div class="task-card-due ${dueDateClass}">期限: ${dueDateText}</div>` : ''}
         `;
 
         // クリックで詳細表示
