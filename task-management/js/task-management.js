@@ -761,6 +761,10 @@ class TaskManagement {
         });
 
         searchInput.addEventListener('focus', (e) => {
+            // 「全て」の場合はクリア
+            if (searchInput.value === '全て') {
+                searchInput.value = '';
+            }
             updateOptions();
             setTimeout(() => {
                 showDropdown();
@@ -771,6 +775,13 @@ class TaskManagement {
             setTimeout(() => {
                 if (!wrapper.contains(document.activeElement)) {
                     hideDropdown();
+                    // 空の場合は「全て」に戻す
+                    if (searchInput.value.trim() === '') {
+                        searchInput.value = '全て';
+                        hiddenSelect.value = '';
+                        this.currentFilters.client = '';
+                        this.updateDisplay();
+                    }
                 }
             }, 150);
         });
@@ -837,6 +848,10 @@ class TaskManagement {
         });
 
         searchInput.addEventListener('click', (e) => {
+            // 「全て」の場合はクリア
+            if (searchInput.value === '全て') {
+                searchInput.value = '';
+            }
             if (dropdown.style.display === 'none') {
                 updateOptions();
                 showDropdown();
