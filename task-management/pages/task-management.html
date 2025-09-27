@@ -350,7 +350,10 @@
                         </div>
                         <div class="compact-form-row">
                             <label for="reference-url">参照URL:</label>
-                            <input type="url" id="reference-url" name="reference_url" class="form-control" placeholder="https://example.com">
+                            <div style="flex: 1; position: relative;">
+                                <input type="url" id="reference-url" name="reference_url" class="form-control" placeholder="https://example.com">
+                                <div id="reference-url-display" class="linked-text-display" style="display: none;"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -369,7 +372,7 @@
                 <!-- 閲覧モード時のボタン -->
                 <div id="view-mode-buttons" style="display: flex;gap: inherit;">
                     <button type="button" id="close-view-btn" class="btn btn-secondary" style="margin-right: 0px;display: inline-block;background-color: rgb(209 209 209 / 66%);color: rgb(99 99 99);border-radius: 5px;font-size: 20px;">閉じる</button>
-                    <button type="button" id="edit-mode-btn" class="btn btn-primary">編集</button>
+                    <button type="button" id="edit-mode-btn" class="btn btn-primary" style="margin-right: 0px;display: inline-block;background-color: rgb(209 209 209 / 66%);color: rgb(99 99 99);border-radius: 5px;font-size: 20px;">編集</button>
                 </div>
 
                 <!-- 編集モード時のボタン -->

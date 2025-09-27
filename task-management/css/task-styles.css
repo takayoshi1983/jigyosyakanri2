@@ -508,9 +508,9 @@
 
 .compact-task-item {
     background: #f8f9fa;
-    border: groove #0083ff3d;
+    border: groove 1px #0083ff3d;
     border-radius: 4px;
-    padding: 0px 26px;
+    padding: 2px 30px;
     font-size: 0.8rem;
     transition: all 0.2s;
     cursor: pointer;
@@ -819,6 +819,22 @@
 
 .linked-text-display a:hover {
     color: #0056b3;
+}
+
+/* 参照URLフィールド用の調整 */
+#reference-url-display.linked-text-display {
+    min-height: 38px;
+    padding: 8px 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#reference-url-display.linked-text-display:empty::before {
+    content: 'URLを入力してください';
+    color: #6c757d;
+    font-style: italic;
 }
 
 /* 検索可能プルダウン */

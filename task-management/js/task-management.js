@@ -368,6 +368,12 @@ class TaskManagement {
         if (taskDescriptionTextarea) {
             this.linkedTextDisplay = createLinkedTextDisplay(taskDescriptionTextarea);
         }
+
+        // 参照URLフィールドにもURL自動リンク化を適用
+        const referenceUrlInput = document.getElementById('reference-url');
+        if (referenceUrlInput) {
+            this.referenceUrlDisplay = createLinkedTextDisplay(referenceUrlInput);
+        }
     }
 
     initializeSearchableSelect() {
@@ -1470,6 +1476,9 @@ class TaskManagement {
                 if (this.linkedTextDisplay) {
                     this.linkedTextDisplay.updateDisplay();
                 }
+                if (this.referenceUrlDisplay) {
+                    this.referenceUrlDisplay.updateDisplay();
+                }
 
                 // 削除ボタンの表示制御（自分が作成したタスクのみ）
                 const deleteBtn = document.getElementById('delete-task-btn');
@@ -1486,6 +1495,10 @@ class TaskManagement {
             // 検索可能プルダウンをクリア
             if (this.searchableSelect) {
                 this.searchableSelect.clear();
+            } else {
+                // フォールバック：直接クリア
+                document.getElementById('client-select').value = '';
+                document.getElementById('client-search').value = '';
             }
 
             if (template) {
@@ -1497,6 +1510,9 @@ class TaskManagement {
                 // URL自動リンク表示を更新
                 if (this.linkedTextDisplay) {
                     this.linkedTextDisplay.updateDisplay();
+                }
+                if (this.referenceUrlDisplay) {
+                    this.referenceUrlDisplay.updateDisplay();
                 }
             }
 
@@ -1627,9 +1643,17 @@ class TaskManagement {
         const templateName = form.dataset.templateName;
 
         // フォームデータ取得
+        const clientSelectValue = document.getElementById('client-select').value;
+        const clientSearchValue = document.getElementById('client-search').value;
+
+        // デバッグ情報
+        console.log('Client select value:', clientSelectValue);
+        console.log('Client search value:', clientSearchValue);
+        console.log('Client ID after parsing:', clientSelectValue !== '' ? parseInt(clientSelectValue) : null);
+
         const taskData = {
             task_name: document.getElementById('task-name').value.trim(),
-            client_id: parseInt(document.getElementById('client-select').value) || null,
+            client_id: clientSelectValue !== '' ? parseInt(clientSelectValue) : null,
             assignee_id: parseInt(document.getElementById('assignee-select').value) || null,
             priority: parseInt(document.getElementById('priority-select').value) || 2,
             due_date: document.getElementById('due-date').value || null,
@@ -1657,7 +1681,9 @@ class TaskManagement {
             return;
         }
 
+        // client_id が null または undefined の場合のみエラー（0は有効な値）
         if (taskData.client_id === null || taskData.client_id === undefined) {
+            console.log('Client ID validation failed:', taskData.client_id);
             showToast('事業者を選択してください', 'error');
             return;
         }
