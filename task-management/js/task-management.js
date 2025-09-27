@@ -196,9 +196,11 @@ class TaskManagement {
             this.tasks = tasksData || [];
             console.log('Tasks loaded:', this.tasks.length);
 
+            // 担当者サイドバーの初期化（フィルター状態復元含む）
+            this.initializeAssigneeSidebar();
+
             this.updateDisplay();
             this.updateSummary();
-            this.renderAssigneeSidebar(); // サイドバーのタスク数を更新
 
         } catch (error) {
             console.error('Tasks loading error:', error);
@@ -352,9 +354,6 @@ class TaskManagement {
         // 検索可能プルダウンの初期化
         this.initializeSearchableSelect();
         this.initializeFilterSearchableSelect();
-
-        // 担当者サイドバーの初期化
-        this.initializeAssigneeSidebar();
     }
 
     initializeLinkedTextDisplay() {
@@ -913,11 +912,18 @@ class TaskManagement {
             this.currentAssigneeFilter = savedState.assigneeFilter;
             this.currentFilters = { ...this.currentFilters, ...savedState.filters };
             this.currentDisplay = savedState.display || 'list';
+            console.log('Filter state restored:', savedState);
         } else {
             this.currentAssigneeFilter = null; // 全担当者を表示
+            console.log('Using default filter state');
         }
 
         this.renderAssigneeSidebar();
+
+        // フィルター状態が復元された場合はUIも更新
+        if (savedState) {
+            this.updateFilterUI();
+        }
     }
 
     // フィルター状態をローカルストレージに保存
