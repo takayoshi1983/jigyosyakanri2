@@ -41,7 +41,7 @@
         </div>
 
         <!-- ヘッダー & フィルターエリア -->
-        <div class="analytics-filters" style="background: #ff86866b; padding: 15px; border-radius: 8px; margin-bottom: 10px; overflow: visible; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
+        <div class="analytics-filters" style="background: #ffb5b587; padding: 15px; border-radius: 8px; margin-bottom: 10px; overflow: visible; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
             <!-- タイトル行 + サマリー情報 -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; position: relative; overflow: visible;">
                 <!-- 左側：タイトル + ボタン -->
@@ -71,11 +71,11 @@
                     </div>
                     <div class="summary-compact" style="background: #d1ecf1; border: 2px solid #bee5eb; padding: 6px 12px; border-radius: 6px; text-align: center; min-width: 70px;">
                         <div id="working-tasks" style="font-weight: bold; font-size: 1.1rem; color: #0c5460; margin: 0;">0</div>
-                        <div style="font-size: 0.7rem; color: #0c5460; margin: 0;">作業中</div>
+                        <div style="font-size: 0.7rem; color: #0c5460; margin: 0;">作業完了</div>
                     </div>
                     <div class="summary-compact" style="background: #d4edda; border: 2px solid #c3e6cb; padding: 6px 12px; border-radius: 6px; text-align: center; min-width: 70px;">
                         <div id="completed-tasks" style="font-weight: bold; font-size: 1.1rem; color: #155724; margin: 0;">0</div>
-                        <div style="font-size: 0.7rem; color: #155724; margin: 0;">完了</div>
+                        <div style="font-size: 0.7rem; color: #155724; margin: 0;">確認完了</div>
                     </div>
                 </div>
 
@@ -234,12 +234,23 @@
                     </div>
 
                     <!-- 依頼タスク（自分が作成した） -->
-                    <div class="my-requested-tasks">
+                    <div class="my-requested-tasks" style="margin-bottom: 15px;">
                         <h4 style="margin: 0 0 6px 0; color: #28a745; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">
                             📤 依頼中のタスク
                             <span id="requested-count" style="background: #28a745; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
                         </h4>
                         <div id="requested-task-list" class="compact-task-list">
+                            <!-- JavaScript で動的に生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 確認完了したタスク -->
+                    <div class="my-completed-tasks">
+                        <h4 style="margin: 0 0 6px 0; color: #6c757d; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">
+                            ✅ 確認完了したタスク
+                            <span id="completed-count" style="background: #6c757d; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
+                        </h4>
+                        <div id="completed-task-list" class="compact-task-list">
                             <!-- JavaScript で動的に生成 -->
                         </div>
                     </div>

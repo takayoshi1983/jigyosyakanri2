@@ -1140,21 +1140,32 @@ class TaskManagement {
     updateMyTasks() {
         if (!this.currentUser) return;
 
-        // 受任タスク（自分が実行する）
-        const assignedTasks = this.tasks.filter(task => task.assignee_id === this.currentUser.id);
-
-        // 依頼タスク（自分が作成した、ただし自分自身のタスクは除く）
-        const requestedTasks = this.tasks.filter(task =>
-            task.requester_id === this.currentUser.id &&
-            task.assignee_id !== this.currentUser.id
+        // 受任タスク（自分が実行する、確認完了以外）
+        const assignedTasks = this.tasks.filter(task =>
+            task.assignee_id === this.currentUser.id &&
+            task.status !== '確認完了'
         );
 
-        // 総タスク数（重複なし）
+        // 依頼タスク（自分が作成した、ただし自分自身のタスクは除く、確認完了以外）
+        const requestedTasks = this.tasks.filter(task =>
+            task.requester_id === this.currentUser.id &&
+            task.assignee_id !== this.currentUser.id &&
+            task.status !== '確認完了'
+        );
+
+        // 確認完了したタスク（自分が関わったもの）
+        const completedTasks = this.tasks.filter(task =>
+            (task.assignee_id === this.currentUser.id || task.requester_id === this.currentUser.id) &&
+            task.status === '確認完了'
+        );
+
+        // 総タスク数（完了済みは除く）
         const totalMyTasks = assignedTasks.length + requestedTasks.length;
 
         // カウント更新
         document.getElementById('assigned-count').textContent = assignedTasks.length;
         document.getElementById('requested-count').textContent = requestedTasks.length;
+        document.getElementById('completed-count').textContent = completedTasks.length;
         document.getElementById('my-task-count').textContent = `${totalMyTasks}件`;
 
         // 受任タスクリスト更新
@@ -1162,9 +1173,12 @@ class TaskManagement {
 
         // 依頼タスクリスト更新
         this.updateCompactTaskList('requested-task-list', requestedTasks);
+
+        // 確認完了タスクリスト更新（グレーアウト）
+        this.updateCompactTaskList('completed-task-list', completedTasks, true);
     }
 
-    updateCompactTaskList(containerId, tasks) {
+    updateCompactTaskList(containerId, tasks, isCompleted = false) {
         const container = document.getElementById(containerId);
 
         if (tasks.length === 0) {
@@ -1175,15 +1189,20 @@ class TaskManagement {
         container.innerHTML = '';
 
         tasks.forEach(task => {
-            const taskItem = this.createCompactTaskItem(task);
+            const taskItem = this.createCompactTaskItem(task, isCompleted);
             container.appendChild(taskItem);
         });
     }
 
-    createCompactTaskItem(task) {
+    createCompactTaskItem(task, isCompleted = false) {
         const item = document.createElement('div');
         item.className = 'compact-task-item';
         item.dataset.taskId = task.id;
+
+        // 完了済みタスクの場合はグレーアウト
+        if (isCompleted) {
+            item.classList.add('task-completed-gray');
+        }
 
         const dueDateText = task.due_date ? this.formatMonthDay(task.due_date) : '';
         const dueDateClass = this.getDueDateClass(task.due_date);
@@ -1201,16 +1220,24 @@ class TaskManagement {
         const truncatedDescription = task.description ?
             (task.description.length > 15 ? task.description.substring(0, 15) + '…' : task.description) : '-';
 
-        // 事業者リンク
+        // 事業者リンク（完了済みの場合は通常テキスト）
         const clientLink = task.clients?.name ?
-            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name}</a>` : '-';
+            (isCompleted ?
+                `<span style="color: #6c757d; font-size: 0.75rem;">${task.clients.name}</span>` :
+                `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name}</a>`
+            ) : '-';
 
-        // 参照URLアイコン
+        // 参照URLアイコン（完了済みの場合はグレー）
         const urlIcon = task.reference_url ?
-            `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()" style="font-size: 0.8rem;">🔗</a>` : '-';
+            (isCompleted ?
+                `<span style="font-size: 0.8rem; color: #adb5bd;">🔗</span>` :
+                `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()" style="font-size: 0.8rem;">🔗</a>`
+            ) : '-';
 
-        // ステータス（クリック可能）
-        const clickableStatus = this.createCompactClickableStatus(task);
+        // ステータス（完了済みの場合はクリック不可）
+        const clickableStatus = isCompleted ?
+            this.createStaticStatus(task) :
+            this.createCompactClickableStatus(task);
 
         // 委任者/受任者の表示（ラベル付き）
         const isAssigned = task.assignee_id === this.currentUser.id;
@@ -1222,22 +1249,26 @@ class TaskManagement {
         const dueDateDisplay = dueDateText !== '-' ? `期限：${dueDateText}` : '期限：-';
         const workDateDisplay = task.work_date ? `予定：${this.formatMonthDay(task.work_date)}` : '予定：-';
 
+        // 完了済みの場合の色調整
+        const textColor = isCompleted ? '#6c757d' : '#495057';
+        const linkColor = isCompleted ? '#6c757d' : (dueDateClass ? '#dc3545' : '#495057');
+
         item.innerHTML = `
             <div style="display: flex; position: relative;">
                 <!-- 左側：メイン情報エリア -->
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding-right: 80px;">
                     <!-- 上段 -->
                     <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-                        <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
+                        <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap; color: ${textColor};" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
                         <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${task.clients?.name || ''}">${clientLink}</span>
-                        <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
+                        <span style="font-size: 0.75rem; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                         <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
                     </div>
                     <!-- 下段 -->
-                    <div style="display: flex; align-items: center; gap: 14px; font-size: 0.7rem; color: #495057; white-space: nowrap;">
+                    <div style="display: flex; align-items: center; gap: 14px; font-size: 0.7rem; color: ${textColor}; white-space: nowrap;">
                         <span style="flex: 0 0 30px; text-align: center; white-space: nowrap;">${urlIcon}</span>
                         <span style="flex: 0 0 auto; white-space: nowrap; min-width: 80px; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
-                        <span style="flex: 0 0 65px; color: ${dueDateClass ? '#dc3545' : '#495057'}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                        <span style="flex: 0 0 65px; color: ${linkColor}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>
                         <span style="flex: 0 0 65px; white-space: nowrap;" title="${task.work_date || ''}">${workDateDisplay}</span>
                     </div>
                 </div>
@@ -1272,6 +1303,10 @@ class TaskManagement {
         return `<span class="my-task-status ${config.class}" style="cursor: pointer; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; min-width: 70px; text-align: center; border: 1px solid #d2b866;"
                       title="クリックで「${config.next}」に変更"
                       onclick="event.stopPropagation(); taskManager.cycleTaskStatus(${task.id})">${config.text}</span>`;
+    }
+
+    createStaticStatus(task) {
+        return `<span style="padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; min-width: 70px; text-align: center; background: #e9ecef; color: #6c757d; border: 1px solid #ced4da;">✅ 確認完了</span>`;
     }
 
     focusOnMyTasks() {
