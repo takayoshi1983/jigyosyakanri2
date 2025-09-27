@@ -401,6 +401,14 @@ class TaskManagement {
                     normalizedText: normalizeText(client.name) // 正規化済みテキストをキャッシュ
                 }))
             ];
+
+            // 隠しselect要素にもoption要素を追加（フォーム送信で正常に値が送られるようにするため）
+            const currentValue = hiddenSelect.value; // 現在の値を保持
+            hiddenSelect.innerHTML = '<option value="">選択してください</option>' +
+                allOptions.map(option =>
+                    `<option value="${option.value}">${option.text}</option>`
+                ).join('');
+            hiddenSelect.value = currentValue; // 値を復元
         };
 
         // ドロップダウンを表示
@@ -605,9 +613,6 @@ class TaskManagement {
             }
         });
 
-        // 初期化
-        updateOptions();
-
         // this.searchableSelect として保存
         this.searchableSelect = {
             updateOptions,
@@ -628,6 +633,9 @@ class TaskManagement {
                 }
             }
         };
+
+        // 初期化時にオプションを設定
+        updateOptions();
     }
 
     initializeFilterSearchableSelect() {
@@ -661,6 +669,13 @@ class TaskManagement {
                     normalizedText: normalizeText(client.name)
                 }))
             ];
+
+            // 隠しselect要素にもoption要素を追加（フィルター用）
+            const currentValue = hiddenSelect.value; // 現在の値を保持
+            hiddenSelect.innerHTML = allOptions.map(option =>
+                `<option value="${option.value}">${option.text}</option>`
+            ).join('');
+            hiddenSelect.value = currentValue; // 値を復元
         };
 
         // ドロップダウンを表示
@@ -890,7 +905,8 @@ class TaskManagement {
             }
         };
 
-        // 初期値設定
+        // 初期値設定とオプション設定
+        updateOptions();
         searchInput.value = '全て';
     }
 
