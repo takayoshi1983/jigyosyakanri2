@@ -289,6 +289,7 @@
     min-height: 40px;
     display: flex;
     align-items: center;
+    justify-content: space-around
 }
 
 .task-card:hover {

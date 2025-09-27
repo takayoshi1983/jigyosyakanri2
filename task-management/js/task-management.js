@@ -715,7 +715,7 @@ class TaskManagement {
                     <span style="flex: 0 0 25px; text-align: center;">${urlIcon}</span>
                     <span style="flex: 0 0 60px; overflow: hidden; text-overflow: ellipsis;" title="${task.requester?.name || ''}">依頼：${requesterName}</span>
                     <span style="flex: 0 0 60px; overflow: hidden; text-overflow: ellipsis;" title="${task.assignee?.name || ''}">受任：${assigneeName}</span>
-                    <span style="flex: 0 0 50px; color: ${dueDateClass ? '#dc3545' : '#495057'};" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                    <span style="flex: 0 0 60px; color: ${dueDateClass ? '#dc3545' : '#495057'};" title="${task.due_date || ''}">${dueDateDisplay}</span>
                     <span style="flex: 1; text-align: right;" title="${task.work_date || ''}">${workDateDisplay}</span>
                 </div>
             </div>
@@ -1234,7 +1234,7 @@ class TaskManagement {
                         <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
                     </div>
                     <!-- 下段 -->
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #495057; white-space: nowrap;">
+                    <div style="display: flex; align-items: center; gap: 14px; font-size: 0.7rem; color: #495057; white-space: nowrap;">
                         <span style="flex: 0 0 30px; text-align: center; white-space: nowrap;">${urlIcon}</span>
                         <span style="flex: 0 0 auto; white-space: nowrap; min-width: 80px; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
                         <span style="flex: 0 0 65px; color: ${dueDateClass ? '#dc3545' : '#495057'}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>
