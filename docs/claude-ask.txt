@@ -3,13 +3,18 @@ task-management.js:129 Master data loaded: Object
 task-management.js:154 Templates loaded: 4
 task-management.js:216 Tasks loaded: 5
 task-management.js:101 Task Management System initialized successfully
-task-management.js:1469 Setting client value: 603
-task-management.js:1471 Using searchableSelect setValue
-task-management.js:621 setValue called with: 603
-task-management.js:622 allOptions length: 96
-task-management.js:623 Looking for value: 603
-task-management.js:627 Found option: ObjectnormalizedText: "aft企画　株式会社"searchText: "ＡＦＴ企画　株式会社"text: "ＡＦＴ企画　株式会社"value: "603"[[Prototype]]: Objectconstructor: ƒ Object()assign: ƒ assign()create: ƒ create()defineProperties: ƒ defineProperties()defineProperty: ƒ defineProperty()entries: ƒ entries()freeze: ƒ freeze()fromEntries: ƒ fromEntries()getOwnPropertyDescriptor: ƒ getOwnPropertyDescriptor()getOwnPropertyDescriptors: ƒ getOwnPropertyDescriptors()getOwnPropertyNames: ƒ getOwnPropertyNames()getOwnPropertySymbols: ƒ getOwnPropertySymbols()getPrototypeOf: ƒ getPrototypeOf()groupBy: ƒ groupBy()hasOwn: ƒ hasOwn()is: ƒ is()isExtensible: ƒ isExtensible()isFrozen: ƒ isFrozen()isSealed: ƒ isSealed()keys: ƒ keys()length: 1name: "Object"preventExtensions: ƒ preventExtensions()prototype: {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}seal: ƒ seal()setPrototypeOf: ƒ setPrototypeOf()values: ƒ values()arguments: (...)caller: (...)[[Prototype]]: ƒ ()[[Scopes]]: Scopes[0]hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()length: 1name: "__lookupGetter__"arguments: (...)caller: (...)[[Prototype]]: ƒ ()[[Scopes]]: Scopes[0]__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()length: 0name: "get __proto__"arguments: (...)caller: (...)[[Prototype]]: ƒ ()[[Scopes]]: Scopes[0]set __proto__: ƒ __proto__()length: 1name: "set __proto__"arguments: (...)caller: (...)[[Prototype]]: ƒ ()[[Scopes]]: Scopes[0]
-task-management.js:1481 Final client-select value: 
-task-management.js:1666 saveTask - client-select value: 
-task-management.js:1667 saveTask - client-search value: ＡＦＴ企画　株式会社
-task-management.js:1668 saveTask - parsed client_id: null
+task-management.js:1477 Setting client value: 319
+task-management.js:1479 Using searchableSelect setValue
+task-management.js:629 setValue called with: 319
+task-management.js:630 allOptions length: 96
+task-management.js:631 Looking for value: 319
+task-management.js:635 Found option: {value: '319', text: '㈱アイパートナーズ', searchText: '㈱アイパートナーズ', normalizedText: '㈱ｱｲﾊﾟｰﾄﾅｰｽﾞ'}
+task-management.js:492 selectItem called with: 319 ㈱アイパートナーズ
+task-management.js:493 hiddenSelect element: <select id=​"client-select" name=​"client_id" style=​"display:​ none;​ background-color:​ rgb(248, 249, 250)​;​" required=​"required" disabled>​…​</select>​
+task-management.js:494 hiddenSelect.id: client-select
+task-management.js:499 After setting - hiddenSelect.value: 
+task-management.js:500 After setting - searchInput.value: ㈱アイパートナーズ
+task-management.js:1489 Final client-select value: 
+task-management.js:1674 saveTask - client-select value: 
+task-management.js:1675 saveTask - client-search value: ㈱アイパートナーズ
+task-management.js:1676 saveTask - parsed client_id: null

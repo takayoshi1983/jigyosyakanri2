@@ -489,16 +489,8 @@ class TaskManagement {
 
         // アイテムを選択
         const selectItem = (value, text) => {
-            console.log('selectItem called with:', value, text);
-            console.log('hiddenSelect element:', hiddenSelect);
-            console.log('hiddenSelect.id:', hiddenSelect?.id);
-
             hiddenSelect.value = value;
             searchInput.value = text;
-
-            console.log('After setting - hiddenSelect.value:', hiddenSelect.value);
-            console.log('After setting - searchInput.value:', searchInput.value);
-
             hideDropdown();
 
             // カスタムイベントを発火（バリデーション等のため）
@@ -626,18 +618,12 @@ class TaskManagement {
                 hideDropdown();
             },
             setValue: (value) => {
-                console.log('setValue called with:', value);
-                console.log('allOptions length:', allOptions.length);
-                console.log('Looking for value:', value.toString());
-
                 updateOptions(); // オプションを最新に更新
                 const option = allOptions.find(opt => opt.value === value.toString());
-                console.log('Found option:', option);
 
                 if (option) {
                     selectItem(option.value, option.text);
                 } else {
-                    console.log('Option not found, clearing');
                     this.searchableSelect.clear();
                 }
             }
@@ -1474,20 +1460,11 @@ class TaskManagement {
                 document.getElementById('task-name').value = task.task_name || '';
 
                 // 検索可能プルダウンに値を設定
-                console.log('Setting client value:', task.client_id);
                 if (this.searchableSelect) {
-                    console.log('Using searchableSelect setValue');
                     this.searchableSelect.setValue(task.client_id || '');
                 } else {
-                    console.log('Using fallback direct set');
                     document.getElementById('client-select').value = task.client_id || '';
                 }
-
-                // 設定後の値を確認
-                setTimeout(() => {
-                    const finalValue = document.getElementById('client-select').value;
-                    console.log('Final client-select value:', finalValue);
-                }, 100);
 
                 document.getElementById('assignee-select').value = task.assignee_id || '';
                 document.getElementById('priority-select').value = task.priority || '2';
@@ -1565,8 +1542,11 @@ class TaskManagement {
         if (mode === 'view') {
             // 閲覧モード
             inputs.forEach(input => {
-                input.disabled = true;
-                input.style.backgroundColor = '#f8f9fa';
+                // 隠しselect要素はdisabledにしない（検索可能プルダウンが動作しなくなるため）
+                if (input.style.display !== 'none') {
+                    input.disabled = true;
+                    input.style.backgroundColor = '#f8f9fa';
+                }
             });
             viewModeButtons.style.display = 'flex';
             editModeButtons.style.display = 'none';
@@ -1669,11 +1649,6 @@ class TaskManagement {
 
         // フォームデータ取得
         const clientSelectValue = document.getElementById('client-select').value;
-        const clientSearchValue = document.getElementById('client-search').value;
-
-        console.log('saveTask - client-select value:', clientSelectValue);
-        console.log('saveTask - client-search value:', clientSearchValue);
-        console.log('saveTask - parsed client_id:', clientSelectValue !== '' ? parseInt(clientSelectValue) : null);
 
         const taskData = {
             task_name: document.getElementById('task-name').value.trim(),
