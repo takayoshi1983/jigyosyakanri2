@@ -476,7 +476,7 @@ class TaskManagement {
                     displayText = option.text.replace(regex, '<mark style="background: #fff3cd; padding: 0;">$1</mark>');
                 }
 
-                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}">${displayText}</div>`;
+                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}" data-text="${option.text}">${displayText}</div>`;
             }).join('');
 
             // 現在選択されているアイテムがあればハイライト
@@ -557,7 +557,7 @@ class TaskManagement {
                     e.preventDefault();
                     if (highlightedIndex >= 0 && items[highlightedIndex]) {
                         const item = items[highlightedIndex];
-                        selectItem(item.dataset.value, item.textContent);
+                        selectItem(item.dataset.value, item.dataset.text);
                     }
                     break;
                 case 'Escape':
@@ -572,7 +572,7 @@ class TaskManagement {
             e.preventDefault(); // ブラーイベントを防ぐ
             const item = e.target.closest('.searchable-select-item');
             if (item && !item.classList.contains('searchable-select-no-results')) {
-                selectItem(item.dataset.value, item.textContent);
+                selectItem(item.dataset.value, item.dataset.text);
             }
         });
 
@@ -724,7 +724,7 @@ class TaskManagement {
                     displayText = option.text.replace(regex, '<mark style="background: #fff3cd; padding: 0;">$1</mark>');
                 }
 
-                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}">${displayText}</div>`;
+                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}" data-text="${option.text}">${displayText}</div>`;
             }).join('');
 
             const selectedItem = dropdown.querySelector('.searchable-select-item.selected');
@@ -816,7 +816,7 @@ class TaskManagement {
                     e.preventDefault();
                     if (highlightedIndex >= 0 && items[highlightedIndex]) {
                         const item = items[highlightedIndex];
-                        selectItem(item.dataset.value, item.textContent.replace(/\s+/g, ' ').trim());
+                        selectItem(item.dataset.value, item.dataset.text);
                     }
                     break;
                 case 'Escape':
@@ -830,7 +830,7 @@ class TaskManagement {
             e.preventDefault();
             const item = e.target.closest('.searchable-select-item');
             if (item && !item.classList.contains('searchable-select-no-results')) {
-                selectItem(item.dataset.value, item.textContent.replace(/\s+/g, ' ').trim());
+                selectItem(item.dataset.value, item.dataset.text);
             }
         });
 
@@ -1644,12 +1644,6 @@ class TaskManagement {
 
         // フォームデータ取得
         const clientSelectValue = document.getElementById('client-select').value;
-        const clientSearchValue = document.getElementById('client-search').value;
-
-        // デバッグ情報
-        console.log('Client select value:', clientSelectValue);
-        console.log('Client search value:', clientSearchValue);
-        console.log('Client ID after parsing:', clientSelectValue !== '' ? parseInt(clientSelectValue) : null);
 
         const taskData = {
             task_name: document.getElementById('task-name').value.trim(),
@@ -1683,7 +1677,6 @@ class TaskManagement {
 
         // client_id が null または undefined の場合のみエラー（0は有効な値）
         if (taskData.client_id === null || taskData.client_id === undefined) {
-            console.log('Client ID validation failed:', taskData.client_id);
             showToast('事業者を選択してください', 'error');
             return;
         }
