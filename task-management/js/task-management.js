@@ -1035,20 +1035,20 @@ class TaskManagement {
     }
 
     getTaskCountForAssignee(assigneeId) {
-        // 未完了タスク（確認完了以外）の数を計算
+        // 「依頼中」タスクの数のみを計算
         return this.tasks.filter(task => {
             if (assigneeId === null) {
-                // 全担当者の場合は全ての未完了タスク
-                return task.status !== '確認完了';
+                // 全担当者の場合は全ての「依頼中」タスク
+                return task.status === '依頼中';
             } else {
-                // 特定担当者の未完了タスク
-                return task.assignee_id === assigneeId && task.status !== '確認完了';
+                // 特定担当者の「依頼中」タスク
+                return task.assignee_id === assigneeId && task.status === '依頼中';
             }
         }).length;
     }
 
     hasUrgentTasksForAssignee(assigneeId) {
-        // 高重要度かつ期限切れまたは期限間近のタスクがあるかチェック
+        // 期限切れまたは期限間近のタスクがあるかチェック
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -1057,10 +1057,7 @@ class TaskManagement {
             if (assigneeId !== null && task.assignee_id !== assigneeId) return false;
             if (task.status === '確認完了') return false;
 
-            // 高重要度チェック
-            if (task.priority === 3) return true;
-
-            // 期限切れ・期限間近チェック
+            // 期限切れ・期限間近チェック（高重要度による赤色表示は削除）
             if (task.due_date) {
                 const dueDate = new Date(task.due_date);
                 return dueDate <= tomorrow;
@@ -1071,12 +1068,12 @@ class TaskManagement {
     }
 
     hasOverdueTasksForAssignee(assigneeId) {
-        // 期限切れタスクがあるかチェック
+        // 「依頼中」タスクで期限切れがあるかチェック
         const today = new Date();
 
         return this.tasks.some(task => {
             if (assigneeId !== null && task.assignee_id !== assigneeId) return false;
-            if (task.status === '確認完了') return false;
+            if (task.status !== '依頼中') return false; // 「依頼中」のみ対象
 
             // 期限切れチェック
             if (task.due_date) {
