@@ -174,12 +174,12 @@ class TaskManagement {
             assigneeFilter.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
         });
 
-        // フィルター - 事業者
-        clientFilter.innerHTML = '<option value="">全て</option>';
-        clientFilter.innerHTML += '<option value="0">その他業務</option>';
-        this.clients.forEach(client => {
-            clientFilter.innerHTML += `<option value="${client.id}">${client.name}</option>`;
-        });
+        // フィルター - 事業者（検索可能プルダウンで処理するためコメントアウト）
+        // clientFilter.innerHTML = '<option value="">全て</option>';
+        // clientFilter.innerHTML += '<option value="0">その他業務</option>';
+        // this.clients.forEach(client => {
+        //     clientFilter.innerHTML += `<option value="${client.id}">${client.name}</option>`;
+        // });
 
         // モーダル - 受任者（従来通り）
         assigneeSelect.innerHTML = '<option value="">選択してください</option>';
@@ -190,6 +190,11 @@ class TaskManagement {
         // 検索可能プルダウンのオプションを更新（後で実行）
         if (this.searchableSelect) {
             this.searchableSelect.updateOptions();
+        }
+
+        // フィルター用検索可能プルダウンのオプションを更新
+        if (this.filterSearchableSelect) {
+            this.filterSearchableSelect.updateOptions();
         }
     }
 
@@ -254,8 +259,8 @@ class TaskManagement {
             });
         });
 
-        // フィルター
-        ['status-filter', 'assignee-filter', 'client-filter'].forEach(id => {
+        // フィルター（client-filterは検索可能プルダウンで処理）
+        ['status-filter', 'assignee-filter'].forEach(id => {
             document.getElementById(id).addEventListener('change', (e) => {
                 const filterType = id.replace('-filter', '');
                 this.currentFilters[filterType] = e.target.value;
@@ -355,6 +360,7 @@ class TaskManagement {
 
         // 検索可能プルダウンの初期化
         this.initializeSearchableSelect();
+        this.initializeFilterSearchableSelect();
     }
 
     initializeLinkedTextDisplay() {
@@ -614,6 +620,255 @@ class TaskManagement {
                 }
             }
         };
+    }
+
+    initializeFilterSearchableSelect() {
+        const searchInput = document.getElementById('client-filter-search');
+        const dropdown = document.getElementById('client-filter-dropdown');
+        const hiddenSelect = document.getElementById('client-filter');
+        const wrapper = searchInput.parentElement;
+
+        let highlightedIndex = -1;
+        let allOptions = [];
+
+        // オプションデータを準備（フィルター用）
+        const updateOptions = () => {
+            allOptions = [
+                {
+                    value: '',
+                    text: '全て',
+                    searchText: '全て',
+                    normalizedText: normalizeText('全て')
+                },
+                {
+                    value: '0',
+                    text: 'その他業務',
+                    searchText: 'その他業務',
+                    normalizedText: normalizeText('その他業務')
+                },
+                ...this.clients.map(client => ({
+                    value: client.id.toString(),
+                    text: client.name,
+                    searchText: client.name,
+                    normalizedText: normalizeText(client.name)
+                }))
+            ];
+        };
+
+        // ドロップダウンを表示
+        const showDropdown = () => {
+            dropdown.style.display = 'block';
+            wrapper.classList.add('open');
+            renderOptions();
+        };
+
+        // ドロップダウンを非表示
+        const hideDropdown = () => {
+            dropdown.style.display = 'none';
+            wrapper.classList.remove('open');
+            highlightedIndex = -1;
+        };
+
+        // スマート検索機能（フィルター用）
+        const smartSearch = (searchTerm, option) => {
+            if (!searchTerm) return true;
+
+            const normalizedSearchTerm = normalizeText(searchTerm);
+
+            return (
+                option.searchText.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                option.normalizedText.includes(normalizedSearchTerm) ||
+                option.normalizedText.startsWith(normalizedSearchTerm) ||
+                option.normalizedText.split(/[\s\-_.()（）]/g).some(word =>
+                    word.startsWith(normalizedSearchTerm)
+                )
+            );
+        };
+
+        // オプションをレンダリング（フィルター用）
+        const renderOptions = (searchTerm = '') => {
+            const filtered = allOptions.filter(option => smartSearch(searchTerm, option));
+
+            if (searchTerm) {
+                const normalizedSearchTerm = normalizeText(searchTerm);
+                filtered.sort((a, b) => {
+                    const aExact = a.normalizedText === normalizedSearchTerm;
+                    const bExact = b.normalizedText === normalizedSearchTerm;
+                    if (aExact !== bExact) return bExact - aExact;
+
+                    const aStarts = a.normalizedText.startsWith(normalizedSearchTerm);
+                    const bStarts = b.normalizedText.startsWith(normalizedSearchTerm);
+                    if (aStarts !== bStarts) return bStarts - aStarts;
+
+                    return a.text.length - b.text.length;
+                });
+            }
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = `<div class="searchable-select-no-results">「${searchTerm}」に該当する事業者が見つかりません</div>`;
+                return;
+            }
+
+            dropdown.innerHTML = filtered.map((option, index) => {
+                const isSelected = hiddenSelect.value === option.value;
+                let displayText = option.text;
+
+                if (searchTerm) {
+                    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    displayText = option.text.replace(regex, '<mark style="background: #fff3cd; padding: 0;">$1</mark>');
+                }
+
+                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}">${displayText}</div>`;
+            }).join('');
+
+            const selectedItem = dropdown.querySelector('.searchable-select-item.selected');
+            if (selectedItem) {
+                highlightedIndex = parseInt(selectedItem.dataset.index);
+                selectedItem.classList.add('highlighted');
+            }
+        };
+
+        // アイテムを選択
+        const selectItem = (value, text) => {
+            hiddenSelect.value = value;
+            searchInput.value = text;
+            hideDropdown();
+
+            // フィルター変更イベントを発火
+            this.currentFilters.client = value;
+            this.updateDisplay();
+        };
+
+        // ハイライトを更新
+        const updateHighlight = () => {
+            dropdown.querySelectorAll('.searchable-select-item').forEach((item, index) => {
+                item.classList.toggle('highlighted', index === highlightedIndex);
+            });
+        };
+
+        // イベントリスナー
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value;
+            if (searchTerm === '') {
+                hiddenSelect.value = '';
+                this.currentFilters.client = '';
+                this.updateDisplay();
+            }
+            updateOptions();
+            showDropdown();
+            renderOptions(searchTerm);
+            highlightedIndex = -1;
+        });
+
+        searchInput.addEventListener('focus', (e) => {
+            updateOptions();
+            setTimeout(() => {
+                showDropdown();
+            }, 10);
+        });
+
+        searchInput.addEventListener('blur', (e) => {
+            setTimeout(() => {
+                if (!wrapper.contains(document.activeElement)) {
+                    hideDropdown();
+                }
+            }, 150);
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = dropdown.querySelectorAll('.searchable-select-item:not(.searchable-select-no-results)');
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (dropdown.style.display === 'none') {
+                        showDropdown();
+                    }
+                    highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                    updateHighlight();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (dropdown.style.display === 'none') {
+                        showDropdown();
+                    }
+                    highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                    updateHighlight();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (highlightedIndex >= 0 && items[highlightedIndex]) {
+                        const item = items[highlightedIndex];
+                        selectItem(item.dataset.value, item.textContent.replace(/\s+/g, ' ').trim());
+                    }
+                    break;
+                case 'Escape':
+                    hideDropdown();
+                    searchInput.blur();
+                    break;
+            }
+        });
+
+        dropdown.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            const item = e.target.closest('.searchable-select-item');
+            if (item && !item.classList.contains('searchable-select-no-results')) {
+                selectItem(item.dataset.value, item.textContent.replace(/\s+/g, ' ').trim());
+            }
+        });
+
+        document.addEventListener('mousedown', (e) => {
+            if (!wrapper.contains(e.target)) {
+                setTimeout(() => hideDropdown(), 10);
+            }
+        });
+
+        wrapper.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('searchable-select-arrow')) {
+                e.preventDefault();
+                if (dropdown.style.display === 'block') {
+                    hideDropdown();
+                } else {
+                    updateOptions();
+                    showDropdown();
+                    searchInput.focus();
+                }
+            }
+        });
+
+        searchInput.addEventListener('click', (e) => {
+            if (dropdown.style.display === 'none') {
+                updateOptions();
+                showDropdown();
+            }
+        });
+
+        // 初期化
+        updateOptions();
+
+        // this.filterSearchableSelect として保存
+        this.filterSearchableSelect = {
+            updateOptions,
+            selectItem,
+            clear: () => {
+                hiddenSelect.value = '';
+                searchInput.value = '全て';
+                hideDropdown();
+                this.currentFilters.client = '';
+                this.updateDisplay();
+            },
+            setValue: (value) => {
+                const option = allOptions.find(opt => opt.value === value.toString());
+                if (option) {
+                    selectItem(option.value, option.text);
+                } else {
+                    this.filterSearchableSelect.clear();
+                }
+            }
+        };
+
+        // 初期値設定
+        searchInput.value = '全て';
     }
 
     switchDisplay(displayType) {
