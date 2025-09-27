@@ -62,7 +62,7 @@ class TaskManagement {
             client: '',
             search: ''
         };
-        this.currentSort = { field: 'due_date', direction: 'asc' };
+        this.currentSort = { field: 'default_priority', direction: 'asc' };
         this.currentDisplay = 'list';
 
         this.init();
@@ -970,6 +970,7 @@ class TaskManagement {
             search: ''
         };
         this.currentDisplay = 'list';
+        this.currentSort = { field: 'default_priority', direction: 'asc' };
 
         // UIを更新
         this.renderAssigneeSidebar();
@@ -1149,32 +1150,80 @@ class TaskManagement {
             });
         }
 
-        // ソート
+        // ソート（4段階優先度システム）
         filtered.sort((a, b) => {
-            const field = this.currentSort.field;
-            let aVal = a[field];
-            let bVal = b[field];
+            // ユーザーがクリックした列でのソートが指定されている場合
+            if (this.currentSort.field !== 'default_priority') {
+                const field = this.currentSort.field;
+                let aVal = a[field];
+                let bVal = b[field];
 
-            // 特別な処理が必要なフィールド
-            if (field === 'client_name') {
-                aVal = a.client_id === 0 ? 'その他業務' : (a.clients?.name || '');
-                bVal = b.client_id === 0 ? 'その他業務' : (b.clients?.name || '');
-            } else if (field === 'assignee_name') {
-                aVal = a.assignee?.name || '';
-                bVal = b.assignee?.name || '';
-            } else if (field === 'requester_name') {
-                aVal = a.requester?.name || '';
-                bVal = b.requester?.name || '';
+                // 特別な処理が必要なフィールド
+                if (field === 'client_name') {
+                    aVal = a.client_id === 0 ? 'その他業務' : (a.clients?.name || '');
+                    bVal = b.client_id === 0 ? 'その他業務' : (b.clients?.name || '');
+                } else if (field === 'assignee_name') {
+                    aVal = a.assignee?.name || '';
+                    bVal = b.assignee?.name || '';
+                } else if (field === 'requester_name') {
+                    aVal = a.requester?.name || '';
+                    bVal = b.requester?.name || '';
+                }
+
+                if (aVal === null || aVal === undefined) aVal = '';
+                if (bVal === null || bVal === undefined) bVal = '';
+
+                const result = aVal > bVal ? 1 : -1;
+                return this.currentSort.direction === 'asc' ? result : -result;
             }
 
-            if (aVal === null || aVal === undefined) aVal = '';
-            if (bVal === null || bVal === undefined) bVal = '';
-
-            const result = aVal > bVal ? 1 : -1;
-            return this.currentSort.direction === 'asc' ? result : -result;
+            // デフォルト4段階ソート
+            return this.getTaskPriorityScore(a) - this.getTaskPriorityScore(b);
         });
 
         return filtered;
+    }
+
+    // タスクの優先度スコアを計算（低いスコア = 高い優先度）
+    getTaskPriorityScore(task) {
+        let score = 0;
+
+        // 1位: 期限切れタスク（最優先）
+        if (task.due_date) {
+            const today = new Date();
+            const due = new Date(task.due_date);
+            const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                // 期限切れ: 0-999（切れた日数が多いほど優先度高）
+                score = Math.abs(diffDays);
+                return score;
+            }
+        }
+
+        // 2位: ステータス順（期限切れでない場合）
+        const statusPriority = {
+            '依頼中': 1000,
+            '作業完了': 2000,
+            '確認完了': 3000
+        };
+        score += statusPriority[task.status] || 9000;
+
+        // 3位: 期限日（近い順）
+        if (task.due_date) {
+            const today = new Date();
+            const due = new Date(task.due_date);
+            const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+            score += Math.max(0, diffDays);
+        } else {
+            score += 9999; // 期限なしは最後
+        }
+
+        // 4位: 重要度（高い順）
+        const priorityValue = task.priority || 1;
+        score += (4 - priorityValue) * 0.1; // 重要度3=0.1, 重要度2=0.2, 重要度1=0.3
+
+        return score;
     }
 
     updateListView(tasks) {
@@ -1196,7 +1245,7 @@ class TaskManagement {
 
         // 期限の色分け
         const dueDateClass = this.getDueDateClass(task.due_date);
-        const dueDateText = task.due_date ? this.formatMonthDay(task.due_date) : '-';
+        const dueDateText = this.formatDueDateWithWarning(task.due_date);
         const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
         const createdDateText = task.created_at ? this.formatMonthDay(task.created_at) : '-';
 
@@ -1323,6 +1372,22 @@ class TaskManagement {
         const day = date.getDate();
 
         return `${month}/${day}`;
+    }
+
+    formatDueDateWithWarning(dueDate) {
+        if (!dueDate) return '-';
+
+        const today = new Date();
+        const due = new Date(dueDate);
+        const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
+        const formattedDate = this.formatMonthDay(dueDate);
+
+        if (diffDays < 0) {
+            // 期限切れの場合：⚠️アイコン + 赤文字
+            return `⚠️${formattedDate}`;
+        }
+
+        return formattedDate;
     }
 
     getDueDateClass(dueDate) {
@@ -1456,7 +1521,7 @@ class TaskManagement {
             card.classList.add('task-completed-gray');
         }
 
-        const dueDateText = task.due_date ? this.formatMonthDay(task.due_date) : '-';
+        const dueDateText = this.formatDueDateWithWarning(task.due_date);
         const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
         const dueDateClass = this.getDueDateClass(task.due_date);
 
@@ -2036,7 +2101,7 @@ class TaskManagement {
             item.classList.add('task-completed-gray');
         }
 
-        const dueDateText = task.due_date ? this.formatMonthDay(task.due_date) : '';
+        const dueDateText = this.formatDueDateWithWarning(task.due_date);
         const dueDateClass = this.getDueDateClass(task.due_date);
 
         const statusConfig = {
