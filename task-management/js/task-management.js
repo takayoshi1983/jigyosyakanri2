@@ -674,6 +674,12 @@ class TaskManagement {
         card.className = 'task-card';
         card.dataset.taskId = task.id;
 
+        // 確認完了タスクの場合はグレーアウト
+        const isCompleted = task.status === '確認完了';
+        if (isCompleted) {
+            card.classList.add('task-completed-gray');
+        }
+
         const dueDateText = task.due_date ? this.formatMonthDay(task.due_date) : '-';
         const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
         const dueDateClass = this.getDueDateClass(task.due_date);
@@ -683,13 +689,19 @@ class TaskManagement {
         const truncatedDescription = task.description ?
             (task.description.length > 12 ? task.description.substring(0, 12) + '…' : task.description) : '-';
 
-        // 事業者リンク
+        // 事業者リンク（省略なし、完了済みの場合は通常テキスト）
         const clientLink = task.clients?.name ?
-            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name.length > 8 ? task.clients.name.substring(0, 8) + '…' : task.clients.name}</a>` : '-';
+            (isCompleted ?
+                `<span style="color: #6c757d; font-size: 0.75rem;">${task.clients.name}</span>` :
+                `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name}</a>`
+            ) : '-';
 
-        // 参照URLアイコン
+        // 参照URLアイコン（完了済みの場合はグレー）
         const urlIcon = task.reference_url ?
-            `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()" style="font-size: 0.8rem;">🔗</a>` : '-';
+            (isCompleted ?
+                `<span style="font-size: 0.8rem; color: #adb5bd;">🔗</span>` :
+                `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()" style="font-size: 0.8rem;">🔗</a>`
+            ) : '-';
 
         // 委任者/受任者の表示
         const requesterName = task.requester?.name ?
@@ -701,22 +713,26 @@ class TaskManagement {
         const dueDateDisplay = dueDateText !== '-' ? `期限：${dueDateText}` : '期限：-';
         const workDateDisplay = workDateText !== '-' ? `予定：${workDateText}` : '予定：-';
 
+        // 完了済みの場合の色調整
+        const textColor = isCompleted ? '#6c757d' : '#495057';
+        const linkColor = isCompleted ? '#6c757d' : (dueDateClass ? '#dc3545' : '#495057');
+
         card.innerHTML = `
             <div style="display: flex; flex-direction: column; gap: 3px; padding: 6px;">
                 <!-- 上段 -->
                 <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
-                    <span style="font-size: 0.7rem; flex: 0 0 25px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
-                    <span style="font-size: 0.75rem; flex: 0 0 auto; min-width: 60px;" title="${task.clients?.name || ''}">${clientLink}</span>
-                    <span style="font-size: 0.8rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis;" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
+                    <span style="font-size: 0.7rem; flex: 0 0 25px; color: ${textColor};" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
+                    <span style="font-size: 0.75rem; flex: 1; min-width: 0;" title="${task.clients?.name || ''}">${clientLink}</span>
+                    <span style="font-size: 0.8rem; font-weight: 600; flex: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                     <span style="font-size: 0.7rem; flex: 0 0 65px; color: #6c757d; overflow: hidden; text-overflow: ellipsis;" title="${task.description || ''}">${truncatedDescription}</span>
                 </div>
                 <!-- 下段 -->
-                <div style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; color: #495057;">
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; color: ${textColor};">
                     <span style="flex: 0 0 25px; text-align: center;">${urlIcon}</span>
-                    <span style="flex: 0 0 60px; overflow: hidden; text-overflow: ellipsis;" title="${task.requester?.name || ''}">依頼：${requesterName}</span>
-                    <span style="flex: 0 0 60px; overflow: hidden; text-overflow: ellipsis;" title="${task.assignee?.name || ''}">受任：${assigneeName}</span>
-                    <span style="flex: 0 0 60px; color: ${dueDateClass ? '#dc3545' : '#495057'};" title="${task.due_date || ''}">${dueDateDisplay}</span>
-                    <span style="flex: 1; text-align: right;" title="${task.work_date || ''}">${workDateDisplay}</span>
+                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;" title="${task.requester?.name || ''}">依頼：${requesterName}</span>
+                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;" title="${task.assignee?.name || ''}">受任：${assigneeName}</span>
+                    <span style="flex: 0 0 60px; color: ${linkColor};" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                    <span style="flex: 0 0 65px; text-align: right;" title="${task.work_date || ''}">${workDateDisplay}</span>
                 </div>
             </div>
         `;
