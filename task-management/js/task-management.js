@@ -3255,8 +3255,16 @@ class TaskManagement {
             return;
         }
 
-        // 作成日でソート（新しい順）
-        recurringTasks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        // display_orderでソート（昇順）、display_orderがない場合は作成日でソート
+        recurringTasks.sort((a, b) => {
+            const aOrder = a.display_order ?? 999999;
+            const bOrder = b.display_order ?? 999999;
+            if (aOrder !== bOrder) {
+                return aOrder - bOrder;
+            }
+            // display_orderが同じ場合は作成日でソート（新しい順）
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
 
         // 各月次自動タスクをレンダリング
         container.innerHTML = '';
@@ -3266,12 +3274,16 @@ class TaskManagement {
         });
 
         console.log(`✅ 月次自動タスク ${recurringTasks.length}件を表示しました`);
+
+        // ドラッグ&ドロップ機能を初期化
+        this.initializeTemplatesSortableV2(container, 'recurring');
     }
 
     createRecurringTaskElementV2(recurringTask) {
         const element = document.createElement('div');
         element.className = 'template-item recurring-task';
         element.dataset.recurringId = recurringTask.id;
+        element.dataset.templateId = recurringTask.template?.id; // ソート処理で使用
         element.dataset.templateType = 'recurring';
 
         // 月次自動タスクの情報を準備
@@ -3286,6 +3298,7 @@ class TaskManagement {
                 <!-- 1行目：タイトル行 -->
                 <div class="template-header-row">
                     <div class="template-name">
+                        <span class="drag-handle" title="ドラッグして並び替え">⋮⋮</span>
                         <span class="template-type">🔄</span>
                         <span class="template-title">${templateName}</span>
                     </div>
@@ -3563,6 +3576,16 @@ class TaskManagement {
                 is_active: formData.is_active,
                 next_run_date: formData.next_run_date
             };
+
+            // 新規作成時のみdisplay_orderを設定
+            if (!this.currentRecurringTask) {
+                // 現在のユーザーの月次タスクの最大display_order + 1
+                const userRecurringTasks = this.recurringTasks.filter(task =>
+                    task.template?.staff_id === this.currentUser?.id && task.is_active
+                );
+                const maxOrder = Math.max(...userRecurringTasks.map(t => t.display_order || 0), 0);
+                recurringData.display_order = maxOrder + 1;
+            }
 
             let result;
             if (this.currentRecurringTask) {
@@ -4061,6 +4084,66 @@ class TaskManagement {
         });
     }
 
+    // 月次自動タスクの並び替え処理
+    async handleRecurringTaskSort(evt, newIndex, oldIndex) {
+        const recurringId = evt.item.dataset.recurringId;
+
+        try {
+            // 現在のユーザーの月次自動タスクを取得（表示順で）
+            const userRecurringTasks = this.recurringTasks.filter(task =>
+                task.template?.staff_id === this.currentUser?.id && task.is_active
+            );
+
+            // display_orderを再計算
+            const reorderedTasks = [];
+            userRecurringTasks.forEach((task, index) => {
+                let newDisplayOrder;
+                if (task.id == recurringId) {
+                    // 移動したアイテム
+                    newDisplayOrder = newIndex;
+                } else if (index < oldIndex && index >= newIndex) {
+                    // 上に移動した場合、間のアイテムは下にずれる
+                    newDisplayOrder = index + 1;
+                } else if (index > oldIndex && index <= newIndex) {
+                    // 下に移動した場合、間のアイテムは上にずれる
+                    newDisplayOrder = index - 1;
+                } else {
+                    // その他は現在位置を維持
+                    newDisplayOrder = index;
+                }
+
+                reorderedTasks.push({
+                    id: task.id,
+                    display_order: newDisplayOrder
+                });
+            });
+
+            // データベースを更新
+            for (const item of reorderedTasks) {
+                const { error } = await supabase
+                    .from('recurring_tasks')
+                    .update({ display_order: item.display_order })
+                    .eq('id', item.id);
+
+                if (error) throw error;
+            }
+
+            console.log('✅ 月次自動タスクの並び替えが完了しました');
+
+            // データを再読み込み
+            await this.loadRecurringTasks();
+            this.renderRecurringTasksV2();
+
+        } catch (error) {
+            console.error('❌ 月次自動タスク並び替えエラー:', error);
+            showToast('並び替えに失敗しました', 'error');
+
+            // エラー時は元に戻す
+            await this.loadRecurringTasks();
+            this.renderRecurringTasksV2();
+        }
+    }
+
     showTemplateHelpV2() {
         const helpText = `
 📋 テンプレート管理システムの使い方
@@ -4411,7 +4494,12 @@ class TaskManagement {
             return;
         }
 
-        console.log(`🔄 テンプレート並び替え: ID=${templateId}, ${oldIndex} → ${newIndex}`);
+        console.log(`🔄 ${type}テンプレート並び替え: ID=${templateId}, ${oldIndex} → ${newIndex}`);
+
+        // 月次自動タスクの場合は専用処理
+        if (type === 'recurring') {
+            return await this.handleRecurringTaskSort(evt, newIndex, oldIndex);
+        }
 
         try {
             // 該当タイプのテンプレートを取得
