@@ -1322,6 +1322,7 @@
 /* 全画面モーダル */
 .template-fullscreen-modal {
     padding: 0;
+    z-index: 2000; /* タブナビゲーション(z-index: 1500)より上に表示 */
 }
 
 .template-fullscreen-modal .template-modal-content {
@@ -1610,6 +1611,10 @@
 }
 
 /* テンプレート編集モーダル用スタイル */
+#template-edit-modal {
+    z-index: 2100; /* テンプレートモーダルより少し上に表示 */
+}
+
 .template-type-indicator {
     background: linear-gradient(135deg, #e3f2fd, #bbdefb);
     border: 1px solid #90caf9;

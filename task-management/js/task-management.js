@@ -2197,6 +2197,9 @@ class TaskManagement {
         const modal = document.getElementById('template-modal');
         modal.style.display = 'none';
         this.setUserInteracting(false); // テンプレートモーダル閉じる時は操作中フラグOFF
+
+        // タブナビゲーションを再有効化
+        this.disableTabNavigation(false);
     }
 
     selectTemplate(template) {
@@ -2970,6 +2973,9 @@ class TaskManagement {
             modal.style.display = 'block';
             this.setUserInteracting(true);
 
+            // タブナビゲーションを無効化
+            this.disableTabNavigation(true);
+
             console.log('✅ 新しいテンプレートモーダルが正常に開かれました');
         } catch (error) {
             console.error('❌ 新しいテンプレートモーダルでエラー:', error);
@@ -3176,6 +3182,9 @@ class TaskManagement {
         modal.style.display = 'block';
         this.setUserInteracting(true);
 
+        // タブナビゲーションを無効化
+        this.disableTabNavigation(true);
+
         console.log('✅ テンプレート編集モーダルが開かれました');
     }
 
@@ -3356,6 +3365,9 @@ class TaskManagement {
         // 現在のテンプレート情報をクリア
         this.currentTemplate = null;
         this.currentTemplateType = null;
+
+        // タブナビゲーションを再有効化
+        this.disableTabNavigation(false);
     }
 
     useTemplateForTask(template) {
@@ -3497,6 +3509,31 @@ class TaskManagement {
         } catch (error) {
             console.error('❌ テンプレート削除エラー:', error);
             showToast('テンプレートの削除に失敗しました', 'error');
+        }
+    }
+
+    // タブナビゲーションの有効/無効切り替え
+    disableTabNavigation(disable) {
+        const tabNavigation = document.querySelector('.tab-navigation');
+        if (!tabNavigation) {
+            console.warn('⚠️ タブナビゲーション要素が見つかりません');
+            return;
+        }
+
+        if (disable) {
+            // タブナビゲーションを無効化
+            tabNavigation.style.pointerEvents = 'none';
+            tabNavigation.style.opacity = '0.3';
+            tabNavigation.style.filter = 'blur(2px)';
+            tabNavigation.setAttribute('data-disabled', 'true');
+            console.log('🚫 タブナビゲーションを無効化しました');
+        } else {
+            // タブナビゲーションを再有効化
+            tabNavigation.style.pointerEvents = '';
+            tabNavigation.style.opacity = '';
+            tabNavigation.style.filter = '';
+            tabNavigation.removeAttribute('data-disabled');
+            console.log('✅ タブナビゲーションを再有効化しました');
         }
     }
 
