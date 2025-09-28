@@ -1,27 +1,14 @@
-新規月次自動タスク作成
-×
-🔄 月次自動タスク
-基本情報
-テンプレート名 *:
-タスク名 *:
-重要度:
-
-⭐ 通常
-想定時間（時間）:
-事業者名:
-事業者名を入力または選択（全角半角対応）...
-▼
-参照URL:
-https://example.com
-🔄 自動作成設定
-毎月の期限日:
-
-25日
-何日前に作成:
-
-3日前
-デフォルト担当者:
-
-吉冨
-表示設定
-⭐ お気に入り登録
+🚀 新しいテンプレートUIを使用します
+task-management.js:3187 🚀 新しいテンプレートモーダルを開いています...
+task-management.js:3222 📋 テンプレートをタイプ別にレンダリング中...
+task-management.js:3276 ✅ 月次自動タスク 2件を表示しました
+task-management.js:3215 ❌ 新しいテンプレートモーダルでエラー: TypeError: this.initializeTemplatesSortableV2 is not a function
+    at TaskManagement.renderRecurringTasksV2 (task-management.js:3279:14)
+    at TaskManagement.renderTemplatesByTypeV2 (task-management.js:3225:14)
+    at TaskManagement.openTemplateModalV2 (task-management.js:3199:18)
+    at HTMLButtonElement.<anonymous> (task-management.js:409:22)
+openTemplateModalV2 @ task-management.js:3215Understand this error
+task-management.js:2373 Uncaught TypeError: Cannot set properties of null (setting 'innerHTML')
+    at TaskManagement.openTemplateModal (task-management.js:2373:32)
+    at TaskManagement.openTemplateModalV2 (task-management.js:3217:25)
+    at HTMLButtonElement.<anonymous> (task-management.js:409:22)

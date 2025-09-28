@@ -3276,7 +3276,7 @@ class TaskManagement {
         console.log(`✅ 月次自動タスク ${recurringTasks.length}件を表示しました`);
 
         // ドラッグ&ドロップ機能を初期化
-        this.initializeTemplatesSortableV2(container, 'recurring');
+        this.initializeSortable(container, 'recurring');
     }
 
     createRecurringTaskElementV2(recurringTask) {
@@ -3663,7 +3663,7 @@ class TaskManagement {
         const referenceUrl = document.getElementById('template-reference-url')?.value?.trim() || null;
 
         // 想定時間（オプション）
-        const estimatedTimeHours = document.getElementById('template-estimated-time')?.value?.trim() || null;
+        const estimatedTimeHours = document.getElementById('template-estimated-hours')?.value?.trim() || null;
 
         // frequency_dayを計算（期限日から作成日数を引いた日）
         const frequencyDay = parseInt(dueDay) - parseInt(createDaysBefore);
