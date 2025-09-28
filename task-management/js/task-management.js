@@ -3205,9 +3205,18 @@ class TaskManagement {
             recurringSettings.style.display = 'block';
         }
 
-        // 他のセクションを非表示
-        const sections = ['template-name-section', 'template-task-section', 'template-description-section'];
-        sections.forEach(sectionId => {
+        // 月次自動タスクの場合はテンプレート名のみ表示、他は非表示
+        const sectionsToShow = ['template-name-section'];
+        const sectionsToHide = ['template-task-section', 'template-description-section'];
+
+        sectionsToShow.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'block';
+            }
+        });
+
+        sectionsToHide.forEach(sectionId => {
             const section = document.getElementById(sectionId);
             if (section) {
                 section.style.display = 'none';
@@ -3301,26 +3310,67 @@ class TaskManagement {
 
     // 月次自動タスクの保存（新規作成・編集）
     async saveRecurringTask() {
+        console.log('🔄 saveRecurringTask() called');
         try {
             // フォームデータを取得
             const formData = this.getRecurringTaskFormData();
+            console.log('📋 Form data:', formData);
 
             if (!formData) {
+                console.warn('⚠️ Form validation failed');
                 return; // バリデーションエラー
             }
+
+            let templateId = null;
+
+            // 1. テンプレートを作成または更新
+            if (!this.currentRecurringTask) {
+                // 新規作成の場合、先にテンプレートを作成
+                const templateData = {
+                    template_name: formData.template_name,
+                    task_name: formData.template_name,
+                    description: '月次自動タスク',
+                    is_global: false,
+                    staff_id: this.currentUser.id
+                };
+
+                const templateResult = await supabase
+                    .from('task_templates')
+                    .insert([templateData])
+                    .select('id')
+                    .single();
+
+                if (templateResult.error) throw templateResult.error;
+                templateId = templateResult.data.id;
+                console.log('✅ Template created with ID:', templateId);
+            } else {
+                // 編集の場合は既存のtemplate_idを使用
+                templateId = this.currentRecurringTask.template_id;
+            }
+
+            // 2. recurring_tasksを作成または更新
+            const recurringData = {
+                template_id: templateId,
+                client_id: formData.client_id,
+                assignee_id: formData.assignee_id,
+                frequency_type: formData.frequency_type,
+                frequency_day: formData.frequency_day,
+                is_active: formData.is_active,
+                next_run_date: formData.next_run_date
+            };
 
             let result;
             if (this.currentRecurringTask) {
                 // 編集
                 result = await supabase
                     .from('recurring_tasks')
-                    .update(formData)
+                    .update(recurringData)
                     .eq('id', this.currentRecurringTask.id);
             } else {
                 // 新規作成
                 result = await supabase
                     .from('recurring_tasks')
-                    .insert([formData]);
+                    .insert([recurringData]);
             }
 
             if (result.error) throw result.error;
@@ -3342,8 +3392,20 @@ class TaskManagement {
     }
 
     getRecurringTaskFormData() {
+        console.log('📝 Getting recurring task form data...');
+
+        // テンプレート名
+        const templateName = document.getElementById('template-name')?.value?.trim();
+        if (!templateName) {
+            showToast('テンプレート名を入力してください', 'error');
+            return null;
+        }
+
         // 期限日
-        const dueDay = document.getElementById('template-due-day')?.value;
+        const dueDayElement = document.getElementById('template-due-day');
+        const dueDay = dueDayElement?.value;
+        console.log('📅 Due day element:', dueDayElement, 'value:', dueDay);
+
         if (!dueDay) {
             showToast('期限日を選択してください', 'error');
             return null;
@@ -3372,7 +3434,7 @@ class TaskManagement {
         nextMonth.setDate(Math.max(1, frequencyDay));
 
         const formData = {
-            template_id: null, // 一旦null、後でテンプレート連携予定
+            template_name: templateName, // テンプレート作成用
             client_id: null, // 全事業者対象
             assignee_id: parseInt(assigneeId),
             frequency_type: 'monthly',
