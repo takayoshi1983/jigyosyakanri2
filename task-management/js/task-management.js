@@ -1048,16 +1048,16 @@ class TaskManagement {
     }
 
     hasUrgentTasksForAssignee(assigneeId) {
-        // 期限切れまたは期限間近のタスクがあるかチェック
+        // 「依頼中」タスクで期限切れまたは期限間近があるかチェック
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
         return this.tasks.some(task => {
             if (assigneeId !== null && task.assignee_id !== assigneeId) return false;
-            if (task.status === '確認完了') return false;
+            if (task.status !== '依頼中') return false; // 「依頼中」のみ赤色対象
 
-            // 期限切れ・期限間近チェック（高重要度による赤色表示は削除）
+            // 期限切れ・期限間近チェック
             if (task.due_date) {
                 const dueDate = new Date(task.due_date);
                 return dueDate <= tomorrow;
@@ -1205,26 +1205,26 @@ class TaskManagement {
     getTaskPriorityScore(task) {
         let score = 0;
 
-        // 1位: 期限切れタスク（最優先）
-        if (task.due_date) {
+        // 1位: ステータス順（依頼中 → 確認待ち → 確認完了）
+        const statusPriority = {
+            '依頼中': 0,
+            '作業完了': 10000,
+            '確認完了': 20000
+        };
+        score += statusPriority[task.status] || 30000;
+
+        // 2位: 期限切れタスク（「依頼中」のみ適用）
+        if (task.status === '依頼中' && task.due_date) {
             const today = new Date();
             const due = new Date(task.due_date);
             const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
 
             if (diffDays < 0) {
-                // 期限切れ: 0-999（切れた日数が多いほど優先度高）
-                score = Math.abs(diffDays);
+                // 期限切れの「依頼中」タスクは最優先（0-999）
+                score += Math.abs(diffDays);
                 return score;
             }
         }
-
-        // 2位: ステータス順（期限切れでない場合）
-        const statusPriority = {
-            '依頼中': 1000,
-            '作業完了': 2000,
-            '確認完了': 3000
-        };
-        score += statusPriority[task.status] || 9000;
 
         // 3位: 期限日（近い順）
         if (task.due_date) {
