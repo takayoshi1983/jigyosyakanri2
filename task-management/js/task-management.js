@@ -1208,10 +1208,10 @@ class TaskManagement {
         // 1位: ステータス順（依頼中 → 確認待ち → 確認完了）
         const statusPriority = {
             '依頼中': 0,
-            '作業完了': 10000,
-            '確認完了': 20000
+            '作業完了': 100000,
+            '確認完了': 200000
         };
-        score += statusPriority[task.status] || 30000;
+        score += statusPriority[task.status] || 300000;
 
         // 2位: 期限切れタスク（「依頼中」のみ適用）
         if (task.status === '依頼中' && task.due_date) {
@@ -1220,8 +1220,9 @@ class TaskManagement {
             const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
 
             if (diffDays < 0) {
-                // 期限切れの「依頼中」タスクは最優先（0-999）
-                score += Math.abs(diffDays);
+                // 期限切れの「依頼中」タスクは最優先（ステータス内での優先度調整）
+                score -= 50000; // 依頼中内で最優先
+                score += Math.abs(diffDays); // 期限切れ日数順
                 return score;
             }
         }
@@ -1233,7 +1234,7 @@ class TaskManagement {
             const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
             score += Math.max(0, diffDays);
         } else {
-            score += 9999; // 期限なしは最後
+            score += 50000; // 期限なしは各ステータス内で最後
         }
 
         // 4位: 重要度（高い順）
