@@ -3392,6 +3392,10 @@ class TaskManagement {
 
         // 編集モードの場合、フォームにデータを入力
         if (mode !== 'create' && recurringTask) {
+            // 検索可能ドロップダウンが初期化されていることを確認
+            if (!this.templateClientSelect) {
+                this.initializeTemplateClientSelect();
+            }
             this.populateRecurringTaskForm(recurringTask);
         }
 
@@ -3440,10 +3444,26 @@ class TaskManagement {
         }
 
         // 事業者設定（検索可能ドロップダウン）
-        if (recurringTask.client_id && this.templateClientSelect) {
+        if (recurringTask.client_id) {
             const client = this.clients.find(c => c.id === recurringTask.client_id);
+            console.log(`Setting client: ${recurringTask.client_id}, found client:`, client);
+            console.log('templateClientSelect state:', this.templateClientSelect);
+
             if (client) {
-                this.templateClientSelect.setValue(recurringTask.client_id);
+                // 検索可能ドロップダウンが利用可能な場合
+                if (this.templateClientSelect && typeof this.templateClientSelect.setValue === 'function') {
+                    console.log('Using templateClientSelect.setValue');
+                    this.templateClientSelect.setValue(recurringTask.client_id);
+                } else {
+                    console.log('Using fallback: direct select element');
+                    // フォールバック：直接select要素に設定
+                    const clientSelect = document.getElementById('template-client-select');
+                    if (clientSelect) {
+                        clientSelect.value = recurringTask.client_id;
+                    }
+                }
+
+                // 検索入力欄にも事業者名を設定
                 const searchInput = document.getElementById('template-client-search');
                 if (searchInput) {
                     searchInput.value = client.name;
