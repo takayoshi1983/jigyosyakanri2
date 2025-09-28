@@ -1525,13 +1525,70 @@
 }
 
 /* テンプレートアイテム内容 */
+.template-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
 .template-name {
     font-weight: 600;
     color: #495057;
-    margin-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 6px;
+    flex: 1;
+}
+
+.template-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.template-item:hover .template-actions {
+    opacity: 1;
+}
+
+.favorite-btn {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    color: #ccc;
+}
+
+.favorite-btn:hover {
+    background: rgba(255, 193, 7, 0.1);
+    transform: scale(1.1);
+}
+
+.favorite-btn.active {
+    color: #ffc107;
+    filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.6));
+}
+
+.template-edit-btn {
+    background: none;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    color: #6c757d;
+}
+
+.template-edit-btn:hover {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    transform: scale(1.1);
 }
 
 .template-task-name {

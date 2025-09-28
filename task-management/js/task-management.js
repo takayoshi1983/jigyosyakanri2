@@ -3018,10 +3018,17 @@ class TaskManagement {
             return;
         }
 
-        // お気に入りでソート → 作成日でソート（display_orderは将来対応）
+        // お気に入りでソート → display_orderでソート → 作成日でソート
         personalTemplates.sort((a, b) => {
             if (a.is_favorite && !b.is_favorite) return -1;
             if (!a.is_favorite && b.is_favorite) return 1;
+
+            // display_orderでソート（0は最後に）
+            const orderA = a.display_order || 9999;
+            const orderB = b.display_order || 9999;
+            if (orderA !== orderB) return orderA - orderB;
+
+            // 最後に作成日でソート
             return new Date(b.created_at) - new Date(a.created_at);
         });
 
@@ -3030,6 +3037,9 @@ class TaskManagement {
             const templateElement = this.createTemplateElementV2(template, 'personal');
             container.appendChild(templateElement);
         });
+
+        // ドラッグ&ドロップ機能を初期化
+        this.initializeSortable(container, 'personal');
 
         console.log(`✅ 個別テンプレート ${personalTemplates.length}件を表示しました`);
     }
@@ -3053,10 +3063,17 @@ class TaskManagement {
             return;
         }
 
-        // お気に入りでソート → 作成日でソート
+        // お気に入りでソート → display_orderでソート → 作成日でソート
         globalTemplates.sort((a, b) => {
             if (a.is_favorite && !b.is_favorite) return -1;
             if (!a.is_favorite && b.is_favorite) return 1;
+
+            // display_orderでソート（0は最後に）
+            const orderA = a.display_order || 9999;
+            const orderB = b.display_order || 9999;
+            if (orderA !== orderB) return orderA - orderB;
+
+            // 最後に作成日でソート
             return new Date(b.created_at) - new Date(a.created_at);
         });
 
@@ -3065,6 +3082,9 @@ class TaskManagement {
             const templateElement = this.createTemplateElementV2(template, 'global');
             container.appendChild(templateElement);
         });
+
+        // ドラッグ&ドロップ機能を初期化
+        this.initializeSortable(container, 'global');
 
         console.log(`✅ 共有テンプレート ${globalTemplates.length}件を表示しました`);
     }
@@ -3080,9 +3100,23 @@ class TaskManagement {
 
         element.innerHTML = `
             <div class="drag-handle">⋮⋮</div>
-            <div class="template-name">
-                <span class="template-type">${typeIcon}</span>
-                ${template.template_name}
+            <div class="template-header-row">
+                <div class="template-name">
+                    <span class="template-type">${typeIcon}</span>
+                    ${template.template_name}
+                </div>
+                <div class="template-actions">
+                    <button class="favorite-btn ${template.is_favorite ? 'active' : ''}"
+                            data-template-id="${template.id}"
+                            title="${template.is_favorite ? 'お気に入りを解除' : 'お気に入りに追加'}">
+                        ⭐
+                    </button>
+                    <button class="template-edit-btn"
+                            data-template-id="${template.id}"
+                            title="編集">
+                        ✏️
+                    </button>
+                </div>
             </div>
             <div class="template-task-name">${template.task_name || ''}</div>
             <div class="template-description">${(template.description || '').substring(0, 100)}${(template.description || '').length > 100 ? '...' : ''}</div>
@@ -3092,9 +3126,27 @@ class TaskManagement {
             </div>
         `;
 
-        // クリックイベント（詳細表示）
+        // クリックイベントハンドリング
         element.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('drag-handle')) {
+            const target = e.target;
+
+            // お気に入りボタンのクリック
+            if (target.classList.contains('favorite-btn')) {
+                e.stopPropagation();
+                this.toggleTemplateFavorite(template);
+                return;
+            }
+
+            // 編集ボタンのクリック
+            if (target.classList.contains('template-edit-btn')) {
+                e.stopPropagation();
+                this.openTemplateEditModalV2(template, 'edit');
+                return;
+            }
+
+            // ドラッグハンドルやボタン以外のクリック（詳細表示）
+            if (!target.classList.contains('drag-handle') &&
+                !target.closest('.template-actions')) {
                 this.openTemplateEditModalV2(template, 'view');
             }
         });
@@ -3510,6 +3562,174 @@ class TaskManagement {
             console.error('❌ テンプレート削除エラー:', error);
             showToast('テンプレートの削除に失敗しました', 'error');
         }
+    }
+
+    // お気に入り状態の切り替え
+    async toggleTemplateFavorite(template) {
+        if (!template?.id) {
+            console.warn('⚠️ 無効なテンプレートです');
+            return;
+        }
+
+        const newFavoriteState = !template.is_favorite;
+        console.log(`⭐ テンプレート「${template.template_name}」のお気に入り状態を変更: ${newFavoriteState}`);
+
+        try {
+            // データベースを更新
+            const { error } = await supabase
+                .from('task_templates')
+                .update({ is_favorite: newFavoriteState })
+                .eq('id', template.id);
+
+            if (error) throw error;
+
+            // ローカルデータを更新
+            template.is_favorite = newFavoriteState;
+
+            // UIを更新（該当するお気に入りボタンを探して更新）
+            const favoriteBtn = document.querySelector(`button.favorite-btn[data-template-id="${template.id}"]`);
+            if (favoriteBtn) {
+                favoriteBtn.className = `favorite-btn ${newFavoriteState ? 'active' : ''}`;
+                favoriteBtn.title = newFavoriteState ? 'お気に入りを解除' : 'お気に入りに追加';
+            }
+
+            // テンプレートアイテム全体のお気に入りクラスを更新
+            const templateElement = favoriteBtn?.closest('.template-item');
+            if (templateElement) {
+                if (newFavoriteState) {
+                    templateElement.classList.add('favorite');
+                } else {
+                    templateElement.classList.remove('favorite');
+                }
+            }
+
+            // テンプレートリストを再ソートして表示
+            this.renderTemplatesByTypeV2();
+
+            // 成功メッセージ
+            const message = newFavoriteState ?
+                `⭐ 「${template.template_name}」をお気に入りに追加しました` :
+                `⭐ 「${template.template_name}」をお気に入りから削除しました`;
+            showToast(message, 'success');
+
+        } catch (error) {
+            console.error('❌ お気に入り状態の更新エラー:', error);
+            showToast('お気に入り状態の更新に失敗しました', 'error');
+        }
+    }
+
+    // ドラッグ&ドロップソート機能の初期化
+    initializeSortable(container, type) {
+        if (!window.Sortable) {
+            console.warn('⚠️ SortableJSライブラリが利用できません');
+            return;
+        }
+
+        // 既存のソート機能をクリア
+        if (container.sortableInstance) {
+            container.sortableInstance.destroy();
+        }
+
+        // 新しいソート機能を初期化
+        container.sortableInstance = Sortable.create(container, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            onEnd: (evt) => {
+                this.handleTemplateSort(evt, type);
+            }
+        });
+
+        console.log(`🔄 ${type}テンプレートのドラッグ&ドロップ機能を初期化しました`);
+    }
+
+    // テンプレートの並び替え処理
+    async handleTemplateSort(evt, type) {
+        const templateId = evt.item.dataset.templateId;
+        const newIndex = evt.newIndex;
+        const oldIndex = evt.oldIndex;
+
+        if (newIndex === oldIndex) {
+            console.log('📍 位置変更なし');
+            return;
+        }
+
+        console.log(`🔄 テンプレート並び替え: ID=${templateId}, ${oldIndex} → ${newIndex}`);
+
+        try {
+            // 該当タイプのテンプレートを取得
+            const templatesOfType = this.templates.filter(template => {
+                if (type === 'personal') {
+                    return !template.is_global && (template.staff_id === this.currentUser?.id || !template.staff_id);
+                } else {
+                    return template.is_global;
+                }
+            });
+
+            // display_orderを再計算
+            const reorderedTemplates = [];
+            templatesOfType.forEach((template, index) => {
+                const newOrder = (index + 1) * 10; // 10, 20, 30, ...
+                reorderedTemplates.push({
+                    id: template.id,
+                    display_order: newOrder
+                });
+            });
+
+            // 移動したテンプレートのdisplay_orderを調整
+            const movedTemplate = reorderedTemplates.find(t => t.id == templateId);
+            if (movedTemplate) {
+                movedTemplate.display_order = (newIndex + 1) * 10;
+            }
+
+            // データベースを一括更新
+            const updates = reorderedTemplates.map(template => ({
+                id: template.id,
+                display_order: template.display_order
+            }));
+
+            await this.updateTemplateDisplayOrders(updates);
+
+            // ローカルデータを更新
+            this.templates.forEach(template => {
+                const update = updates.find(u => u.id === template.id);
+                if (update) {
+                    template.display_order = update.display_order;
+                }
+            });
+
+            console.log('✅ テンプレートの並び替えが完了しました');
+            showToast('並び順を更新しました', 'success');
+
+        } catch (error) {
+            console.error('❌ 並び替え処理エラー:', error);
+            showToast('並び替えの保存に失敗しました', 'error');
+
+            // エラー時はリストを再描画してUIを元に戻す
+            this.renderTemplatesByTypeV2();
+        }
+    }
+
+    // テンプレートのdisplay_order一括更新
+    async updateTemplateDisplayOrders(updates) {
+        const promises = updates.map(update =>
+            supabase
+                .from('task_templates')
+                .update({ display_order: update.display_order })
+                .eq('id', update.id)
+        );
+
+        const results = await Promise.all(promises);
+
+        // エラーチェック
+        const errors = results.filter(result => result.error);
+        if (errors.length > 0) {
+            throw new Error(`並び替えの更新中にエラーが発生しました: ${errors.length}件`);
+        }
+
+        return results;
     }
 
     // タブナビゲーションの有効/無効切り替え
