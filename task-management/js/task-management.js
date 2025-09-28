@@ -355,7 +355,15 @@ class TaskManagement {
 
         // テンプレートボタン
         document.getElementById('template-btn').addEventListener('click', () => {
-            this.openTemplateModal();
+            // 新しいUIが利用可能かチェック
+            const hasNewUI = document.querySelector('.template-main-content');
+            if (hasNewUI) {
+                console.log('🚀 新しいテンプレートUIを使用します');
+                this.openTemplateModalV2();
+            } else {
+                console.log('📋 従来のテンプレートUIを使用します');
+                this.openTemplateModal();
+            }
         });
 
         // タスクモーダル関連
@@ -401,6 +409,9 @@ class TaskManagement {
         document.getElementById('template-cancel-btn').addEventListener('click', () => {
             this.closeTemplateModal();
         });
+
+        // テンプレート編集モーダル関連のイベントリスナー
+        this.setupTemplateEditModalEvents();
 
         // モーダル外クリックで閉じる
         document.getElementById('task-modal').addEventListener('click', (e) => {
@@ -2354,8 +2365,11 @@ class TaskManagement {
     updateMyTasks() {
         if (!this.currentUser) return;
 
+        // 時間ベースの非表示フィルターを適用
+        const visibleTasks = this.applyTimeBasedVisibility(this.tasks);
+
         // 受任タスク（自分が実行する、確認完了以外）
-        const assignedTasksRaw = this.tasks
+        const assignedTasksRaw = visibleTasks
             .filter(task =>
                 task.assignee_id === this.currentUser.id &&
                 task.status !== '確認完了'
@@ -2363,7 +2377,7 @@ class TaskManagement {
         const assignedTasks = this.sortMyAssignedTasks(assignedTasksRaw);
 
         // 依頼タスク（自分が作成した、ただし自分自身のタスクは除く、確認完了以外）
-        const requestedTasksRaw = this.tasks
+        const requestedTasksRaw = visibleTasks
             .filter(task =>
                 task.requester_id === this.currentUser.id &&
                 task.assignee_id !== this.currentUser.id &&
@@ -2371,8 +2385,8 @@ class TaskManagement {
             );
         const requestedTasks = this.sortMyRequestedTasks(requestedTasksRaw);
 
-        // 確認完了したタスク（自分が関わったもの）
-        const completedTasks = this.tasks.filter(task =>
+        // 確認完了したタスク（自分が関わったもの、時間ベースフィルター適用）
+        const completedTasks = visibleTasks.filter(task =>
             (task.assignee_id === this.currentUser.id || task.requester_id === this.currentUser.id) &&
             task.status === '確認完了'
         );
@@ -2400,7 +2414,7 @@ class TaskManagement {
         const container = document.getElementById(containerId);
 
         if (tasks.length === 0) {
-            container.innerHTML = '<div style="text-align: center; color: #6c757d; font-size: 0.8rem; padding: 15px;">該当するタスクはありません</div>';
+            container.innerHTML = '<div style="text-align: center; color: #6c757d; font-size: 0.8rem; padding: 0px;">該当するタスクはありません</div>';
             return;
         }
 
@@ -2565,31 +2579,38 @@ class TaskManagement {
             showToast('テンプレートの保存に失敗しました', 'error');
         }
     }
-    // 時間ベースの非表示処理（確認待ち→翌日非表示、確認完了→1日後非表示）
+    // 時間ベースの非表示処理（受託者・依頼者別の非表示ルール）
     applyTimeBasedVisibility(tasks) {
+        if (!this.currentUser) return tasks;
+
+        // 日本時間での今日の日付を取得（UTC+9）
         const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const jstOffset = 9 * 60; // JSTはUTC+9時間
+        const jstNow = new Date(now.getTime() + (jstOffset * 60 * 1000));
+        const today = new Date(jstNow.getFullYear(), jstNow.getMonth(), jstNow.getDate());
 
         return tasks.filter(task => {
-            // 確認待ち（作業完了）タスクの翌日非表示
-            if (task.status === '作業完了' && task.completed_at) {
+            // 確認待ち（作業完了）タスクの受託者への非表示処理
+            if (task.status === '作業完了' && task.completed_at && task.assignee_id === this.currentUser.id) {
                 const completedDate = new Date(task.completed_at);
-                const completedDay = new Date(completedDate.getFullYear(), completedDate.getMonth(), completedDate.getDate());
+                const jstCompletedDate = new Date(completedDate.getTime() + (jstOffset * 60 * 1000));
+                const completedDay = new Date(jstCompletedDate.getFullYear(), jstCompletedDate.getMonth(), jstCompletedDate.getDate());
                 const diffDays = Math.floor((today - completedDay) / (1000 * 60 * 60 * 24));
 
-                // 翌日以降は非表示
+                // 受託者のみ：翌日以降は非表示（依頼者には表示される）
                 if (diffDays >= 1) {
                     return false;
                 }
             }
 
-            // 確認完了タスクの1日後非表示
+            // 確認完了タスクの全員への非表示処理（ステータスが「確認完了」でかつconfirmed_atがある場合のみ）
             if (task.status === '確認完了' && task.confirmed_at) {
                 const confirmedDate = new Date(task.confirmed_at);
-                const confirmedDay = new Date(confirmedDate.getFullYear(), confirmedDate.getMonth(), confirmedDate.getDate());
+                const jstConfirmedDate = new Date(confirmedDate.getTime() + (jstOffset * 60 * 1000));
+                const confirmedDay = new Date(jstConfirmedDate.getFullYear(), jstConfirmedDate.getMonth(), jstConfirmedDate.getDate());
                 const diffDays = Math.floor((today - confirmedDay) / (1000 * 60 * 60 * 24));
 
-                // 1日後以降は非表示
+                // 全員：翌日以降は非表示
                 if (diffDays >= 1) {
                     return false;
                 }
@@ -2922,6 +2943,563 @@ class TaskManagement {
             console.error('Load history settings error:', error);
         }
     }
+    // ===== 新しい3分割テンプレート管理機能 =====
+    // 既存機能を破壊せずに新機能を追加
+
+    openTemplateModalV2() {
+        console.log('🚀 新しいテンプレートモーダルを開いています...');
+        const modal = document.getElementById('template-modal');
+
+        // 新しいUIかどうかをチェック
+        const newUI = document.querySelector('.template-main-content');
+        if (!newUI) {
+            console.warn('⚠️ 新しいUI要素が見つかりません。従来のモーダルを使用します。');
+            return this.openTemplateModal();
+        }
+
+        try {
+            // 3分割テンプレートリストを生成
+            this.renderTemplatesByTypeV2();
+
+            // テンプレート数を更新
+            this.updateTemplateCountV2();
+
+            // イベントリスナーを設定
+            this.setupTemplateModalEventsV2();
+
+            modal.style.display = 'block';
+            this.setUserInteracting(true);
+
+            console.log('✅ 新しいテンプレートモーダルが正常に開かれました');
+        } catch (error) {
+            console.error('❌ 新しいテンプレートモーダルでエラー:', error);
+            // フォールバック: 従来のモーダルを使用
+            return this.openTemplateModal();
+        }
+    }
+
+    renderTemplatesByTypeV2() {
+        console.log('📋 テンプレートをタイプ別にレンダリング中...');
+
+        // 個別テンプレート（is_global=false, staff_id=current_user）
+        this.renderPersonalTemplatesV2();
+
+        // 共有テンプレート（is_global=true）
+        this.renderGlobalTemplatesV2();
+
+        console.log('✅ テンプレートのレンダリングが完了しました');
+    }
+
+    renderPersonalTemplatesV2() {
+        const container = document.getElementById('personal-templates-list');
+        if (!container) {
+            console.warn('⚠️ personal-templates-list要素が見つかりません');
+            return;
+        }
+
+        const personalTemplates = this.templates.filter(template =>
+            !template.is_global &&
+            (template.staff_id === this.currentUser?.id || !template.staff_id)
+        );
+
+        if (personalTemplates.length === 0) {
+            container.innerHTML = `
+                <div class="template-list-empty">
+                    まだ個別テンプレートがありません<br>
+                    「新規作成」ボタンからテンプレートを作成しましょう
+                </div>
+            `;
+            return;
+        }
+
+        // お気に入りでソート → 作成日でソート（display_orderは将来対応）
+        personalTemplates.sort((a, b) => {
+            if (a.is_favorite && !b.is_favorite) return -1;
+            if (!a.is_favorite && b.is_favorite) return 1;
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+
+        container.innerHTML = '';
+        personalTemplates.forEach(template => {
+            const templateElement = this.createTemplateElementV2(template, 'personal');
+            container.appendChild(templateElement);
+        });
+
+        console.log(`✅ 個別テンプレート ${personalTemplates.length}件を表示しました`);
+    }
+
+    renderGlobalTemplatesV2() {
+        const container = document.getElementById('global-templates-list');
+        if (!container) {
+            console.warn('⚠️ global-templates-list要素が見つかりません');
+            return;
+        }
+
+        const globalTemplates = this.templates.filter(template => template.is_global);
+
+        if (globalTemplates.length === 0) {
+            container.innerHTML = `
+                <div class="template-list-empty">
+                    まだ共有テンプレートがありません<br>
+                    「新規作成」ボタンから共通テンプレートを作成しましょう
+                </div>
+            `;
+            return;
+        }
+
+        // お気に入りでソート → 作成日でソート
+        globalTemplates.sort((a, b) => {
+            if (a.is_favorite && !b.is_favorite) return -1;
+            if (!a.is_favorite && b.is_favorite) return 1;
+            return new Date(b.created_at) - new Date(a.created_at);
+        });
+
+        container.innerHTML = '';
+        globalTemplates.forEach(template => {
+            const templateElement = this.createTemplateElementV2(template, 'global');
+            container.appendChild(templateElement);
+        });
+
+        console.log(`✅ 共有テンプレート ${globalTemplates.length}件を表示しました`);
+    }
+
+    createTemplateElementV2(template, type) {
+        const element = document.createElement('div');
+        element.className = `template-item ${template.is_favorite ? 'favorite' : ''}`;
+        element.dataset.templateId = template.id;
+        element.dataset.templateType = type;
+
+        const typeIcon = type === 'personal' ? '👤' : '🌐';
+        const priorityStars = '⭐'.repeat(template.priority || 1);
+
+        element.innerHTML = `
+            <div class="drag-handle">⋮⋮</div>
+            <div class="template-name">
+                <span class="template-type">${typeIcon}</span>
+                ${template.template_name}
+            </div>
+            <div class="template-task-name">${template.task_name || ''}</div>
+            <div class="template-description">${(template.description || '').substring(0, 100)}${(template.description || '').length > 100 ? '...' : ''}</div>
+            <div class="template-hours">
+                <span style="margin-right: 10px;">${priorityStars}</span>
+                ⏱️ ${template.estimated_time_hours || '未設定'}時間
+            </div>
+        `;
+
+        // クリックイベント（詳細表示）
+        element.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('drag-handle')) {
+                this.openTemplateEditModalV2(template, 'view');
+            }
+        });
+
+        return element;
+    }
+
+    updateTemplateCountV2() {
+        const totalCount = this.templates.length;
+        const countElement = document.getElementById('template-count-info');
+        if (countElement) {
+            countElement.textContent = `📊 総テンプレート数: ${totalCount}`;
+        }
+    }
+
+    setupTemplateModalEventsV2() {
+        console.log('⚙️ 新しいテンプレートモーダルのイベントリスナーを設定中...');
+
+        // 新規作成ボタン
+        const addButtons = document.querySelectorAll('.template-add-btn');
+        addButtons.forEach(btn => {
+            // 既存のイベントリスナーを削除して新しく設定
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            newBtn.addEventListener('click', (e) => {
+                const type = e.target.dataset.type;
+                console.log(`📝 新規${type}テンプレート作成をクリック`);
+                this.openTemplateEditModalV2(null, 'create', type);
+            });
+        });
+
+        // 閉じるボタン
+        this.setupSafeEventListener('template-modal-close', 'click', () => {
+            this.closeTemplateModal();
+        });
+
+        this.setupSafeEventListener('template-cancel-btn', 'click', () => {
+            this.closeTemplateModal();
+        });
+
+        // ヘルプボタン
+        this.setupSafeEventListener('template-help-btn', 'click', () => {
+            this.showTemplateHelpV2();
+        });
+
+        console.log('✅ イベントリスナーの設定が完了しました');
+    }
+
+    setupSafeEventListener(elementId, event, handler) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            // 既存のイベントリスナーを削除
+            const newElement = element.cloneNode(true);
+            element.parentNode.replaceChild(newElement, element);
+            // 新しいイベントリスナーを追加
+            newElement.addEventListener(event, handler);
+        } else {
+            console.warn(`⚠️ 要素 ${elementId} が見つかりません`);
+        }
+    }
+
+    openTemplateEditModalV2(template = null, mode = 'create', type = 'personal') {
+        console.log(`📝 テンプレート編集モーダルを開く: mode=${mode}, type=${type}`);
+
+        const modal = document.getElementById('template-edit-modal');
+        if (!modal) {
+            console.error('❌ template-edit-modal要素が見つかりません');
+            return;
+        }
+
+        // 現在のテンプレート情報を保存
+        this.currentTemplate = template;
+        this.currentTemplateType = type;
+
+        // フォームをリセット
+        const form = document.getElementById('template-edit-form');
+        if (form) {
+            form.reset();
+        }
+
+        // モードに応じてUI更新
+        this.setTemplateEditModeV2(mode, template, type);
+
+        modal.style.display = 'block';
+        this.setUserInteracting(true);
+
+        console.log('✅ テンプレート編集モーダルが開かれました');
+    }
+
+    setTemplateEditModeV2(mode, template, type) {
+        const title = document.getElementById('template-edit-title');
+        const typeIndicator = document.getElementById('template-type-text');
+        const recurringSettings = document.getElementById('recurring-settings');
+        const viewButtons = document.getElementById('template-view-mode-buttons');
+        const editButtons = document.getElementById('template-edit-mode-buttons');
+
+        // タイトル更新
+        if (title) {
+            title.textContent = mode === 'create' ?
+                `新規${this.getTypeDisplayName(type)}作成` :
+                `${template.template_name} - ${this.getTypeDisplayName(type)}`;
+        }
+
+        // タイプ表示更新
+        if (typeIndicator) {
+            typeIndicator.textContent = `${this.getTypeIcon(type)} ${this.getTypeDisplayName(type)}`;
+        }
+
+        // 月次自動タスク設定の表示/非表示
+        if (recurringSettings) {
+            recurringSettings.style.display = type === 'recurring' ? 'block' : 'none';
+        }
+
+        // ボタン表示切り替え
+        if (viewButtons && editButtons) {
+            if (mode === 'view') {
+                viewButtons.style.display = 'flex';
+                editButtons.style.display = 'none';
+                this.populateTemplateFormV2(template);
+                this.setFormReadOnlyV2(true);
+            } else {
+                viewButtons.style.display = 'none';
+                editButtons.style.display = 'flex';
+                if (template) {
+                    this.populateTemplateFormV2(template);
+                }
+                this.setFormReadOnlyV2(false);
+            }
+        }
+    }
+
+    getTypeDisplayName(type) {
+        const names = {
+            'recurring': '月次自動タスク',
+            'personal': '個別テンプレート',
+            'global': '共有テンプレート'
+        };
+        return names[type] || '不明なタイプ';
+    }
+
+    getTypeIcon(type) {
+        const icons = {
+            'recurring': '🔄',
+            'personal': '👤',
+            'global': '🌐'
+        };
+        return icons[type] || '📋';
+    }
+
+    populateTemplateFormV2(template) {
+        if (!template) return;
+
+        const setFieldValue = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.value = value || '';
+            }
+        };
+
+        const setCheckboxValue = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.checked = !!value;
+            }
+        };
+
+        // 基本情報
+        setFieldValue('template-name-input', template.template_name);
+        setFieldValue('template-task-name', template.task_name);
+        setFieldValue('template-priority', template.priority || 1);
+        setFieldValue('template-estimated-hours', template.estimated_time_hours);
+        setFieldValue('template-description', template.description);
+
+        // お気に入り
+        setCheckboxValue('template-is-favorite', template.is_favorite);
+    }
+
+    setFormReadOnlyV2(readOnly) {
+        const form = document.getElementById('template-edit-form');
+        if (!form) return;
+
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.readOnly = readOnly;
+            input.disabled = readOnly;
+        });
+    }
+
+    showTemplateHelpV2() {
+        const helpText = `
+📋 テンプレート管理システムの使い方
+
+🔄 月次自動タスク作成
+・毎月自動で作成されるタスクを設定
+・指定した日付の指定日数前に自動作成
+
+👤 個別テンプレート
+・あなた専用のテンプレート
+・よく使用するタスクをテンプレート化
+
+🌐 共有テンプレート
+・全員が使用できる共通テンプレート
+・標準的な作業をテンプレート化
+
+⭐ お気に入り機能
+・よく使うテンプレートを上位表示
+・ドラッグ&ドロップで並び替え可能
+        `;
+
+        alert(helpText);
+    }
+
+    // テンプレート編集モーダルのイベントリスナーを設定
+    setupTemplateEditModalEvents() {
+        console.log('⚙️ テンプレート編集モーダルのイベントリスナーを設定中...');
+
+        // テンプレート編集モーダルの要素確認
+        const templateEditModal = document.getElementById('template-edit-modal');
+        if (!templateEditModal) {
+            console.warn('⚠️ template-edit-modal要素が見つかりません');
+            return;
+        }
+
+        // 閉じるボタン
+        this.setupSafeEventListener('template-edit-close', 'click', () => {
+            this.closeTemplateEditModal();
+        });
+
+        // 閲覧モードボタン
+        this.setupSafeEventListener('template-close-view-btn', 'click', () => {
+            this.closeTemplateEditModal();
+        });
+
+        this.setupSafeEventListener('template-edit-mode-btn', 'click', () => {
+            this.setTemplateEditModeV2('edit', this.currentTemplate, this.currentTemplateType);
+        });
+
+        this.setupSafeEventListener('template-use-btn', 'click', () => {
+            this.useTemplateForTask(this.currentTemplate);
+        });
+
+        // 編集モードボタン
+        this.setupSafeEventListener('template-cancel-edit-btn', 'click', () => {
+            this.closeTemplateEditModal();
+        });
+
+        this.setupSafeEventListener('template-save-btn', 'click', () => {
+            this.saveTemplateV2();
+        });
+
+        this.setupSafeEventListener('template-delete-btn', 'click', () => {
+            this.deleteTemplateV2();
+        });
+
+        console.log('✅ テンプレート編集モーダルのイベントリスナー設定完了');
+    }
+
+    closeTemplateEditModal() {
+        const modal = document.getElementById('template-edit-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            this.setUserInteracting(false);
+        }
+        // 現在のテンプレート情報をクリア
+        this.currentTemplate = null;
+        this.currentTemplateType = null;
+    }
+
+    useTemplateForTask(template) {
+        if (!template) return;
+
+        // テンプレート編集モーダルを閉じる
+        this.closeTemplateEditModal();
+        // テンプレートモーダルを閉じる
+        this.closeTemplateModal();
+
+        // テンプレートデータでタスクモーダルを開く
+        this.openTaskModal(null, template);
+    }
+
+    async saveTemplateV2() {
+        console.log('💾 テンプレートを保存中...');
+
+        try {
+            const formData = this.getTemplateFormDataV2();
+            if (!formData) {
+                showToast('入力内容を確認してください', 'error');
+                return;
+            }
+
+            let result;
+            if (this.currentTemplate?.id) {
+                // 更新
+                result = await this.updateTemplateV2(this.currentTemplate.id, formData);
+            } else {
+                // 新規作成
+                result = await this.createTemplateV2(formData);
+            }
+
+            if (result.success) {
+                showToast('テンプレートを保存しました', 'success');
+                await this.loadTemplates(); // テンプレート再読み込み
+                this.closeTemplateEditModal();
+
+                // テンプレートモーダルが開いている場合は更新
+                const templateModal = document.getElementById('template-modal');
+                if (templateModal && templateModal.style.display !== 'none') {
+                    this.renderTemplatesByTypeV2();
+                }
+            } else {
+                showToast(result.error || 'テンプレートの保存に失敗しました', 'error');
+            }
+
+        } catch (error) {
+            console.error('❌ テンプレート保存エラー:', error);
+            showToast('テンプレートの保存中にエラーが発生しました', 'error');
+        }
+    }
+
+    getTemplateFormDataV2() {
+        const templateName = document.getElementById('template-name-input')?.value?.trim();
+        const taskName = document.getElementById('template-task-name')?.value?.trim();
+
+        if (!templateName || !taskName) {
+            console.warn('⚠️ 必須項目が入力されていません');
+            return null;
+        }
+
+        return {
+            template_name: templateName,
+            task_name: taskName,
+            priority: parseInt(document.getElementById('template-priority')?.value) || 1,
+            estimated_time_hours: parseFloat(document.getElementById('template-estimated-hours')?.value) || null,
+            description: document.getElementById('template-description')?.value?.trim() || '',
+            is_favorite: document.getElementById('template-is-favorite')?.checked || false,
+            is_global: this.currentTemplateType === 'global',
+            staff_id: this.currentTemplateType === 'personal' ? this.currentUser?.id : null
+        };
+    }
+
+    async createTemplateV2(templateData) {
+        try {
+            const { data, error } = await supabase
+                .from('task_templates')
+                .insert([templateData])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            return { success: true, data };
+        } catch (error) {
+            console.error('❌ テンプレート作成エラー:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async updateTemplateV2(templateId, templateData) {
+        try {
+            const { data, error } = await supabase
+                .from('task_templates')
+                .update(templateData)
+                .eq('id', templateId)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            return { success: true, data };
+        } catch (error) {
+            console.error('❌ テンプレート更新エラー:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async deleteTemplateV2() {
+        if (!this.currentTemplate?.id) {
+            console.warn('⚠️ 削除対象のテンプレートが選択されていません');
+            return;
+        }
+
+        const confirmMessage = `テンプレート「${this.currentTemplate.template_name}」を削除しますか？\nこの操作は取り消せません。`;
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('task_templates')
+                .delete()
+                .eq('id', this.currentTemplate.id);
+
+            if (error) throw error;
+
+            showToast('テンプレートを削除しました', 'success');
+            await this.loadTemplates(); // テンプレート再読み込み
+            this.closeTemplateEditModal();
+
+            // テンプレートモーダルが開いている場合は更新
+            const templateModal = document.getElementById('template-modal');
+            if (templateModal && templateModal.style.display !== 'none') {
+                this.renderTemplatesByTypeV2();
+            }
+
+        } catch (error) {
+            console.error('❌ テンプレート削除エラー:', error);
+            showToast('テンプレートの削除に失敗しました', 'error');
+        }
+    }
+
 }
 
 // グローバルインスタンス（タスク管理ページでのみ初期化）

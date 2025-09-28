@@ -305,21 +305,200 @@
         </div>
     </div>
 
-    <!-- テンプレート選択モーダル -->
-    <div id="template-modal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h2>タスクテンプレート選択</h2>
-                <span class="close" id="template-modal-close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <p>テンプレートを選択して新規タスクを作成します。</p>
-                <div id="template-list" class="template-list">
-                    <!-- JavaScriptで動的に生成 -->
+    <!-- テンプレート管理モーダル（全画面3分割） -->
+    <div id="template-modal" class="modal template-fullscreen-modal" style="display: none;">
+        <div class="template-modal-content">
+            <!-- ヘッダー -->
+            <div class="template-modal-header">
+                <h2>📋 テンプレート管理システム</h2>
+                <div class="template-header-controls">
+                    <button id="template-help-btn" class="btn btn-info btn-sm" title="使い方">❓</button>
+                    <span class="close" id="template-modal-close">&times;</span>
                 </div>
             </div>
+
+            <!-- メインコンテンツ：3分割レイアウト -->
+            <div class="template-main-content">
+                <!-- 左側：月次自動タスク作成 -->
+                <div class="template-section template-section-recurring">
+                    <div class="template-section-header">
+                        <h3>🔄 月次自動タスク作成</h3>
+                        <button class="template-add-btn" data-type="recurring">
+                            ➕ 新規作成
+                        </button>
+                    </div>
+                    <div class="template-section-description">
+                        毎月自動で作成されるタスクを設定します。<br>
+                        指定した日付の指定日数前に自動作成されます。
+                    </div>
+                    <div class="template-list-container">
+                        <div id="recurring-templates-list" class="template-list recurring-list">
+                            <!-- JavaScriptで動的に生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中央：個別テンプレート -->
+                <div class="template-section template-section-personal">
+                    <div class="template-section-header">
+                        <h3>👤 個別テンプレート</h3>
+                        <button class="template-add-btn" data-type="personal">
+                            ➕ 新規作成
+                        </button>
+                    </div>
+                    <div class="template-section-description">
+                        あなた専用のテンプレートです。<br>
+                        よく使用するタスクをテンプレート化できます。
+                    </div>
+                    <div class="template-list-container">
+                        <div id="personal-templates-list" class="template-list personal-list">
+                            <!-- JavaScriptで動的に生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：共有テンプレート -->
+                <div class="template-section template-section-global">
+                    <div class="template-section-header">
+                        <h3>🌐 共有テンプレート</h3>
+                        <button class="template-add-btn" data-type="global">
+                            ➕ 新規作成
+                        </button>
+                    </div>
+                    <div class="template-section-description">
+                        全員が使用できる共通テンプレートです。<br>
+                        標準的な作業をテンプレート化できます。
+                    </div>
+                    <div class="template-list-container">
+                        <div id="global-templates-list" class="template-list global-list">
+                            <!-- JavaScriptで動的に生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- フッター -->
+            <div class="template-modal-footer">
+                <div class="template-footer-info">
+                    <span id="template-count-info">📊 総テンプレート数: 0</span>
+                </div>
+                <div class="template-footer-buttons">
+                    <button type="button" id="template-cancel-btn" class="btn btn-secondary">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- テンプレート作成・編集モーダル -->
+    <div id="template-edit-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 id="template-edit-title">新規テンプレート作成</h2>
+                <span class="close" id="template-edit-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="template-edit-form">
+                    <!-- テンプレートタイプ表示 -->
+                    <div class="template-type-indicator" id="template-type-indicator">
+                        <span id="template-type-text">📋 個別テンプレート</span>
+                    </div>
+
+                    <!-- 基本情報セクション -->
+                    <div class="modal-section">
+                        <div class="section-title">基本情報</div>
+                        <div class="compact-form-row">
+                            <label for="template-name-input">テンプレート名 <span class="required">*</span>:</label>
+                            <input type="text" id="template-name-input" name="template_name" class="form-control" required>
+                        </div>
+                        <div class="compact-form-row">
+                            <label for="template-task-name">タスク名 <span class="required">*</span>:</label>
+                            <input type="text" id="template-task-name" name="task_name" class="form-control" required>
+                        </div>
+                        <div class="compact-form-row">
+                            <label for="template-priority">重要度:</label>
+                            <select id="template-priority" name="priority" class="form-control">
+                                <option value="1" selected>⭐ 通常</option>
+                                <option value="2">⭐⭐ 急ぎ</option>
+                                <option value="3">⭐⭐⭐ 緊急</option>
+                            </select>
+                        </div>
+                        <div class="compact-form-row">
+                            <label for="template-estimated-hours">想定時間（時間）:</label>
+                            <input type="number" id="template-estimated-hours" name="estimated_time_hours" class="form-control" step="0.5" min="0">
+                        </div>
+                    </div>
+
+                    <!-- 月次自動タスク専用設定 -->
+                    <div class="modal-section" id="recurring-settings" style="display: none;">
+                        <div class="section-title">🔄 自動作成設定</div>
+                        <div class="compact-form-row">
+                            <label for="template-due-day">毎月の期限日:</label>
+                            <select id="template-due-day" name="due_day" class="form-control">
+                                <option value="">選択してください</option>
+                                <option value="1">1日</option>
+                                <option value="5">5日</option>
+                                <option value="10">10日</option>
+                                <option value="15">15日</option>
+                                <option value="20">20日</option>
+                                <option value="25">25日</option>
+                                <option value="last">月末</option>
+                            </select>
+                        </div>
+                        <div class="compact-form-row">
+                            <label for="template-create-days-before">何日前に作成:</label>
+                            <select id="template-create-days-before" name="create_days_before" class="form-control">
+                                <option value="1">1日前</option>
+                                <option value="3" selected>3日前</option>
+                                <option value="5">5日前</option>
+                                <option value="7">7日前</option>
+                                <option value="10">10日前</option>
+                                <option value="14">14日前</option>
+                            </select>
+                        </div>
+                        <div class="compact-form-row">
+                            <label for="template-default-assignee">デフォルト担当者:</label>
+                            <select id="template-default-assignee" name="default_assignee_id" class="form-control">
+                                <option value="">選択してください</option>
+                                <!-- JavaScriptで動的に生成 -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 作業内容セクション -->
+                    <div class="modal-section">
+                        <div class="section-title">作業内容</div>
+                        <div class="content-form-group">
+                            <label for="template-description">作業内容:</label>
+                            <textarea id="template-description" name="description" class="form-control content-textarea" rows="4" placeholder="作業の詳細を記入してください。URLを含む場合は自動的にリンクが生成されます。"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- お気に入り設定 -->
+                    <div class="modal-section">
+                        <div class="section-title">表示設定</div>
+                        <div class="compact-form-row">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="template-is-favorite" name="is_favorite">
+                                ⭐ お気に入りに追加（リストの上位に表示）
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
             <div class="modal-footer">
-                <button type="button" id="template-cancel-btn" class="btn btn-secondary">キャンセル</button>
+                <!-- 閲覧モード時のボタン -->
+                <div id="template-view-mode-buttons" style="display: flex; gap: 10px;">
+                    <button type="button" id="template-close-view-btn" class="btn btn-secondary">閉じる</button>
+                    <button type="button" id="template-edit-mode-btn" class="btn btn-primary">編集</button>
+                    <button type="button" id="template-use-btn" class="btn btn-success">このテンプレートを使用</button>
+                </div>
+
+                <!-- 編集モード時のボタン -->
+                <div id="template-edit-mode-buttons" style="display: flex; gap: 10px;">
+                    <button type="button" id="template-delete-btn" class="btn btn-danger">削除</button>
+                    <button type="button" id="template-cancel-edit-btn" class="btn btn-secondary">キャンセル</button>
+                    <button type="button" id="template-save-btn" class="btn btn-primary">保存</button>
+                </div>
             </div>
         </div>
     </div>

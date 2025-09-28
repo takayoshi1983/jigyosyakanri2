@@ -1,46 +1,55 @@
-task-management.js:88 Current user: Object
-task-management.js:127 Master data loaded: Object
-task-management.js:152 Templates loaded: 4
-task-management.js:197 Tasks loaded: 9
-task-management.js:915 Filter state restored: Object
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
-task-management.js:99 Task Management System initialized successfully
-task-management.js:1244 Task: 試算表作成, Status: 確認完了, Score: 3000003.3
-task-management.js:1244 Task: 記帳依頼, Status: 確認完了, Score: 3000006.3
-task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
-task-management.js:1244 Task: 試算表作成, Status: 確認完了, Score: 3000003.3
-task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 試算表作成, Status: 確認完了, Score: 3000003.3
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
-task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
-task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
-task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
-task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000000.2
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000000.2
-task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000000.2
-task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
-task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000011.2
-task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
-task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000011.2
-task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
-task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000011.2
-task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
+こちらが月次タスクテンプレートのテーブル
+
+create table public.recurring_tasks (
+  id bigserial not null,
+  template_id bigint null,
+  client_id bigint null,
+  assignee_id bigint null,
+  frequency_type text null,
+  frequency_day integer null,
+  is_active boolean null default true,
+  next_run_date date null,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint recurring_tasks_pkey primary key (id),
+  constraint recurring_tasks_assignee_id_fkey foreign KEY (assignee_id) references staffs (id),
+  constraint recurring_tasks_client_id_fkey foreign KEY (client_id) references clients (id),
+  constraint recurring_tasks_template_id_fkey foreign KEY (template_id) references task_templates (id),
+  constraint recurring_tasks_frequency_type_check check (
+    (
+      frequency_type = any (
+        array['monthly'::text, 'weekly'::text, 'daily'::text]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create trigger update_recurring_tasks_updated_at BEFORE
+update on recurring_tasks for EACH row
+execute FUNCTION update_updated_at_column ();
+
+
+
+こちらがテスクテンプレートのテーブル
+
+create table public.task_templates (
+  id bigserial not null,
+  template_name text not null,
+  task_name text null,
+  description text null,
+  estimated_time_hours numeric(5, 2) null,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  staff_id integer null,
+  is_global boolean null default false,
+  constraint task_templates_pkey primary key (id),
+  constraint task_templates_staff_id_fkey foreign KEY (staff_id) references staffs (id)
+) TABLESPACE pg_default;
+
+create index IF not exists idx_task_templates_staff_id on public.task_templates using btree (staff_id) TABLESPACE pg_default;
+
+create index IF not exists idx_task_templates_global on public.task_templates using btree (is_global) TABLESPACE pg_default;
+
+create trigger update_task_templates_updated_at BEFORE
+update on task_templates for EACH row
+execute FUNCTION update_updated_at_column ();
