@@ -1,15 +1,27 @@
-task-management.js:3791 TaskManagement initialized for task-management page
-task-management.js:139 Current user: Object
-task-management.js:189 Master data loaded: Object
-task-management.js:214 Templates loaded: 7
-task-management.js:261 Tasks loaded: 23
-task-management.js:995 Filter state restored: ObjectassigneeFilter: nulldisplay: "card"filters: {status: '', client: '', search: ''}timestamp: 1759066163912[[Prototype]]: Object
-task-management.js:3384 ⚙️ テンプレート編集モーダルのイベントリスナーを設定中...
-task-management.js:3424 ✅ テンプレート編集モーダルのイベントリスナー設定完了
-task-management.js:1405 Auto refresh started: 60秒間隔
-task-management.js:161 Task Management System initialized successfully
-task-management.js:3645 Uncaught TypeError: Cannot read properties of undefined (reading 'sortableInstance')
-    at TaskManagement.initializeSortable (task-management.js:3645:23)
-    at task-management.js:1787:18
-task-management.js:1549 User interaction started - auto refresh paused
-task-management.js:1551 User interaction ended - auto refresh resumed
+create table public.recurring_tasks (
+  id bigserial not null,
+  template_id bigint null,
+  client_id bigint null,
+  assignee_id bigint null,
+  frequency_type text null,
+  frequency_day integer null,
+  is_active boolean null default true,
+  next_run_date date null,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  constraint recurring_tasks_pkey primary key (id),
+  constraint recurring_tasks_assignee_id_fkey foreign KEY (assignee_id) references staffs (id),
+  constraint recurring_tasks_client_id_fkey foreign KEY (client_id) references clients (id),
+  constraint recurring_tasks_template_id_fkey foreign KEY (template_id) references task_templates (id),
+  constraint recurring_tasks_frequency_type_check check (
+    (
+      frequency_type = any (
+        array['monthly'::text, 'weekly'::text, 'daily'::text]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create trigger update_recurring_tasks_updated_at BEFORE
+update on recurring_tasks for EACH row
+execute FUNCTION update_updated_at_column ();

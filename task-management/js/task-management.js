@@ -57,6 +57,7 @@ class TaskManagement {
         this.staffs = [];
         this.tasks = [];
         this.templates = [];
+        this.recurringTasks = [];
         this.currentFilters = {
             status: '',
             client: '',
@@ -144,6 +145,7 @@ class TaskManagement {
             // 基本データ読み込み
             await this.loadMasterData();
             await this.loadTemplates();
+            await this.loadRecurringTasks();
             await this.loadTasks();
 
             // UI初期化
@@ -220,6 +222,32 @@ class TaskManagement {
         }
     }
 
+    async loadRecurringTasks() {
+        try {
+            const { data: recurringData, error } = await supabase
+                .from('recurring_tasks')
+                .select(`
+                    *,
+                    template:task_templates(id, template_name, task_name, description),
+                    client:clients(id, name),
+                    assignee:staffs(id, name)
+                `)
+                .eq('assignee_id', this.currentUser.id)
+                .eq('is_active', true)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            this.recurringTasks = recurringData || [];
+            console.log('Recurring tasks loaded:', this.recurringTasks.length);
+
+        } catch (error) {
+            console.error('Recurring tasks loading error:', error);
+            // エラーが発生しても初期化は続行
+            this.recurringTasks = [];
+        }
+    }
+
     updateDropdowns() {
         // モーダル用ドロップダウン（受任者のみ）
         const assigneeSelect = document.getElementById('assignee-select');
@@ -231,6 +259,15 @@ class TaskManagement {
         sortedStaffs.forEach(staff => {
             assigneeSelect.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
         });
+
+        // 月次自動タスク用のデフォルト担当者ドロップダウンも更新
+        const defaultAssigneeSelect = document.getElementById('template-default-assignee');
+        if (defaultAssigneeSelect) {
+            defaultAssigneeSelect.innerHTML = '<option value="">選択してください</option>';
+            sortedStaffs.forEach(staff => {
+                defaultAssigneeSelect.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
+            });
+        }
 
         // 検索可能プルダウンのオプションを更新（後で実行）
         if (this.searchableSelect) {
@@ -2989,13 +3026,362 @@ class TaskManagement {
     renderTemplatesByTypeV2() {
         console.log('📋 テンプレートをタイプ別にレンダリング中...');
 
-        // 個別テンプレート（is_global=false, staff_id=current_user）
+        // 月次自動タスク（左側）
+        this.renderRecurringTasksV2();
+
+        // 個別テンプレート（中央）
         this.renderPersonalTemplatesV2();
 
-        // 共有テンプレート（is_global=true）
+        // 共有テンプレート（右側）
         this.renderGlobalTemplatesV2();
 
         console.log('✅ テンプレートのレンダリングが完了しました');
+    }
+
+    renderRecurringTasksV2() {
+        const container = document.getElementById('recurring-templates-list');
+        if (!container) {
+            console.warn('⚠️ recurring-templates-list要素が見つかりません');
+            return;
+        }
+
+        // 現在のユーザーの月次自動タスクのみ表示
+        const recurringTasks = this.recurringTasks.filter(task =>
+            task.assignee_id === this.currentUser?.id && task.is_active
+        );
+
+        if (recurringTasks.length === 0) {
+            container.innerHTML = `
+                <div class="template-list-empty">
+                    まだ月次自動タスクがありません<br>
+                    「新規作成」ボタンから設定しましょう
+                </div>
+            `;
+            return;
+        }
+
+        // 作成日でソート（新しい順）
+        recurringTasks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // 各月次自動タスクをレンダリング
+        container.innerHTML = '';
+        recurringTasks.forEach(task => {
+            const taskElement = this.createRecurringTaskElementV2(task);
+            container.appendChild(taskElement);
+        });
+
+        console.log(`✅ 月次自動タスク ${recurringTasks.length}件を表示しました`);
+    }
+
+    createRecurringTaskElementV2(recurringTask) {
+        const element = document.createElement('div');
+        element.className = 'template-item recurring-task';
+        element.dataset.recurringId = recurringTask.id;
+        element.dataset.templateType = 'recurring';
+
+        // 月次自動タスクの情報を準備
+        const templateName = recurringTask.template?.template_name || '未設定';
+        const clientName = recurringTask.client?.name || '全事業者';
+        const frequencyText = `毎月${recurringTask.frequency_day}日`;
+        const nextRunDate = recurringTask.next_run_date ?
+            new Date(recurringTask.next_run_date).toLocaleDateString('ja-JP') : '未設定';
+
+        element.innerHTML = `
+            <div class="template-compact-layout">
+                <!-- 1行目：タイトル行 -->
+                <div class="template-header-row">
+                    <div class="template-name">
+                        <span class="template-type">🔄</span>
+                        <span class="template-title">${templateName}</span>
+                    </div>
+                    <div class="template-actions">
+                        <button class="template-edit-btn"
+                                data-recurring-id="${recurringTask.id}"
+                                title="編集">
+                            ✏️
+                        </button>
+                        <button class="template-delete-btn"
+                                data-recurring-id="${recurringTask.id}"
+                                title="削除">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+                <!-- 2行目：詳細情報行 -->
+                <div class="template-details-row">
+                    <div class="template-info">
+                        👥 ${clientName} • ⏰ ${frequencyText}
+                    </div>
+                    <div class="template-meta">
+                        <span class="template-next-run">📅 次回: ${nextRunDate}</span>
+                        <span class="template-status ${recurringTask.is_active ? 'active' : 'inactive'}">
+                            ${recurringTask.is_active ? '✅ 有効' : '⏸️ 無効'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // クリックイベントハンドリング
+        element.addEventListener('click', (e) => {
+            const target = e.target;
+
+            // 編集ボタンクリック
+            if (target.classList.contains('template-edit-btn')) {
+                e.stopPropagation();
+                this.openRecurringTaskEditModal(recurringTask);
+                return;
+            }
+
+            // 削除ボタンクリック
+            if (target.classList.contains('template-delete-btn')) {
+                e.stopPropagation();
+                this.deleteRecurringTask(recurringTask.id);
+                return;
+            }
+
+            // その他のクリック（詳細表示）
+            if (!target.closest('.template-actions')) {
+                this.openRecurringTaskEditModal(recurringTask, 'view');
+            }
+        });
+
+        return element;
+    }
+
+    // 月次自動タスク編集モーダル
+    openRecurringTaskEditModal(recurringTask = null, mode = 'create') {
+        console.log(`🔄 月次自動タスク編集モーダルを開く: mode=${mode}`);
+
+        const modal = document.getElementById('template-edit-modal');
+        if (!modal) {
+            console.error('❌ template-edit-modal要素が見つかりません');
+            return;
+        }
+
+        // 現在の月次自動タスク情報を保存
+        this.currentRecurringTask = recurringTask;
+        this.currentTemplateType = 'recurring';
+
+        // フォームをリセット
+        const form = document.getElementById('template-edit-form');
+        if (form) {
+            form.reset();
+        }
+
+        // モードに応じてUI更新
+        this.setRecurringTaskEditMode(mode, recurringTask);
+
+        modal.style.display = 'block';
+        this.setUserInteracting(true);
+
+        // タブナビゲーションを無効化
+        this.disableTabNavigation(true);
+
+        console.log('✅ 月次自動タスク編集モーダルが開かれました');
+    }
+
+    setRecurringTaskEditMode(mode, recurringTask) {
+        const title = document.getElementById('template-edit-title');
+        const typeIndicator = document.getElementById('template-type-text');
+        const recurringSettings = document.getElementById('recurring-settings');
+        const viewButtons = document.getElementById('template-view-mode-buttons');
+        const editButtons = document.getElementById('template-edit-mode-buttons');
+
+        // タイトル更新
+        if (title) {
+            title.textContent = mode === 'create' ?
+                '新規月次自動タスク作成' :
+                `${recurringTask?.template?.template_name || '月次自動タスク'} - 編集`;
+        }
+
+        // タイプ表示更新
+        if (typeIndicator) {
+            typeIndicator.textContent = '🔄 月次自動タスク';
+        }
+
+        // 月次自動タスク設定を表示
+        if (recurringSettings) {
+            recurringSettings.style.display = 'block';
+        }
+
+        // 他のセクションを非表示
+        const sections = ['template-name-section', 'template-task-section', 'template-description-section'];
+        sections.forEach(sectionId => {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'none';
+            }
+        });
+
+        // ボタン表示切り替え
+        if (viewButtons && editButtons) {
+            if (mode === 'view') {
+                viewButtons.style.display = 'flex';
+                editButtons.style.display = 'none';
+            } else {
+                viewButtons.style.display = 'none';
+                editButtons.style.display = 'flex';
+            }
+        }
+
+        // フォームデータを設定
+        if (mode !== 'create' && recurringTask) {
+            this.populateRecurringTaskForm(recurringTask);
+        } else {
+            // 新規作成時のデフォルト値設定
+            this.setRecurringTaskDefaults();
+        }
+    }
+
+    populateRecurringTaskForm(recurringTask) {
+        // 期限日設定
+        const dueDaySelect = document.getElementById('template-due-day');
+        if (dueDaySelect && recurringTask.frequency_day) {
+            dueDaySelect.value = recurringTask.frequency_day;
+        }
+
+        // 何日前に作成設定（今は仮で3日前をデフォルト）
+        const createBeforeSelect = document.getElementById('template-create-days-before');
+        if (createBeforeSelect) {
+            createBeforeSelect.value = '3';
+        }
+
+        // デフォルト担当者
+        const assigneeSelect = document.getElementById('template-default-assignee');
+        if (assigneeSelect && recurringTask.assignee_id) {
+            assigneeSelect.value = recurringTask.assignee_id;
+        }
+    }
+
+    setRecurringTaskDefaults() {
+        // デフォルト担当者を現在のユーザーに設定
+        const assigneeSelect = document.getElementById('template-default-assignee');
+        if (assigneeSelect && this.currentUser) {
+            assigneeSelect.value = this.currentUser.id;
+        }
+
+        // デフォルト値設定
+        const dueDaySelect = document.getElementById('template-due-day');
+        if (dueDaySelect) {
+            dueDaySelect.value = '25'; // 月末近くをデフォルト
+        }
+
+        const createBeforeSelect = document.getElementById('template-create-days-before');
+        if (createBeforeSelect) {
+            createBeforeSelect.value = '3'; // 3日前をデフォルト
+        }
+    }
+
+    // 月次自動タスクの削除
+    async deleteRecurringTask(recurringId) {
+        if (!confirm('この月次自動タスクを削除しますか？\n削除後は復元できません。')) {
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('recurring_tasks')
+                .delete()
+                .eq('id', recurringId);
+
+            if (error) throw error;
+
+            showToast('月次自動タスクを削除しました', 'success');
+
+            // データを再読み込みして表示を更新
+            await this.loadRecurringTasks();
+            this.renderRecurringTasksV2();
+
+        } catch (error) {
+            console.error('❌ 月次自動タスク削除エラー:', error);
+            showToast('月次自動タスクの削除に失敗しました', 'error');
+        }
+    }
+
+    // 月次自動タスクの保存（新規作成・編集）
+    async saveRecurringTask() {
+        try {
+            // フォームデータを取得
+            const formData = this.getRecurringTaskFormData();
+
+            if (!formData) {
+                return; // バリデーションエラー
+            }
+
+            let result;
+            if (this.currentRecurringTask) {
+                // 編集
+                result = await supabase
+                    .from('recurring_tasks')
+                    .update(formData)
+                    .eq('id', this.currentRecurringTask.id);
+            } else {
+                // 新規作成
+                result = await supabase
+                    .from('recurring_tasks')
+                    .insert([formData]);
+            }
+
+            if (result.error) throw result.error;
+
+            const action = this.currentRecurringTask ? '更新' : '作成';
+            showToast(`月次自動タスクを${action}しました`, 'success');
+
+            // データを再読み込みして表示を更新
+            await this.loadRecurringTasks();
+            this.renderRecurringTasksV2();
+
+            // モーダルを閉じる
+            this.closeTemplateEditModal();
+
+        } catch (error) {
+            console.error('❌ 月次自動タスク保存エラー:', error);
+            showToast('月次自動タスクの保存に失敗しました', 'error');
+        }
+    }
+
+    getRecurringTaskFormData() {
+        // 期限日
+        const dueDay = document.getElementById('template-due-day')?.value;
+        if (!dueDay) {
+            showToast('期限日を選択してください', 'error');
+            return null;
+        }
+
+        // 何日前に作成
+        const createDaysBefore = document.getElementById('template-create-days-before')?.value;
+        if (!createDaysBefore) {
+            showToast('作成日を選択してください', 'error');
+            return null;
+        }
+
+        // 担当者
+        const assigneeId = document.getElementById('template-default-assignee')?.value;
+        if (!assigneeId) {
+            showToast('担当者を選択してください', 'error');
+            return null;
+        }
+
+        // frequency_dayを計算（期限日から作成日数を引いた日）
+        const frequencyDay = parseInt(dueDay) - parseInt(createDaysBefore);
+
+        // 次回実行日を計算（来月の実行日）
+        const nextMonth = new Date();
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        nextMonth.setDate(Math.max(1, frequencyDay));
+
+        const formData = {
+            template_id: null, // 一旦null、後でテンプレート連携予定
+            client_id: null, // 全事業者対象
+            assignee_id: parseInt(assigneeId),
+            frequency_type: 'monthly',
+            frequency_day: Math.max(1, frequencyDay),
+            is_active: true,
+            next_run_date: nextMonth.toISOString().split('T')[0]
+        };
+
+        return formData;
     }
 
     renderPersonalTemplatesV2() {
@@ -3191,7 +3577,12 @@ class TaskManagement {
             newBtn.addEventListener('click', (e) => {
                 const type = e.target.dataset.type;
                 console.log(`📝 新規${type}テンプレート作成をクリック`);
-                this.openTemplateEditModalV2(null, 'create', type);
+
+                if (type === 'recurring') {
+                    this.openRecurringTaskEditModal(null, 'create');
+                } else {
+                    this.openTemplateEditModalV2(null, 'create', type);
+                }
             });
         });
 
@@ -3414,7 +3805,11 @@ class TaskManagement {
         });
 
         this.setupSafeEventListener('template-save-btn', 'click', () => {
-            this.saveTemplateV2();
+            if (this.currentTemplateType === 'recurring') {
+                this.saveRecurringTask();
+            } else {
+                this.saveTemplateV2();
+            }
         });
 
         this.setupSafeEventListener('template-delete-btn', 'click', () => {
