@@ -3109,7 +3109,7 @@ class TaskManagement {
                     <button class="favorite-btn ${template.is_favorite ? 'active' : ''}"
                             data-template-id="${template.id}"
                             title="${template.is_favorite ? 'お気に入りを解除' : 'お気に入りに追加'}">
-                        ⭐
+                        📌
                     </button>
                     <button class="template-edit-btn"
                             data-template-id="${template.id}"
@@ -3608,8 +3608,8 @@ class TaskManagement {
 
             // 成功メッセージ
             const message = newFavoriteState ?
-                `⭐ 「${template.template_name}」をお気に入りに追加しました` :
-                `⭐ 「${template.template_name}」をお気に入りから削除しました`;
+                `📌 「${template.template_name}」をお気に入りに追加しました` :
+                `📌 「${template.template_name}」をお気に入りから削除しました`;
             showToast(message, 'success');
 
         } catch (error) {

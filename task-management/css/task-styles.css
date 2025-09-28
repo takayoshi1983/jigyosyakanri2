@@ -1565,13 +1565,13 @@
 }
 
 .favorite-btn:hover {
-    background: rgba(255, 193, 7, 0.1);
+    background: rgba(220, 53, 69, 0.1);
     transform: scale(1.1);
 }
 
 .favorite-btn.active {
-    color: #ffc107;
-    filter: drop-shadow(0 0 4px rgba(255, 193, 7, 0.6));
+    color: #dc3545;
+    filter: drop-shadow(0 0 4px rgba(220, 53, 69, 0.6));
 }
 
 .template-edit-btn {
