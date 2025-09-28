@@ -1496,11 +1496,12 @@
     background: white;
     border: 1px solid #e9ecef;
     border-radius: 8px;
-    padding: 12px;
+    padding: 8px 12px; /* 上下パディングを削減 */
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
+    min-height: 56px; /* 最小高さを設定 */
 }
 
 .template-item:hover {
@@ -1522,6 +1523,7 @@
     right: 8px;
     color: #dc3545;
     font-size: 1rem;
+    z-index: 10;
 }
 
 /* テンプレートアイテム内容 */
@@ -1591,6 +1593,56 @@
     transform: scale(1.1);
 }
 
+/* コンパクトレイアウト用スタイル */
+.template-compact-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 40px;
+}
+
+.template-title {
+    font-weight: 600;
+    color: #495057;
+}
+
+.template-details-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.template-info {
+    font-size: 0.8rem;
+    color: #6c757d;
+    line-height: 1.2;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.template-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.template-priority {
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.template-time {
+    font-size: 0.75rem;
+    color: #28a745;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* レガシースタイル（後方互換性のため保持） */
 .template-task-name {
     font-size: 0.9rem;
     color: #6c757d;

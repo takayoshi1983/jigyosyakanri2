@@ -3098,31 +3098,45 @@ class TaskManagement {
         const typeIcon = type === 'personal' ? '👤' : '🌐';
         const priorityStars = '⭐'.repeat(template.priority || 1);
 
+        // コンパクト表示用のデータ準備
+        const taskInfo = template.task_name || '';
+        const description = template.description || '';
+        const displayText = taskInfo && description ?
+            `${taskInfo} • ${description.substring(0, 50)}${description.length > 50 ? '...' : ''}` :
+            taskInfo || description.substring(0, 80) + (description.length > 80 ? '...' : '');
+
         element.innerHTML = `
             <div class="drag-handle">⋮⋮</div>
-            <div class="template-header-row">
-                <div class="template-name">
-                    <span class="template-type">${typeIcon}</span>
-                    ${template.template_name}
+            <div class="template-compact-layout">
+                <!-- 1行目：タイトル行 -->
+                <div class="template-header-row">
+                    <div class="template-name">
+                        <span class="template-type">${typeIcon}</span>
+                        <span class="template-title">${template.template_name}</span>
+                    </div>
+                    <div class="template-actions">
+                        <button class="favorite-btn ${template.is_favorite ? 'active' : ''}"
+                                data-template-id="${template.id}"
+                                title="${template.is_favorite ? 'お気に入りを解除' : 'お気に入りに追加'}">
+                            📌
+                        </button>
+                        <button class="template-edit-btn"
+                                data-template-id="${template.id}"
+                                title="編集">
+                            ✏️
+                        </button>
+                    </div>
                 </div>
-                <div class="template-actions">
-                    <button class="favorite-btn ${template.is_favorite ? 'active' : ''}"
-                            data-template-id="${template.id}"
-                            title="${template.is_favorite ? 'お気に入りを解除' : 'お気に入りに追加'}">
-                        📌
-                    </button>
-                    <button class="template-edit-btn"
-                            data-template-id="${template.id}"
-                            title="編集">
-                        ✏️
-                    </button>
+                <!-- 2行目：詳細情報行 -->
+                <div class="template-details-row">
+                    <div class="template-info">
+                        ${displayText ? `💼 ${displayText}` : '💼 詳細なし'}
+                    </div>
+                    <div class="template-meta">
+                        <span class="template-priority">${priorityStars}</span>
+                        <span class="template-time">⏱️ ${template.estimated_time_hours || '未設定'}h</span>
+                    </div>
                 </div>
-            </div>
-            <div class="template-task-name">${template.task_name || ''}</div>
-            <div class="template-description">${(template.description || '').substring(0, 100)}${(template.description || '').length > 100 ? '...' : ''}</div>
-            <div class="template-hours">
-                <span style="margin-right: 10px;">${priorityStars}</span>
-                ⏱️ ${template.estimated_time_hours || '未設定'}時間
             </div>
         `;
 
