@@ -426,6 +426,21 @@
                             <label for="template-estimated-hours">想定時間（時間）:</label>
                             <input type="number" id="template-estimated-hours" name="estimated_time_hours" class="form-control" step="0.5" min="0">
                         </div>
+                        <div class="compact-form-row">
+                            <label for="template-client-name">事業者名:</label>
+                            <input type="text" id="template-client-name" name="client_name" class="form-control" placeholder="事業者名を入力">
+                        </div>
+                        <div class="compact-form-row">
+                            <label for="template-reference-url">参照URL:</label>
+                            <input type="url" id="template-reference-url" name="reference_url" class="form-control" placeholder="https://example.com">
+                        </div>
+                        <div class="compact-form-row" id="template-default-assignee-row">
+                            <label for="template-default-assignee-general">既定の受託者:</label>
+                            <select id="template-default-assignee-general" name="default_assignee_id" class="form-control">
+                                <option value="">選択してください</option>
+                                <!-- JavaScriptで動的に生成 -->
+                            </select>
+                        </div>
                     </div>
 
                     <!-- 月次自動タスク専用設定 -->
@@ -504,7 +519,7 @@
 
     <!-- タスク作成/編集モーダル -->
     <div id="task-modal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-content" style="max-width: 500px; margin-top:-150px;">
             <div class="modal-header">
                 <h2 id="modal-title">新規タスク作成</h2>
                 <span class="close" id="modal-close">&times;</span>

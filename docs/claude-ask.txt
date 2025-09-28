@@ -1,27 +1,18 @@
-create table public.recurring_tasks (
-  id bigserial not null,
-  template_id bigint null,
-  client_id bigint null,
-  assignee_id bigint null,
-  frequency_type text null,
-  frequency_day integer null,
-  is_active boolean null default true,
-  next_run_date date null,
-  created_at timestamp with time zone null default now(),
-  updated_at timestamp with time zone null default now(),
-  constraint recurring_tasks_pkey primary key (id),
-  constraint recurring_tasks_assignee_id_fkey foreign KEY (assignee_id) references staffs (id),
-  constraint recurring_tasks_client_id_fkey foreign KEY (client_id) references clients (id),
-  constraint recurring_tasks_template_id_fkey foreign KEY (template_id) references task_templates (id),
-  constraint recurring_tasks_frequency_type_check check (
-    (
-      frequency_type = any (
-        array['monthly'::text, 'weekly'::text, 'daily'::text]
-      )
-    )
-  )
-) TABLESPACE pg_default;
-
-create trigger update_recurring_tasks_updated_at BEFORE
-update on recurring_tasks for EACH row
-execute FUNCTION update_updated_at_column ();
+task-management.js:4038 ❌ テンプレート削除エラー: 
+Object
+code
+: 
+"23503"
+details
+: 
+"Key is still referenced from table \"recurring_tasks\"."
+hint
+: 
+null
+message
+: 
+"update or delete on table \"task_templates\" violates foreign key constraint \"recurring_tasks_template_id_fkey\" on table \"recurring_tasks\""
+[[Prototype]]
+: 
+Object
+deleteTemplateV2	@	task-management.js:4038

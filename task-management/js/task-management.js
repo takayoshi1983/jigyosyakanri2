@@ -269,6 +269,15 @@ class TaskManagement {
             });
         }
 
+        // 一般テンプレート用のデフォルト担当者ドロップダウンも更新
+        const defaultAssigneeGeneralSelect = document.getElementById('template-default-assignee-general');
+        if (defaultAssigneeGeneralSelect) {
+            defaultAssigneeGeneralSelect.innerHTML = '<option value="">選択してください</option>';
+            sortedStaffs.forEach(staff => {
+                defaultAssigneeGeneralSelect.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
+            });
+        }
+
         // 検索可能プルダウンのオプションを更新（後で実行）
         if (this.searchableSelect) {
             this.searchableSelect.updateOptions();
@@ -3205,6 +3214,12 @@ class TaskManagement {
             recurringSettings.style.display = 'block';
         }
 
+        // 月次自動タスク用と一般用の既定の受託者フィールドを切り替え
+        const defaultAssigneeRow = document.getElementById('template-default-assignee-row');
+        if (defaultAssigneeRow) {
+            defaultAssigneeRow.style.display = 'none'; // 月次自動タスクでは非表示
+        }
+
         // 月次自動タスクの場合はテンプレート名のみ表示、他は非表示
         const sectionsToShow = ['template-basic-section'];
         const sectionsToHide = ['template-description-section'];
@@ -3736,6 +3751,12 @@ class TaskManagement {
             recurringSettings.style.display = type === 'recurring' ? 'block' : 'none';
         }
 
+        // 一般用の既定の受託者フィールドの表示/非表示
+        const defaultAssigneeRow = document.getElementById('template-default-assignee-row');
+        if (defaultAssigneeRow) {
+            defaultAssigneeRow.style.display = type === 'recurring' ? 'none' : 'block';
+        }
+
         // ボタン表示切り替え
         if (viewButtons && editButtons) {
             if (mode === 'view') {
@@ -3958,12 +3979,27 @@ class TaskManagement {
             return null;
         }
 
+        // 事業者名と参照URLを説明欄に追加
+        let description = document.getElementById('template-description')?.value?.trim() || '';
+        const clientName = document.getElementById('template-client-name')?.value?.trim();
+        const referenceUrl = document.getElementById('template-reference-url')?.value?.trim();
+
+        if (clientName || referenceUrl) {
+            description += '\n\n';
+            if (clientName) {
+                description += `事業者名: ${clientName}\n`;
+            }
+            if (referenceUrl) {
+                description += `参照URL: ${referenceUrl}`;
+            }
+        }
+
         return {
             template_name: templateName,
             task_name: taskName,
             priority: parseInt(document.getElementById('template-priority')?.value) || 1,
             estimated_time_hours: parseFloat(document.getElementById('template-estimated-hours')?.value) || null,
-            description: document.getElementById('template-description')?.value?.trim() || '',
+            description: description,
             is_favorite: document.getElementById('template-is-favorite')?.checked || false,
             is_global: this.currentTemplateType === 'global',
             staff_id: this.currentTemplateType === 'personal' ? this.currentUser?.id : null
@@ -4011,12 +4047,38 @@ class TaskManagement {
             return;
         }
 
-        const confirmMessage = `テンプレート「${this.currentTemplate.template_name}」を削除しますか？\nこの操作は取り消せません。`;
-        if (!confirm(confirmMessage)) {
-            return;
-        }
-
         try {
+            // まず月次自動タスクで使用されているかチェック
+            const { data: recurringTasks, error: checkError } = await supabase
+                .from('recurring_tasks')
+                .select('id')
+                .eq('template_id', this.currentTemplate.id);
+
+            if (checkError) throw checkError;
+
+            // 月次自動タスクで使用されている場合は警告
+            if (recurringTasks && recurringTasks.length > 0) {
+                const message = `テンプレート「${this.currentTemplate.template_name}」は${recurringTasks.length}件の月次自動タスクで使用されています。\n\n削除すると関連する月次自動タスクも削除されます。\n続行しますか？`;
+                if (!confirm(message)) {
+                    return;
+                }
+
+                // 関連する月次自動タスクを先に削除
+                const { error: deleteRecurringError } = await supabase
+                    .from('recurring_tasks')
+                    .delete()
+                    .eq('template_id', this.currentTemplate.id);
+
+                if (deleteRecurringError) throw deleteRecurringError;
+            } else {
+                // 通常の削除確認
+                const confirmMessage = `テンプレート「${this.currentTemplate.template_name}」を削除しますか？\nこの操作は取り消せません。`;
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
+            }
+
+            // テンプレートを削除
             const { error } = await supabase
                 .from('task_templates')
                 .delete()
