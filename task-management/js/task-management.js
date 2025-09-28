@@ -3511,34 +3511,12 @@ class TaskManagement {
             }
         }
 
-        // フォームデータを設定
-        if (mode !== 'create' && recurringTask) {
-            this.populateRecurringTaskForm(recurringTask);
-        } else {
-            // 新規作成時のデフォルト値設定
+        // 新規作成時のデフォルト値設定
+        if (mode === 'create') {
             this.setRecurringTaskDefaults();
         }
     }
 
-    populateRecurringTaskForm(recurringTask) {
-        // 期限日設定
-        const dueDaySelect = document.getElementById('template-due-day');
-        if (dueDaySelect && recurringTask.frequency_day) {
-            dueDaySelect.value = recurringTask.frequency_day;
-        }
-
-        // 何日前に作成設定（今は仮で3日前をデフォルト）
-        const createBeforeSelect = document.getElementById('template-create-days-before');
-        if (createBeforeSelect) {
-            createBeforeSelect.value = '3';
-        }
-
-        // 受託者
-        const assigneeSelect = document.getElementById('template-default-assignee');
-        if (assigneeSelect && recurringTask.assignee_id) {
-            assigneeSelect.value = recurringTask.assignee_id;
-        }
-    }
 
     setRecurringTaskDefaults() {
         // 受託者を現在のユーザーに設定
@@ -4051,7 +4029,7 @@ class TaskManagement {
         if (title) {
             title.textContent = mode === 'create' ?
                 `新規${this.getTypeDisplayName(type)}作成` :
-                `${template.template_name} - ${this.getTypeDisplayName(type)}`;
+                `${template?.template_name || 'テンプレート'} - ${this.getTypeDisplayName(type)}`;
         }
 
         // タイプ表示更新
@@ -4263,11 +4241,19 @@ class TaskManagement {
         });
 
         this.setupSafeEventListener('template-edit-mode-btn', 'click', () => {
-            this.setTemplateEditModeV2('edit', this.currentTemplate, this.currentTemplateType);
+            if (this.currentTemplate) {
+                this.setTemplateEditModeV2('edit', this.currentTemplate, this.currentTemplateType);
+            } else {
+                console.warn('⚠️ currentTemplate is null, cannot switch to edit mode');
+            }
         });
 
         this.setupSafeEventListener('template-use-btn', 'click', () => {
-            this.useTemplateForTask(this.currentTemplate);
+            if (this.currentTemplate) {
+                this.useTemplateForTask(this.currentTemplate);
+            } else {
+                console.warn('⚠️ currentTemplate is null, cannot use template');
+            }
         });
 
         // 編集モードボタン

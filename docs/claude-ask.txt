@@ -1,4 +1,6 @@
-📊 総データ件数: 1188件
+config.js:10 Supabase config loaded: Object
+analytics.html:537 Dashboard toggle elements: Object
+supabase-client.js:224 📊 総データ件数: 1188件
 supabase-client.js:232 📊 バッチ取得中: range(0, 999)
 supabase-client.js:247 📊 取得結果: 1000件
 supabase-client.js:254 月次タスクデータ取得中: 1000件
@@ -7,28 +9,5 @@ supabase-client.js:247 📊 取得結果: 188件
 supabase-client.js:254 月次タスクデータ取得中: 1188件
 supabase-client.js:258 📊 最後のバッチ (188件 < 1000件)
 supabase-client.js:265 月次タスクデータ取得完了: 総計1188件
-analytics.js:2831 📊 週次フィルター: 
-{startPeriod: '2024-10', endPeriod: '2025-09', currentFilters: {…}}
-currentFilters
-: 
-{startPeriod: '2024-10', endPeriod: '2025-09', staffId: '', fiscalMonth: '', businessName: ''}
-endPeriod
-: 
-"2025-09"
-startPeriod
-: 
-"2024-10"
-[[Prototype]]
-: 
-Object
-analytics.js:2850 📅 計算された期間: 
-{startDate: '2024-10-01', endDate: '2025-09-30'}
-endDate
-: 
-"2025-09-30"
-startDate
-: 
-"2024-10-01"
-[[Prototype]]
-: 
-Object
+analytics.js:2831 📊 週次フィルター: ObjectcurrentFilters: {startPeriod: '2024-10', endPeriod: '2025-09', staffId: '', fiscalMonth: '', businessName: ''}endPeriod: "2025-09"startPeriod: "2024-10"[[Prototype]]: Object
+analytics.js:2850 📅 計算された期間: ObjectendDate: "2025-09-30"startDate: "2024-10-01"[[Prototype]]: Object
