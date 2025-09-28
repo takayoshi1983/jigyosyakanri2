@@ -1,18 +1,27 @@
-task-management.js:4038 ❌ テンプレート削除エラー: 
-Object
-code
-: 
-"23503"
-details
-: 
-"Key is still referenced from table \"recurring_tasks\"."
-hint
-: 
-null
-message
-: 
-"update or delete on table \"task_templates\" violates foreign key constraint \"recurring_tasks_template_id_fkey\" on table \"recurring_tasks\""
-[[Prototype]]
-: 
-Object
-deleteTemplateV2	@	task-management.js:4038
+新規月次自動タスク作成
+×
+🔄 月次自動タスク
+基本情報
+テンプレート名 *:
+タスク名 *:
+重要度:
+
+⭐ 通常
+想定時間（時間）:
+事業者名:
+事業者名を入力または選択（全角半角対応）...
+▼
+参照URL:
+https://example.com
+🔄 自動作成設定
+毎月の期限日:
+
+25日
+何日前に作成:
+
+3日前
+デフォルト担当者:
+
+吉冨
+表示設定
+⭐ お気に入り登録

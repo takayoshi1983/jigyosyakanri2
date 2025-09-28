@@ -260,7 +260,7 @@ class TaskManagement {
             assigneeSelect.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
         });
 
-        // 月次自動タスク用のデフォルト担当者ドロップダウンも更新
+        // 月次自動タスク用の受託者ドロップダウンも更新
         const defaultAssigneeSelect = document.getElementById('template-default-assignee');
         if (defaultAssigneeSelect) {
             defaultAssigneeSelect.innerHTML = '<option value="">選択してください</option>';
@@ -269,7 +269,7 @@ class TaskManagement {
             });
         }
 
-        // 一般テンプレート用のデフォルト担当者ドロップダウンも更新
+        // 一般テンプレート用の受託者ドロップダウンも更新
         const defaultAssigneeGeneralSelect = document.getElementById('template-default-assignee-general');
         if (defaultAssigneeGeneralSelect) {
             defaultAssigneeGeneralSelect.innerHTML = '<option value="">選択してください</option>';
@@ -3241,9 +3241,9 @@ class TaskManagement {
             return;
         }
 
-        // 現在のユーザーの月次自動タスクのみ表示
+        // 現在のユーザーが作成した月次自動タスクのみ表示（担当者は別の人でも可）
         const recurringTasks = this.recurringTasks.filter(task =>
-            task.assignee_id === this.currentUser?.id && task.is_active
+            task.template?.staff_id === this.currentUser?.id && task.is_active
         );
 
         if (recurringTasks.length === 0) {
@@ -3458,7 +3458,7 @@ class TaskManagement {
             createBeforeSelect.value = '3';
         }
 
-        // デフォルト担当者
+        // 受託者
         const assigneeSelect = document.getElementById('template-default-assignee');
         if (assigneeSelect && recurringTask.assignee_id) {
             assigneeSelect.value = recurringTask.assignee_id;
@@ -3466,7 +3466,7 @@ class TaskManagement {
     }
 
     setRecurringTaskDefaults() {
-        // デフォルト担当者を現在のユーザーに設定
+        // 受託者を現在のユーザーに設定
         const assigneeSelect = document.getElementById('template-default-assignee');
         if (assigneeSelect && this.currentUser) {
             assigneeSelect.value = this.currentUser.id;
@@ -3533,7 +3533,10 @@ class TaskManagement {
                     task_name: formData.template_name,
                     description: '月次自動タスク',
                     is_global: false,
-                    staff_id: this.currentUser.id
+                    staff_id: this.currentUser.id,
+                    client_id: formData.client_id,
+                    reference_url: formData.reference_url,
+                    default_assignee_id: formData.default_assignee_id
                 };
 
                 const templateResult = await supabase
@@ -3630,6 +3633,12 @@ class TaskManagement {
             return null;
         }
 
+        // 事業者ID（月次タスクでも事業者を指定可能）
+        const clientId = parseInt(document.getElementById('template-client-select')?.value) || null;
+
+        // 参照URL（オプション）
+        const referenceUrl = document.getElementById('template-reference-url')?.value?.trim() || null;
+
         // frequency_dayを計算（期限日から作成日数を引いた日）
         const frequencyDay = parseInt(dueDay) - parseInt(createDaysBefore);
 
@@ -3640,7 +3649,9 @@ class TaskManagement {
 
         const formData = {
             template_name: templateName, // テンプレート作成用
-            client_id: null, // 全事業者対象
+            client_id: clientId, // 事業者指定（nullの場合は全事業者対象）
+            reference_url: referenceUrl, // 参照URL
+            default_assignee_id: parseInt(assigneeId), // 既定の受託者
             assignee_id: parseInt(assigneeId),
             frequency_type: 'monthly',
             frequency_day: Math.max(1, frequencyDay),
