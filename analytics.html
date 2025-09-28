@@ -534,6 +534,8 @@
             const toggleButton = document.getElementById('toggle-dashboard-button');
             const dashboardSection = document.getElementById('summary-dashboard');
 
+            console.log('Dashboard toggle elements:', { toggleButton, dashboardSection });
+
             // ローカルストレージから設定を読み込み（ログイン情報と組み合わせ）
             function getCurrentUser() {
                 try {
@@ -558,10 +560,12 @@
             }
 
             toggleButton.addEventListener('click', function() {
+                console.log('Toggle clicked, current state:', isDashboardVisible);
                 if (isDashboardVisible) {
                     // ダッシュボードを非表示
                     dashboardSection.style.display = 'none';
                     toggleButton.innerHTML = '📊 グラフ表示';
+                    console.log('Dashboard hidden');
                     toggleButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
                     toggleButton.onmouseover = function() { this.style.background = 'linear-gradient(135deg, #495057, #343a40)'; };
                     toggleButton.onmouseout = function() { this.style.background = 'linear-gradient(135deg, #6c757d, #495057)'; };

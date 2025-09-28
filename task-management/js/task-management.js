@@ -2305,6 +2305,14 @@ class TaskManagement {
                 document.getElementById('task-name').value = template.task_name || '';
                 document.getElementById('task-description').value = template.description || '';
                 document.getElementById('estimated-hours').value = template.estimated_time_hours || '';
+                document.getElementById('reference-url').value = template.reference_url || '';
+
+                // 事業者IDを設定（検索可能ドロップダウン）
+                if (template.client_id && this.searchableSelect) {
+                    this.searchableSelect.setValue(template.client_id);
+                } else if (template.client_id) {
+                    document.getElementById('client-select').value = template.client_id;
+                }
 
                 // URL自動リンク表示を更新
                 if (this.linkedTextDisplay) {
@@ -3382,6 +3390,11 @@ class TaskManagement {
         // モードに応じてUI更新
         this.setRecurringTaskEditMode(mode, recurringTask);
 
+        // 編集モードの場合、フォームにデータを入力
+        if (mode !== 'create' && recurringTask) {
+            this.populateRecurringTaskForm(recurringTask);
+        }
+
         modal.style.display = 'block';
         this.setUserInteracting(true);
 
@@ -3389,6 +3402,54 @@ class TaskManagement {
         this.disableTabNavigation(true);
 
         console.log('✅ 月次自動タスク編集モーダルが開かれました');
+    }
+
+    populateRecurringTaskForm(recurringTask) {
+        if (!recurringTask) return;
+
+        console.log('📝 月次タスクフォームにデータを入力:', recurringTask);
+
+        const setFieldValue = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.value = value || '';
+                console.log(`Set ${id} = ${value}`);
+            } else {
+                console.warn(`Element not found: ${id}`);
+            }
+        };
+
+        // 基本情報（テンプレートから）
+        if (recurringTask.template) {
+            setFieldValue('template-name-input', recurringTask.template.template_name);
+            setFieldValue('template-task-name', recurringTask.template.task_name);
+            setFieldValue('template-estimated-hours', recurringTask.template.estimated_time_hours);
+            setFieldValue('template-reference-url', recurringTask.template.reference_url);
+        }
+
+        // 月次タスク設定
+        setFieldValue('template-due-day', recurringTask.due_day);
+        setFieldValue('template-create-days-before', recurringTask.create_days_before);
+
+        // 受託者設定
+        if (recurringTask.assignee_id) {
+            const assigneeSelect = document.getElementById('template-default-assignee');
+            if (assigneeSelect) {
+                assigneeSelect.value = recurringTask.assignee_id;
+            }
+        }
+
+        // 事業者設定（検索可能ドロップダウン）
+        if (recurringTask.client_id && this.templateClientSelect) {
+            const client = this.clients.find(c => c.id === recurringTask.client_id);
+            if (client) {
+                this.templateClientSelect.setValue(recurringTask.client_id);
+                const searchInput = document.getElementById('template-client-search');
+                if (searchInput) {
+                    searchInput.value = client.name;
+                }
+            }
+        }
     }
 
     setRecurringTaskEditMode(mode, recurringTask) {

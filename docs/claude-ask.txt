@@ -1,14 +1,34 @@
-🚀 新しいテンプレートUIを使用します
-task-management.js:3187 🚀 新しいテンプレートモーダルを開いています...
-task-management.js:3222 📋 テンプレートをタイプ別にレンダリング中...
-task-management.js:3276 ✅ 月次自動タスク 2件を表示しました
-task-management.js:3215 ❌ 新しいテンプレートモーダルでエラー: TypeError: this.initializeTemplatesSortableV2 is not a function
-    at TaskManagement.renderRecurringTasksV2 (task-management.js:3279:14)
-    at TaskManagement.renderTemplatesByTypeV2 (task-management.js:3225:14)
-    at TaskManagement.openTemplateModalV2 (task-management.js:3199:18)
-    at HTMLButtonElement.<anonymous> (task-management.js:409:22)
-openTemplateModalV2 @ task-management.js:3215Understand this error
-task-management.js:2373 Uncaught TypeError: Cannot set properties of null (setting 'innerHTML')
-    at TaskManagement.openTemplateModal (task-management.js:2373:32)
-    at TaskManagement.openTemplateModalV2 (task-management.js:3217:25)
-    at HTMLButtonElement.<anonymous> (task-management.js:409:22)
+📊 総データ件数: 1188件
+supabase-client.js:232 📊 バッチ取得中: range(0, 999)
+supabase-client.js:247 📊 取得結果: 1000件
+supabase-client.js:254 月次タスクデータ取得中: 1000件
+supabase-client.js:232 📊 バッチ取得中: range(1000, 1999)
+supabase-client.js:247 📊 取得結果: 188件
+supabase-client.js:254 月次タスクデータ取得中: 1188件
+supabase-client.js:258 📊 最後のバッチ (188件 < 1000件)
+supabase-client.js:265 月次タスクデータ取得完了: 総計1188件
+analytics.js:2831 📊 週次フィルター: 
+{startPeriod: '2024-10', endPeriod: '2025-09', currentFilters: {…}}
+currentFilters
+: 
+{startPeriod: '2024-10', endPeriod: '2025-09', staffId: '', fiscalMonth: '', businessName: ''}
+endPeriod
+: 
+"2025-09"
+startPeriod
+: 
+"2024-10"
+[[Prototype]]
+: 
+Object
+analytics.js:2850 📅 計算された期間: 
+{startDate: '2024-10-01', endDate: '2025-09-30'}
+endDate
+: 
+"2025-09-30"
+startDate
+: 
+"2024-10-01"
+[[Prototype]]
+: 
+Object
