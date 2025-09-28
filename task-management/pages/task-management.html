@@ -427,8 +427,17 @@
                             <input type="number" id="template-estimated-hours" name="estimated_time_hours" class="form-control" step="0.5" min="0">
                         </div>
                         <div class="compact-form-row">
-                            <label for="template-client-name">事業者名:</label>
-                            <input type="text" id="template-client-name" name="client_name" class="form-control" placeholder="事業者名を入力">
+                            <label for="template-client-search">事業者名:</label>
+                            <div class="searchable-select-wrapper">
+                                <input type="text" id="template-client-search" class="form-control searchable-select-input" placeholder="事業者名を入力または選択（全角半角対応）..." autocomplete="off">
+                                <div class="searchable-select-arrow">▼</div>
+                                <div id="template-client-dropdown" class="searchable-select-dropdown" style="display: none;">
+                                    <!-- JavaScript で動的に生成 -->
+                                </div>
+                                <select id="template-client-select" name="client_id" style="display: none;">
+                                    <!-- 隠しselect（フォーム送信用） -->
+                                </select>
+                            </div>
                         </div>
                         <div class="compact-form-row">
                             <label for="template-reference-url">参照URL:</label>

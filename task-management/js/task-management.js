@@ -480,6 +480,7 @@ class TaskManagement {
         // 検索可能プルダウンの初期化
         this.initializeSearchableSelect();
         this.initializeFilterSearchableSelect();
+        this.initializeTemplateClientSelect();
     }
 
     initializeLinkedTextDisplay() {
@@ -1029,6 +1030,192 @@ class TaskManagement {
         // 初期値設定とオプション設定
         updateOptions();
         searchInput.value = '全て';
+    }
+
+    initializeTemplateClientSelect() {
+        const searchInput = document.getElementById('template-client-search');
+        const dropdown = document.getElementById('template-client-dropdown');
+        const hiddenSelect = document.getElementById('template-client-select');
+
+        if (!searchInput || !dropdown || !hiddenSelect) {
+            console.warn('⚠️ テンプレート用事業者選択の要素が見つかりません');
+            return;
+        }
+
+        const wrapper = searchInput.parentElement;
+        let highlightedIndex = -1;
+        let allOptions = [];
+
+        // オプションデータを準備
+        const updateOptions = () => {
+            allOptions = [
+                {
+                    value: '',
+                    text: '事業者を選択しない',
+                    searchText: '事業者を選択しない',
+                    normalizedText: normalizeText('事業者を選択しない')
+                },
+                ...this.clients.map(client => ({
+                    value: client.id.toString(),
+                    text: client.name,
+                    searchText: client.name,
+                    normalizedText: normalizeText(client.name)
+                }))
+            ];
+
+            // 隠しselect要素を更新
+            const currentValue = hiddenSelect.value;
+            hiddenSelect.innerHTML = '<option value="">事業者を選択しない</option>' +
+                this.clients.map(client =>
+                    `<option value="${client.id}">${client.name}</option>`
+                ).join('');
+            hiddenSelect.value = currentValue;
+        };
+
+        // ドロップダウンを表示
+        const showDropdown = () => {
+            dropdown.style.display = 'block';
+            wrapper.classList.add('open');
+            renderOptions();
+        };
+
+        // ドロップダウンを非表示
+        const hideDropdown = () => {
+            dropdown.style.display = 'none';
+            wrapper.classList.remove('open');
+            highlightedIndex = -1;
+        };
+
+        // オプションをレンダリング
+        const renderOptions = (searchTerm = '') => {
+            const normalizedSearch = normalizeText(searchTerm);
+
+            let filtered = allOptions.filter(option =>
+                option.normalizedText.includes(normalizedSearch)
+            );
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = `<div class="searchable-select-no-results">「${searchTerm}」に該当する事業者が見つかりません</div>`;
+                return;
+            }
+
+            dropdown.innerHTML = filtered.map((option, index) => {
+                const isSelected = hiddenSelect.value === option.value;
+                return `<div class="searchable-select-item ${isSelected ? 'selected' : ''}" data-value="${option.value}" data-index="${index}" data-text="${option.text}">${option.text}</div>`;
+            }).join('');
+
+            const selectedItem = dropdown.querySelector('.searchable-select-item.selected');
+            if (selectedItem) {
+                highlightedIndex = parseInt(selectedItem.dataset.index);
+                selectedItem.classList.add('highlighted');
+            }
+        };
+
+        // アイテムを選択
+        const selectItem = (value, text) => {
+            hiddenSelect.value = value;
+            searchInput.value = text;
+            hideDropdown();
+        };
+
+        // ハイライトを更新
+        const updateHighlight = () => {
+            dropdown.querySelectorAll('.searchable-select-item').forEach((item, index) => {
+                item.classList.toggle('highlighted', index === highlightedIndex);
+            });
+        };
+
+        // イベントリスナー
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value;
+            if (searchTerm === '') {
+                hiddenSelect.value = '';
+            }
+            updateOptions();
+            showDropdown();
+            renderOptions(searchTerm);
+            highlightedIndex = -1;
+        });
+
+        searchInput.addEventListener('click', (e) => {
+            if (dropdown.style.display === 'none') {
+                updateOptions();
+                showDropdown();
+            }
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = dropdown.querySelectorAll('.searchable-select-item:not(.searchable-select-no-results)');
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (dropdown.style.display === 'none') {
+                        showDropdown();
+                    }
+                    highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                    updateHighlight();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (dropdown.style.display === 'none') {
+                        showDropdown();
+                    }
+                    highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                    updateHighlight();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (highlightedIndex >= 0 && items[highlightedIndex]) {
+                        const item = items[highlightedIndex];
+                        selectItem(item.dataset.value, item.dataset.text);
+                    }
+                    break;
+                case 'Escape':
+                    hideDropdown();
+                    break;
+            }
+        });
+
+        searchInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                hideDropdown();
+            }, 200);
+        });
+
+        dropdown.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            const item = e.target.closest('.searchable-select-item');
+            if (item && !item.classList.contains('searchable-select-no-results')) {
+                selectItem(item.dataset.value, item.dataset.text);
+            }
+        });
+
+        wrapper.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('searchable-select-arrow')) {
+                e.preventDefault();
+                if (dropdown.style.display === 'block') {
+                    hideDropdown();
+                } else {
+                    updateOptions();
+                    showDropdown();
+                }
+            }
+        });
+
+        // 初期化
+        updateOptions();
+
+        // this.templateClientSelect として保存
+        this.templateClientSelect = {
+            updateOptions,
+            selectItem,
+            clear: () => {
+                searchInput.value = '';
+                hiddenSelect.value = '';
+                hideDropdown();
+            }
+        };
     }
 
     initializeAssigneeSidebar() {
@@ -3569,9 +3756,24 @@ class TaskManagement {
         // コンパクト表示用のデータ準備
         const taskInfo = template.task_name || '';
         const description = template.description || '';
-        const displayText = taskInfo && description ?
-            `${taskInfo} • ${description.substring(0, 50)}${description.length > 50 ? '...' : ''}` :
-            taskInfo || description.substring(0, 80) + (description.length > 80 ? '...' : '');
+
+        // client_idから事業者名を取得
+        let clientName = '';
+        if (template.client_id) {
+            const client = this.clients.find(c => c.id === template.client_id);
+            clientName = client ? client.name : '';
+        }
+
+        let displayText = '';
+        if (clientName) {
+            displayText = `👥 ${clientName}`;
+            if (taskInfo) displayText += ` • ${taskInfo}`;
+            if (description) displayText += ` • ${description.substring(0, 30)}${description.length > 30 ? '...' : ''}`;
+        } else if (taskInfo && description) {
+            displayText = `${taskInfo} • ${description.substring(0, 50)}${description.length > 50 ? '...' : ''}`;
+        } else {
+            displayText = taskInfo || description.substring(0, 80) + (description.length > 80 ? '...' : '');
+        }
 
         element.innerHTML = `
             <div class="drag-handle">⋮⋮</div>
@@ -3816,6 +4018,18 @@ class TaskManagement {
         setFieldValue('template-priority', template.priority || 1);
         setFieldValue('template-estimated-hours', template.estimated_time_hours);
         setFieldValue('template-description', template.description);
+        setFieldValue('template-reference-url', template.reference_url);
+        setFieldValue('template-default-assignee-general', template.default_assignee_id);
+
+        // 事業者選択（検索可能ドロップダウン用）
+        if (template.client_id && this.templateClientSelect) {
+            const client = this.clients.find(c => c.id === template.client_id);
+            if (client) {
+                this.templateClientSelect.selectItem(client.id.toString(), client.name);
+            }
+        } else if (this.templateClientSelect) {
+            this.templateClientSelect.clear();
+        }
 
         // お気に入り
         setCheckboxValue('template-is-favorite', template.is_favorite);
@@ -3979,27 +4193,15 @@ class TaskManagement {
             return null;
         }
 
-        // 事業者名と参照URLを説明欄に追加
-        let description = document.getElementById('template-description')?.value?.trim() || '';
-        const clientName = document.getElementById('template-client-name')?.value?.trim();
-        const referenceUrl = document.getElementById('template-reference-url')?.value?.trim();
-
-        if (clientName || referenceUrl) {
-            description += '\n\n';
-            if (clientName) {
-                description += `事業者名: ${clientName}\n`;
-            }
-            if (referenceUrl) {
-                description += `参照URL: ${referenceUrl}`;
-            }
-        }
-
         return {
             template_name: templateName,
             task_name: taskName,
             priority: parseInt(document.getElementById('template-priority')?.value) || 1,
             estimated_time_hours: parseFloat(document.getElementById('template-estimated-hours')?.value) || null,
-            description: description,
+            description: document.getElementById('template-description')?.value?.trim() || '',
+            client_id: parseInt(document.getElementById('template-client-select')?.value) || null,
+            reference_url: document.getElementById('template-reference-url')?.value?.trim() || null,
+            default_assignee_id: parseInt(document.getElementById('template-default-assignee-general')?.value) || null,
             is_favorite: document.getElementById('template-is-favorite')?.checked || false,
             is_global: this.currentTemplateType === 'global',
             staff_id: this.currentTemplateType === 'personal' ? this.currentUser?.id : null
