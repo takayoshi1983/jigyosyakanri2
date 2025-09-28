@@ -228,11 +228,10 @@ class TaskManagement {
                 .from('recurring_tasks')
                 .select(`
                     *,
-                    template:task_templates(id, template_name, task_name, description),
+                    template:task_templates(id, template_name, task_name, description, staff_id),
                     client:clients(id, name),
                     assignee:staffs(id, name)
                 `)
-                .eq('assignee_id', this.currentUser.id)
                 .eq('is_active', true)
                 .order('created_at', { ascending: false });
 
@@ -3532,6 +3531,7 @@ class TaskManagement {
                     template_name: formData.template_name,
                     task_name: formData.template_name,
                     description: '月次自動タスク',
+                    estimated_time_hours: formData.estimated_time_hours,
                     is_global: false,
                     staff_id: this.currentUser.id,
                     client_id: formData.client_id,
@@ -3639,6 +3639,9 @@ class TaskManagement {
         // 参照URL（オプション）
         const referenceUrl = document.getElementById('template-reference-url')?.value?.trim() || null;
 
+        // 想定時間（オプション）
+        const estimatedTimeHours = document.getElementById('template-estimated-time')?.value?.trim() || null;
+
         // frequency_dayを計算（期限日から作成日数を引いた日）
         const frequencyDay = parseInt(dueDay) - parseInt(createDaysBefore);
 
@@ -3651,6 +3654,7 @@ class TaskManagement {
             template_name: templateName, // テンプレート作成用
             client_id: clientId, // 事業者指定（nullの場合は全事業者対象）
             reference_url: referenceUrl, // 参照URL
+            estimated_time_hours: estimatedTimeHours, // 想定時間
             default_assignee_id: parseInt(assigneeId), // 既定の受託者
             assignee_id: parseInt(assigneeId),
             frequency_type: 'monthly',
