@@ -534,8 +534,28 @@
             const toggleButton = document.getElementById('toggle-dashboard-button');
             const dashboardSection = document.querySelector('#summary-dashboard');
 
-            // 初期状態は表示（HTMLの実際の状態に合わせて）
-            let isDashboardVisible = true;
+            // ローカルストレージから設定を読み込み（ログイン情報と組み合わせ）
+            function getCurrentUser() {
+                try {
+                    const userStr = localStorage.getItem('currentUser');
+                    return userStr ? JSON.parse(userStr) : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            const currentUser = getCurrentUser(); // 現在のユーザー情報を取得
+            const storageKey = currentUser ? `dashboard-visible-${currentUser.id}` : 'dashboard-visible-guest';
+            let isDashboardVisible = localStorage.getItem(storageKey) !== 'false'; // デフォルトは表示
+
+            // 初期表示を設定
+            if (!isDashboardVisible) {
+                dashboardSection.style.display = 'none';
+                toggleButton.innerHTML = '📊 グラフ表示';
+                toggleButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
+                toggleButton.onmouseover = function() { this.style.background = 'linear-gradient(135deg, #495057, #343a40)'; };
+                toggleButton.onmouseout = function() { this.style.background = 'linear-gradient(135deg, #6c757d, #495057)'; };
+            }
 
             toggleButton.addEventListener('click', function() {
                 if (isDashboardVisible) {
@@ -554,6 +574,9 @@
                     toggleButton.onmouseout = function() { this.style.background = 'linear-gradient(135deg, #28a745, #20c997)'; };
                 }
                 isDashboardVisible = !isDashboardVisible;
+
+                // ローカルストレージに状態を保存
+                localStorage.setItem(storageKey, isDashboardVisible.toString());
             });
         });
     </script>

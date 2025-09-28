@@ -3275,8 +3275,9 @@ class TaskManagement {
 
         console.log(`✅ 月次自動タスク ${recurringTasks.length}件を表示しました`);
 
-        // ドラッグ&ドロップ機能を初期化
-        this.initializeSortable(container, 'recurring');
+        // ドラッグ&ドロップ機能を初期化（display_order列が存在する場合のみ）
+        // 注意: display_order列がDBに存在しない場合はコメントアウト
+        // this.initializeSortable(container, 'recurring');
     }
 
     createRecurringTaskElementV2(recurringTask) {
@@ -3298,7 +3299,8 @@ class TaskManagement {
                 <!-- 1行目：タイトル行 -->
                 <div class="template-header-row">
                     <div class="template-name">
-                        <span class="drag-handle" title="ドラッグして並び替え">⋮⋮</span>
+                        <!-- ドラッグハンドル（display_order列が存在する場合のみ表示） -->
+                        <!-- <span class="drag-handle" title="ドラッグして並び替え">⋮⋮</span> -->
                         <span class="template-type">🔄</span>
                         <span class="template-title">${templateName}</span>
                     </div>
@@ -3578,14 +3580,14 @@ class TaskManagement {
             };
 
             // 新規作成時のみdisplay_orderを設定
-            if (!this.currentRecurringTask) {
-                // 現在のユーザーの月次タスクの最大display_order + 1
-                const userRecurringTasks = this.recurringTasks.filter(task =>
-                    task.template?.staff_id === this.currentUser?.id && task.is_active
-                );
-                const maxOrder = Math.max(...userRecurringTasks.map(t => t.display_order || 0), 0);
-                recurringData.display_order = maxOrder + 1;
-            }
+            // 注意: display_order列がDBに存在しない場合はコメントアウト
+            // if (!this.currentRecurringTask) {
+            //     const userRecurringTasks = this.recurringTasks.filter(task =>
+            //         task.template?.staff_id === this.currentUser?.id && task.is_active
+            //     );
+            //     const maxOrder = Math.max(...userRecurringTasks.map(t => t.display_order || 0), 0);
+            //     recurringData.display_order = maxOrder + 1;
+            // }
 
             let result;
             if (this.currentRecurringTask) {
