@@ -226,7 +226,9 @@ class TaskManagement {
 
         // モーダル - 受任者
         assigneeSelect.innerHTML = '<option value="">選択してください</option>';
-        this.staffs.forEach(staff => {
+        // ID順でソート
+        const sortedStaffs = [...this.staffs].sort((a, b) => a.id - b.id);
+        sortedStaffs.forEach(staff => {
             assigneeSelect.innerHTML += `<option value="${staff.id}">${staff.name}</option>`;
         });
 
