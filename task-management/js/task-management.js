@@ -73,7 +73,15 @@ class TaskManagement {
         this.pendingNotifications = new Map(); // 通知待ちタスク管理
         this.lastTaskCount = 0; // 前回のタスク数
 
+        // 高機能履歴管理システム
+        this.historyMode = false; // 履歴表示モード
+        this.historyPeriod = 'current'; // 'current', '7days', '30days', 'all'
+        this.allTasks = []; // 履歴含む全タスク
+        this.showCompleted = true; // 確認完了タスク表示
+        this.showHidden = false; // 非表示タスク表示
+
         this.init();
+        this.setupHistoryManagement(); // 履歴管理システム初期化
     }
 
     // タスク管理ページかどうかを判定
@@ -1169,6 +1177,12 @@ class TaskManagement {
     }
 
     updateDisplay() {
+        // 履歴モードの場合は履歴表示を使用
+        if (this.historyMode) {
+            this.updateHistoryDisplay();
+            return;
+        }
+
         const filteredTasks = this.getFilteredTasks();
 
         // タスク数カウント更新
@@ -1188,6 +1202,11 @@ class TaskManagement {
 
     getFilteredTasks() {
         let filtered = [...this.tasks];
+
+        // 履歴モードでない場合は時間ベースの非表示処理を適用
+        if (!this.historyMode) {
+            filtered = this.applyTimeBasedVisibility(filtered);
+        }
 
         // 担当者サイドバーフィルター（最優先）
         if (this.currentAssigneeFilter !== null) {
@@ -1300,6 +1319,53 @@ class TaskManagement {
         score += (4 - priorityValue) * 0.1; // 重要度3=0.1, 重要度2=0.2, 重要度1=0.3
 
         return score;
+    }
+
+    // マイタスク専用ソートメソッド
+    sortMyAssignedTasks(a, b) {
+        // 受任中のタスク: 依頼中 → 確認待ち の順
+        const statusPriority = {
+            '依頼中': 1,
+            '作業完了': 2
+        };
+
+        const aPriority = statusPriority[a.status] || 999;
+        const bPriority = statusPriority[b.status] || 999;
+
+        if (aPriority !== bPriority) {
+            return aPriority - bPriority;
+        }
+
+        // 同ステータスなら期限日順（近い順）
+        return this.compareDueDates(a, b);
+    }
+
+    sortMyRequestedTasks(a, b) {
+        // 依頼中のタスク: 確認待ち → 依頼中 の順（確認作業優先）
+        const statusPriority = {
+            '作業完了': 1,  // 確認待ち
+            '依頼中': 2
+        };
+
+        const aPriority = statusPriority[a.status] || 999;
+        const bPriority = statusPriority[b.status] || 999;
+
+        if (aPriority !== bPriority) {
+            return aPriority - bPriority;
+        }
+
+        // 同ステータスなら期限日順（近い順）
+        return this.compareDueDates(a, b);
+    }
+
+    compareDueDates(a, b) {
+        if (!a.due_date && !b.due_date) return 0;
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+
+        const dateA = new Date(a.due_date);
+        const dateB = new Date(b.due_date);
+        return dateA - dateB;
     }
 
     // スマート通知システム関連メソッド
@@ -2289,17 +2355,21 @@ class TaskManagement {
         if (!this.currentUser) return;
 
         // 受任タスク（自分が実行する、確認完了以外）
-        const assignedTasks = this.tasks.filter(task =>
-            task.assignee_id === this.currentUser.id &&
-            task.status !== '確認完了'
-        );
+        const assignedTasksRaw = this.tasks
+            .filter(task =>
+                task.assignee_id === this.currentUser.id &&
+                task.status !== '確認完了'
+            );
+        const assignedTasks = this.sortMyAssignedTasks(assignedTasksRaw);
 
         // 依頼タスク（自分が作成した、ただし自分自身のタスクは除く、確認完了以外）
-        const requestedTasks = this.tasks.filter(task =>
-            task.requester_id === this.currentUser.id &&
-            task.assignee_id !== this.currentUser.id &&
-            task.status !== '確認完了'
-        );
+        const requestedTasksRaw = this.tasks
+            .filter(task =>
+                task.requester_id === this.currentUser.id &&
+                task.assignee_id !== this.currentUser.id &&
+                task.status !== '確認完了'
+            );
+        const requestedTasks = this.sortMyRequestedTasks(requestedTasksRaw);
 
         // 確認完了したタスク（自分が関わったもの）
         const completedTasks = this.tasks.filter(task =>
@@ -2493,6 +2563,363 @@ class TaskManagement {
         } catch (error) {
             console.error('Save template error:', error);
             showToast('テンプレートの保存に失敗しました', 'error');
+        }
+    }
+    // 時間ベースの非表示処理（確認待ち→翌日非表示、確認完了→1日後非表示）
+    applyTimeBasedVisibility(tasks) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        return tasks.filter(task => {
+            // 確認待ち（作業完了）タスクの翌日非表示
+            if (task.status === '作業完了' && task.completed_at) {
+                const completedDate = new Date(task.completed_at);
+                const completedDay = new Date(completedDate.getFullYear(), completedDate.getMonth(), completedDate.getDate());
+                const diffDays = Math.floor((today - completedDay) / (1000 * 60 * 60 * 24));
+
+                // 翌日以降は非表示
+                if (diffDays >= 1) {
+                    return false;
+                }
+            }
+
+            // 確認完了タスクの1日後非表示
+            if (task.status === '確認完了' && task.confirmed_at) {
+                const confirmedDate = new Date(task.confirmed_at);
+                const confirmedDay = new Date(confirmedDate.getFullYear(), confirmedDate.getMonth(), confirmedDate.getDate());
+                const diffDays = Math.floor((today - confirmedDay) / (1000 * 60 * 60 * 24));
+
+                // 1日後以降は非表示
+                if (diffDays >= 1) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    // マイタスクのソート改善（受任中：依頼中→確認待ち）
+    sortMyAssignedTasks(tasks) {
+        return tasks.sort((a, b) => {
+            const statusOrder = {
+                '依頼中': 1,
+                '作業完了': 2, // 確認待ち
+                '確認完了': 3
+            };
+
+            const aOrder = statusOrder[a.status] || 999;
+            const bOrder = statusOrder[b.status] || 999;
+
+            if (aOrder !== bOrder) {
+                return aOrder - bOrder;
+            }
+
+            // 同じステータスの場合は期限日順
+            if (a.due_date && b.due_date) {
+                return new Date(a.due_date) - new Date(b.due_date);
+            }
+            if (a.due_date) return -1;
+            if (b.due_date) return 1;
+
+            return 0;
+        });
+    }
+
+    // マイタスクのソート改善（依頼中：確認待ち→依頼中）
+    sortMyRequestedTasks(tasks) {
+        return tasks.sort((a, b) => {
+            const statusOrder = {
+                '作業完了': 1, // 確認待ち
+                '依頼中': 2,
+                '確認完了': 3
+            };
+
+            const aOrder = statusOrder[a.status] || 999;
+            const bOrder = statusOrder[b.status] || 999;
+
+            if (aOrder !== bOrder) {
+                return aOrder - bOrder;
+            }
+
+            // 同じステータスの場合は期限日順
+            if (a.due_date && b.due_date) {
+                return new Date(a.due_date) - new Date(b.due_date);
+            }
+            if (a.due_date) return -1;
+            if (b.due_date) return 1;
+
+            return 0;
+        });
+    }
+
+    // 高機能履歴管理システム初期化
+    setupHistoryManagement() {
+        // 履歴ボタンイベント
+        const historyToggle = document.getElementById('history-toggle');
+        if (historyToggle) {
+            historyToggle.addEventListener('click', () => this.toggleHistoryMode());
+        }
+
+        // 履歴パネルイベント
+        const applyHistoryFilter = document.getElementById('apply-history-filter');
+        const closeHistoryPanel = document.getElementById('close-history-panel');
+        const historyPeriodSelect = document.getElementById('history-period-select');
+        const showCompletedCheckbox = document.getElementById('show-completed');
+        const showHiddenCheckbox = document.getElementById('show-hidden');
+
+        if (applyHistoryFilter) {
+            applyHistoryFilter.addEventListener('click', () => this.applyHistoryFilter());
+        }
+
+        if (closeHistoryPanel) {
+            closeHistoryPanel.addEventListener('click', () => this.closeHistoryPanel());
+        }
+
+        if (historyPeriodSelect) {
+            historyPeriodSelect.addEventListener('change', (e) => {
+                this.historyPeriod = e.target.value;
+            });
+        }
+
+        if (showCompletedCheckbox) {
+            showCompletedCheckbox.addEventListener('change', (e) => {
+                this.showCompleted = e.target.checked;
+            });
+        }
+
+        if (showHiddenCheckbox) {
+            showHiddenCheckbox.addEventListener('change', (e) => {
+                this.showHidden = e.target.checked;
+            });
+        }
+
+        // ローカルストレージから設定を復元
+        this.loadHistorySettings();
+    }
+
+    // 履歴モードの切り替え
+    toggleHistoryMode() {
+        this.historyMode = !this.historyMode;
+        const historyPanel = document.getElementById('history-panel');
+        const historyToggle = document.getElementById('history-toggle');
+
+        if (this.historyMode) {
+            historyPanel.style.display = 'block';
+            historyToggle.textContent = '📅 履歴モード終了';
+            historyToggle.style.background = 'linear-gradient(135deg, #ff6b6b, #ff8e8e)';
+
+            // 履歴データを読み込み
+            this.loadHistoryData();
+        } else {
+            historyPanel.style.display = 'none';
+            historyToggle.textContent = '📅 履歴表示';
+            historyToggle.style.background = 'linear-gradient(135deg, #ffd700, #ffed4e)';
+
+            // 通常モードに戻す
+            this.updateDisplay();
+        }
+    }
+
+    // 履歴パネルを閉じる
+    closeHistoryPanel() {
+        this.historyMode = false;
+        const historyPanel = document.getElementById('history-panel');
+        const historyToggle = document.getElementById('history-toggle');
+
+        historyPanel.style.display = 'none';
+        historyToggle.textContent = '📅 履歴表示';
+        historyToggle.style.background = 'linear-gradient(135deg, #ffd700, #ffed4e)';
+
+        this.updateDisplay();
+    }
+
+    // 履歴フィルターを適用
+    async applyHistoryFilter() {
+        if (!this.historyMode) return;
+
+        try {
+            await this.loadHistoryData();
+            this.updateHistoryDisplay();
+            this.saveHistorySettings();
+            showToast('履歴フィルターを適用しました', 'success');
+        } catch (error) {
+            console.error('History filter error:', error);
+            showToast('履歴フィルターの適用に失敗しました', 'error');
+        }
+    }
+
+    // 履歴データを読み込み
+    async loadHistoryData() {
+        try {
+            const today = new Date();
+            let startDate = null;
+
+            // 期間ごとの開始日を計算
+            switch (this.historyPeriod) {
+                case '7days':
+                    startDate = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
+                    break;
+                case '30days':
+                    startDate = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+                    break;
+                case 'all':
+                    startDate = null; // 全期間
+                    break;
+                case 'current':
+                default:
+                    // 現在のタスクのみ（既存のロジックを使用）
+                    this.allTasks = [...this.tasks];
+                    return;
+            }
+
+            // Supabaseから履歴データを取得
+            let query = supabase
+                .from('tasks')
+                .select(`
+                    *,
+                    clients(id, name),
+                    assignee:staffs!assignee_id(id, name, email),
+                    requester:staffs!requester_id(id, name, email)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (startDate) {
+                query = query.gte('created_at', startDate.toISOString());
+            }
+
+            const { data, error } = await query;
+
+            if (error) throw error;
+
+            this.allTasks = data || [];
+
+        } catch (error) {
+            console.error('Load history data error:', error);
+            showToast('履歴データの読み込みに失敗しました', 'error');
+        }
+    }
+
+    // 履歴表示を更新
+    updateHistoryDisplay() {
+        if (!this.historyMode) return;
+
+        let filtered = [...this.allTasks];
+
+        // ステータスフィルター適用
+        if (!this.showCompleted) {
+            filtered = filtered.filter(task => task.status !== '確認完了');
+        }
+
+        if (!this.showHidden) {
+            // 通常非表示のタスクを除外
+            filtered = this.applyTimeBasedVisibility(filtered);
+        }
+
+        // 担当者フィルター適用
+        if (this.currentAssigneeFilter !== null) {
+            filtered = filtered.filter(task => task.assignee_id === this.currentAssigneeFilter);
+        }
+
+        // その他のフィルター適用
+        if (this.currentFilters.status) {
+            filtered = filtered.filter(task => task.status === this.currentFilters.status);
+        }
+
+        if (this.currentFilters.client) {
+            filtered = filtered.filter(task => task.client_id == this.currentFilters.client);
+        }
+
+        if (this.currentFilters.search) {
+            const search = this.currentFilters.search.toLowerCase();
+            const normalizedSearch = normalizeText(this.currentFilters.search);
+
+            filtered = filtered.filter(task => {
+                const clientName = task.client_id === 0 ? 'その他業務' : (task.clients?.name || '');
+
+                const basicMatch = task.task_name.toLowerCase().includes(search) ||
+                                   clientName.toLowerCase().includes(search) ||
+                                   (task.description || '').toLowerCase().includes(search);
+
+                const normalizedMatch = normalizeText(task.task_name).includes(normalizedSearch) ||
+                                        normalizeText(clientName).includes(normalizedSearch) ||
+                                        normalizeText(task.description || '').includes(normalizedSearch);
+
+                return basicMatch || normalizedMatch;
+            });
+        }
+
+        // ソート適用
+        filtered.sort((a, b) => {
+            if (this.currentSort.field !== 'default_priority') {
+                const field = this.currentSort.field;
+                let aVal = a[field];
+                let bVal = b[field];
+
+                if (field === 'client_name') {
+                    aVal = a.client_id === 0 ? 'その他業務' : (a.clients?.name || '');
+                    bVal = b.client_id === 0 ? 'その他業務' : (b.clients?.name || '');
+                } else if (field === 'assignee_name') {
+                    aVal = a.assignee?.name || '';
+                    bVal = b.assignee?.name || '';
+                } else if (field === 'requester_name') {
+                    aVal = a.requester?.name || '';
+                    bVal = b.requester?.name || '';
+                }
+
+                if (aVal === null || aVal === undefined) aVal = '';
+                if (bVal === null || bVal === undefined) bVal = '';
+
+                const result = aVal > bVal ? 1 : -1;
+                return this.currentSort.direction === 'asc' ? result : -result;
+            }
+
+            return this.getTaskPriorityScore(a) - this.getTaskPriorityScore(b);
+        });
+
+        // 表示更新
+        document.getElementById('total-task-count').textContent = `${filtered.length}件`;
+
+        if (this.currentDisplay === 'list') {
+            this.updateListView(filtered);
+        } else if (this.currentDisplay === 'card') {
+            this.updateCardView(filtered);
+        }
+    }
+
+    // 履歴設定をローカルストレージに保存
+    saveHistorySettings() {
+        const settings = {
+            historyPeriod: this.historyPeriod,
+            showCompleted: this.showCompleted,
+            showHidden: this.showHidden
+        };
+
+        localStorage.setItem('task-history-settings', JSON.stringify(settings));
+    }
+
+    // 履歴設定をローカルストレージから読み込み
+    loadHistorySettings() {
+        try {
+            const saved = localStorage.getItem('task-history-settings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+
+                this.historyPeriod = settings.historyPeriod || 'current';
+                this.showCompleted = settings.showCompleted !== undefined ? settings.showCompleted : true;
+                this.showHidden = settings.showHidden !== undefined ? settings.showHidden : false;
+
+                // UIを更新
+                const historyPeriodSelect = document.getElementById('history-period-select');
+                const showCompletedCheckbox = document.getElementById('show-completed');
+                const showHiddenCheckbox = document.getElementById('show-hidden');
+
+                if (historyPeriodSelect) historyPeriodSelect.value = this.historyPeriod;
+                if (showCompletedCheckbox) showCompletedCheckbox.checked = this.showCompleted;
+                if (showHiddenCheckbox) showHiddenCheckbox.checked = this.showHidden;
+            }
+        } catch (error) {
+            console.error('Load history settings error:', error);
         }
     }
 }

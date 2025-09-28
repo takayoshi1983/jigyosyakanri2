@@ -134,9 +134,46 @@
                         <button id="display-calendar" class="display-btn" data-display="calendar">📅 カレンダー</button>
                     </div>
                 </div>
+
+                <!-- 履歴閲覧システム -->
+                <div class="filter-group">
+                    <button id="history-toggle-btn" class="history-toggle-btn">
+                        <span class="history-icon">📚</span>
+                        <span class="history-text">履歴閲覧</span>
+                    </button>
+                </div>
             </div>
         </div>
 
+        <!-- 履歴設定パネル -->
+        <div id="history-panel" class="history-panel" style="display: none;">
+            <div class="history-panel-content">
+                <div class="history-controls">
+                    <label>履歴期間:</label>
+                    <select id="history-period-select" class="form-control">
+                        <option value="current">現在のタスクのみ</option>
+                        <option value="7days">過去7日間</option>
+                        <option value="30days">過去30日間</option>
+                        <option value="all">すべての履歴</option>
+                    </select>
+
+                    <label>表示設定:</label>
+                    <div class="history-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="show-completed" checked> 確認完了タスク
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="show-hidden"> 非表示タスク
+                        </label>
+                    </div>
+
+                    <div class="history-actions">
+                        <button id="apply-history-filter" class="btn btn-primary btn-sm">適用</button>
+                        <button id="close-history-panel" class="btn btn-secondary btn-sm">閉じる</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- メインコンテンツ：左右分割レイアウト -->
         <div class="task-dashboard-container" style="display: flex; gap: 20px; min-height: 600px; position: relative;">
