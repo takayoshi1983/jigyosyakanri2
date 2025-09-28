@@ -1784,7 +1784,7 @@ class TaskManagement {
 
         // ドラッグ&ドロップ初期化
         setTimeout(() => {
-            this.initializeSortable();
+            this.initializeKanbanSortable();
         }, 100); // DOM更新後に初期化
     }
 
@@ -1914,7 +1914,7 @@ class TaskManagement {
         return card;
     }
 
-    initializeSortable() {
+    initializeKanbanSortable() {
         // SortableJSを使用したドラッグ&ドロップ
         const kanbanColumns = document.querySelectorAll('.kanban-tasks');
 

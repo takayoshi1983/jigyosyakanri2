@@ -1,62 +1,15 @@
-[
-  {
-    "id": 6,
-    "template_name": "給与計算",
-    "is_favorite": false,
-    "display_order": 0,
-    "priority": 1,
-    "is_global": false,
-    "staff_id": null,
-    "created_at": "2025-09-28 06:46:36.357901+00"
-  },
-  {
-    "id": 5,
-    "template_name": "月次売掛突合せ",
-    "is_favorite": false,
-    "display_order": 0,
-    "priority": 1,
-    "is_global": false,
-    "staff_id": null,
-    "created_at": "2025-09-28 06:43:53.838141+00"
-  },
-  {
-    "id": 1,
-    "template_name": "月次記帳",
-    "is_favorite": false,
-    "display_order": 0,
-    "priority": 1,
-    "is_global": true,
-    "staff_id": null,
-    "created_at": "2025-09-25 12:06:24.535881+00"
-  },
-  {
-    "id": 2,
-    "template_name": "決算準備",
-    "is_favorite": false,
-    "display_order": 0,
-    "priority": 1,
-    "is_global": true,
-    "staff_id": null,
-    "created_at": "2025-09-25 12:06:24.535881+00"
-  },
-  {
-    "id": 3,
-    "template_name": "給与計算",
-    "is_favorite": false,
-    "display_order": 0,
-    "priority": 1,
-    "is_global": true,
-    "staff_id": null,
-    "created_at": "2025-09-25 12:06:24.535881+00"
-  },
-  {
-    "id": 4,
-    "template_name": "税務申告",
-    "is_favorite": false,
-    "display_order": 0,
-    "priority": 1,
-    "is_global": true,
-    "staff_id": null,
-    "created_at": "2025-09-25 12:06:24.535881+00"
-  }
-]
+task-management.js:3791 TaskManagement initialized for task-management page
+task-management.js:139 Current user: Object
+task-management.js:189 Master data loaded: Object
+task-management.js:214 Templates loaded: 7
+task-management.js:261 Tasks loaded: 23
+task-management.js:995 Filter state restored: ObjectassigneeFilter: nulldisplay: "card"filters: {status: '', client: '', search: ''}timestamp: 1759066163912[[Prototype]]: Object
+task-management.js:3384 ⚙️ テンプレート編集モーダルのイベントリスナーを設定中...
+task-management.js:3424 ✅ テンプレート編集モーダルのイベントリスナー設定完了
+task-management.js:1405 Auto refresh started: 60秒間隔
+task-management.js:161 Task Management System initialized successfully
+task-management.js:3645 Uncaught TypeError: Cannot read properties of undefined (reading 'sortableInstance')
+    at TaskManagement.initializeSortable (task-management.js:3645:23)
+    at task-management.js:1787:18
+task-management.js:1549 User interaction started - auto refresh paused
+task-management.js:1551 User interaction ended - auto refresh resumed
