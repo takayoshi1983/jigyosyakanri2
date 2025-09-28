@@ -65,11 +65,13 @@ class TaskManagement {
         this.currentSort = { field: 'default_priority', direction: 'asc' };
         this.currentDisplay = 'list';
 
-        // 自動リフレッシュ設定
+        // スマート通知システム設定
         this.autoRefreshInterval = null;
-        this.autoRefreshIntervalMs = 30000; // 30秒間隔
+        this.smartNotificationInterval = null;
         this.lastUpdateTime = new Date();
         this.isUserInteracting = false; // ユーザー操作中フラグ
+        this.pendingNotifications = new Map(); // 通知待ちタスク管理
+        this.lastTaskCount = 0; // 前回のタスク数
 
         this.init();
     }
@@ -90,6 +92,17 @@ class TaskManagement {
         ];
 
         return taskManagementElements.some(id => document.getElementById(id) !== null);
+    }
+
+    // 現在のユーザー情報を表示
+    displayCurrentUserInfo() {
+        const userInfoElement = document.getElementById('current-user-info');
+        if (!userInfoElement || !this.currentUser) return;
+
+        userInfoElement.innerHTML = `
+            <div style="font-weight: 600; color: #495057;">${this.currentUser.name || 'ユーザー名なし'}</div>
+            <div style="font-size: 0.6rem; color: #6c757d;">${this.currentUser.email || 'メールなし'}</div>
+        `;
     }
 
     async init() {
@@ -117,6 +130,9 @@ class TaskManagement {
             this.currentUser = staffData;
             console.log('Current user:', this.currentUser);
 
+            // ユーザー情報表示
+            this.displayCurrentUserInfo();
+
             // 基本データ読み込み
             await this.loadMasterData();
             await this.loadTemplates();
@@ -126,8 +142,8 @@ class TaskManagement {
             this.initializeUI();
             this.setupEventListeners();
 
-            // 自動リフレッシュ開始
-            this.startAutoRefresh();
+            // スマート通知システム開始
+            this.startSmartNotificationSystem();
 
             // ページ離脱時の清掃処理
             window.addEventListener('beforeunload', () => {
@@ -233,6 +249,11 @@ class TaskManagement {
 
             this.tasks = tasksData || [];
             console.log('Tasks loaded:', this.tasks.length);
+
+            // 初回読み込み時のタスク数を設定（新規タスク検知のため）
+            if (this.lastTaskCount === 0) {
+                this.lastTaskCount = this.tasks.length;
+            }
 
             // 担当者サイドバーの初期化（フィルター状態復元含む）
             this.initializeAssigneeSidebar();
@@ -1281,8 +1302,15 @@ class TaskManagement {
         return score;
     }
 
-    // 自動リフレッシュ関連メソッド
-    startAutoRefresh() {
+    // スマート通知システム関連メソッド
+    startSmartNotificationSystem() {
+        // 関係者のみ通常の定期チェック（60秒間隔）
+        if (this.isRelevantUser()) {
+            this.startAutoRefresh(60000); // 60秒間隔
+        }
+    }
+
+    startAutoRefresh(intervalMs = 60000) {
         if (this.autoRefreshInterval) {
             clearInterval(this.autoRefreshInterval);
         }
@@ -1293,9 +1321,9 @@ class TaskManagement {
             } catch (error) {
                 console.error('Auto refresh error:', error);
             }
-        }, this.autoRefreshIntervalMs);
+        }, intervalMs);
 
-        console.log(`Auto refresh started: ${this.autoRefreshIntervalMs/1000}秒間隔`);
+        console.log(`Auto refresh started: ${intervalMs/1000}秒間隔`);
     }
 
     stopAutoRefresh() {
@@ -1324,6 +1352,109 @@ class TaskManagement {
 
         this.lastUpdateTime = new Date();
         console.log('Tasks refreshed at:', this.lastUpdateTime.toLocaleTimeString());
+
+        // 新規タスクや変更の検知
+        this.detectTaskChanges();
+    }
+
+    // 関係者かどうかを判定
+    isRelevantUser() {
+        if (!this.currentUser || !this.tasks.length) return false;
+
+        return this.tasks.some(task =>
+            task.assignee_id === this.currentUser.id ||
+            task.requester_id === this.currentUser.id
+        );
+    }
+
+    // タスク変更の検知と通知
+    detectTaskChanges() {
+        const currentTaskCount = this.tasks.length;
+
+        if (this.lastTaskCount > 0 && currentTaskCount > this.lastTaskCount) {
+            // 新規タスクの検知
+            const newTasks = this.tasks.slice(this.lastTaskCount);
+            this.handleNewTasks(newTasks);
+        }
+
+        this.lastTaskCount = currentTaskCount;
+    }
+
+    // 新規タスクの処理
+    handleNewTasks(newTasks) {
+        newTasks.forEach(task => {
+            if (this.isTaskRelevantToUser(task)) {
+                const notificationKey = `new_task_${task.id}`;
+                this.scheduleSmartNotification(notificationKey, {
+                    type: 'new_task',
+                    task: task,
+                    message: this.createNewTaskMessage(task)
+                });
+            }
+        });
+    }
+
+    // タスクがユーザーに関係するかチェック
+    isTaskRelevantToUser(task) {
+        if (!this.currentUser) return false;
+        return task.assignee_id === this.currentUser.id ||
+               task.requester_id === this.currentUser.id;
+    }
+
+    // 新規タスクメッセージ作成
+    createNewTaskMessage(task) {
+        const requesterName = task.requester?.name || '不明';
+        const taskName = task.task_name || 'タスク';
+
+        if (task.assignee_id === this.currentUser.id) {
+            return `${requesterName}さんから新規タスク「${taskName}」の依頼が届きました`;
+        } else {
+            return `タスク「${taskName}」が更新されました`;
+        }
+    }
+
+    // スマート通知のスケジュール
+    scheduleSmartNotification(key, notificationData) {
+        if (this.pendingNotifications.has(key)) return;
+
+        this.pendingNotifications.set(key, {
+            ...notificationData,
+            attempts: 0,
+            maxAttempts: 5
+        });
+
+        this.startSmartNotificationAttempts(key);
+    }
+
+    // 5秒間隔での通知試行
+    startSmartNotificationAttempts(key) {
+        const attemptNotification = () => {
+            const notification = this.pendingNotifications.get(key);
+            if (!notification) return;
+
+            try {
+                showToast(notification.message, 'info');
+                console.log(`Smart notification delivered: ${notification.message}`);
+
+                // 通知成功 - 削除
+                this.pendingNotifications.delete(key);
+
+            } catch (error) {
+                console.error('Notification failed:', error);
+                notification.attempts++;
+
+                if (notification.attempts >= notification.maxAttempts) {
+                    console.log(`Notification max attempts reached for: ${key}`);
+                    this.pendingNotifications.delete(key);
+                } else {
+                    // 5秒後に再試行
+                    setTimeout(attemptNotification, 5000);
+                }
+            }
+        };
+
+        // 即座に1回目の試行
+        attemptNotification();
     }
 
     // モーダルが開いているかチェック
