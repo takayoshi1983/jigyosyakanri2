@@ -228,7 +228,7 @@ class TaskManagement {
                 .from('recurring_tasks')
                 .select(`
                     *,
-                    template:task_templates(id, template_name, task_name, description, staff_id),
+                    template:task_templates(id, template_name, task_name, description, staff_id, estimated_time_hours, reference_url, client_id, default_assignee_id),
                     client:clients(id, name),
                     assignee:staffs(id, name)
                 `)
@@ -3347,7 +3347,7 @@ class TaskManagement {
             // 編集ボタンクリック
             if (target.classList.contains('template-edit-btn')) {
                 e.stopPropagation();
-                this.openRecurringTaskEditModal(recurringTask);
+                this.openRecurringTaskEditModal(recurringTask, 'edit');
                 return;
             }
 
