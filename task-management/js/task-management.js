@@ -65,11 +65,41 @@ class TaskManagement {
         this.currentSort = { field: 'default_priority', direction: 'asc' };
         this.currentDisplay = 'list';
 
+        // 自動リフレッシュ設定
+        this.autoRefreshInterval = null;
+        this.autoRefreshIntervalMs = 30000; // 30秒間隔
+        this.lastUpdateTime = new Date();
+        this.isUserInteracting = false; // ユーザー操作中フラグ
+
         this.init();
+    }
+
+    // タスク管理ページかどうかを判定
+    isTaskManagementPage() {
+        // URLパスでの判定
+        const path = window.location.pathname;
+        if (path.includes('task-management.html')) {
+            return true;
+        }
+
+        // DOM要素での判定（より確実）
+        const taskManagementElements = [
+            'task-display-area',
+            'assignee-sidebar',
+            'tasks-table'
+        ];
+
+        return taskManagementElements.some(id => document.getElementById(id) !== null);
     }
 
     async init() {
         try {
+            // タスク管理ページでのみ動作するようにチェック
+            if (!this.isTaskManagementPage()) {
+                console.log('Not on task management page - TaskManagement initialization skipped');
+                return;
+            }
+
             // 認証確認
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
@@ -95,6 +125,14 @@ class TaskManagement {
             // UI初期化
             this.initializeUI();
             this.setupEventListeners();
+
+            // 自動リフレッシュ開始
+            this.startAutoRefresh();
+
+            // ページ離脱時の清掃処理
+            window.addEventListener('beforeunload', () => {
+                this.stopAutoRefresh();
+            });
 
             console.log('Task Management System initialized successfully');
         } catch (error) {
@@ -1240,10 +1278,68 @@ class TaskManagement {
         const priorityValue = task.priority || 1;
         score += (4 - priorityValue) * 0.1; // 重要度3=0.1, 重要度2=0.2, 重要度1=0.3
 
-        // デバッグ用ログ（一時的）
-        console.log(`Task: ${task.task_name}, Status: ${task.status}, Score: ${score}`);
-
         return score;
+    }
+
+    // 自動リフレッシュ関連メソッド
+    startAutoRefresh() {
+        if (this.autoRefreshInterval) {
+            clearInterval(this.autoRefreshInterval);
+        }
+
+        this.autoRefreshInterval = setInterval(async () => {
+            try {
+                await this.refreshTasks();
+            } catch (error) {
+                console.error('Auto refresh error:', error);
+            }
+        }, this.autoRefreshIntervalMs);
+
+        console.log(`Auto refresh started: ${this.autoRefreshIntervalMs/1000}秒間隔`);
+    }
+
+    stopAutoRefresh() {
+        if (this.autoRefreshInterval) {
+            clearInterval(this.autoRefreshInterval);
+            this.autoRefreshInterval = null;
+            console.log('Auto refresh stopped');
+        }
+    }
+
+    async refreshTasks() {
+        // ユーザー操作中またはモーダル表示中はスキップ
+        if (this.isUserInteracting || this.isModalOpen()) {
+            console.log('Auto refresh skipped: user is interacting');
+            return;
+        }
+
+        const oldTaskCount = this.tasks.length;
+        await this.loadTasks();
+        const newTaskCount = this.tasks.length;
+
+        // タスク数が変更された場合に通知
+        if (newTaskCount !== oldTaskCount) {
+            showToast(`タスクが更新されました (${newTaskCount}件)`, 'info');
+        }
+
+        this.lastUpdateTime = new Date();
+        console.log('Tasks refreshed at:', this.lastUpdateTime.toLocaleTimeString());
+    }
+
+    // モーダルが開いているかチェック
+    isModalOpen() {
+        const modals = document.querySelectorAll('.modal');
+        return Array.from(modals).some(modal => modal.style.display !== 'none' && modal.style.display !== '');
+    }
+
+    // ユーザー操作開始
+    setUserInteracting(isInteracting) {
+        this.isUserInteracting = isInteracting;
+        if (isInteracting) {
+            console.log('User interaction started - auto refresh paused');
+        } else {
+            console.log('User interaction ended - auto refresh resumed');
+        }
     }
 
     updateListView(tasks) {
@@ -1790,6 +1886,7 @@ class TaskManagement {
         }
 
         modal.style.display = 'flex';
+        this.setUserInteracting(true); // モーダル表示時は操作中フラグON
     }
 
     setModalMode(mode) {
@@ -1823,6 +1920,7 @@ class TaskManagement {
     closeTaskModal() {
         const modal = document.getElementById('task-modal');
         modal.style.display = 'none';
+        this.setUserInteracting(false); // モーダル閉じる時は操作中フラグOFF
     }
 
     openTemplateModal() {
@@ -1884,11 +1982,13 @@ class TaskManagement {
         templateList.appendChild(createTemplateBtn);
 
         modal.style.display = 'flex';
+        this.setUserInteracting(true); // テンプレートモーダル表示時は操作中フラグON
     }
 
     closeTemplateModal() {
         const modal = document.getElementById('template-modal');
         modal.style.display = 'none';
+        this.setUserInteracting(false); // テンプレートモーダル閉じる時は操作中フラグOFF
     }
 
     selectTemplate(template) {
@@ -2266,5 +2366,21 @@ class TaskManagement {
     }
 }
 
-// グローバルインスタンス
-window.taskManager = new TaskManagement();
+// グローバルインスタンス（タスク管理ページでのみ初期化）
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM要素が存在する場合のみTaskManagementを初期化
+    const taskManagementElements = [
+        'task-display-area',
+        'assignee-sidebar',
+        'tasks-table'
+    ];
+
+    const isTaskManagementPage = taskManagementElements.some(id => document.getElementById(id) !== null);
+
+    if (isTaskManagementPage) {
+        window.taskManager = new TaskManagement();
+        console.log('TaskManagement initialized for task-management page');
+    } else {
+        console.log('TaskManagement initialization skipped - not on task-management page');
+    }
+});

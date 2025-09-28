@@ -1,0 +1,46 @@
+task-management.js:88 Current user: Object
+task-management.js:127 Master data loaded: Object
+task-management.js:152 Templates loaded: 4
+task-management.js:197 Tasks loaded: 9
+task-management.js:915 Filter state restored: Object
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
+task-management.js:99 Task Management System initialized successfully
+task-management.js:1244 Task: 試算表作成, Status: 確認完了, Score: 3000003.3
+task-management.js:1244 Task: 記帳依頼, Status: 確認完了, Score: 3000006.3
+task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
+task-management.js:1244 Task: 試算表作成, Status: 確認完了, Score: 3000003.3
+task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 試算表作成, Status: 確認完了, Score: 3000003.3
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
+task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
+task-management.js:1244 Task: 試算表作成, Status: 作業完了, Score: 2000010.2
+task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
+task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000000.2
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000000.2
+task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000000.2
+task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
+task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000011.2
+task-management.js:1244 Task: 給与計算・支給, Status: 作業完了, Score: 2000005.3
+task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000011.2
+task-management.js:1244 Task: 法人税申告書作成, Status: 依頼中, Score: 1000024.1
+task-management.js:1244 Task: 記帳依頼, Status: 依頼中, Score: 1000011.2
+task-management.js:1244 Task: 決算書類準備, Status: 依頼中, Score: 1000002.2
