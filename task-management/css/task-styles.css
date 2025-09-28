@@ -1516,11 +1516,11 @@
 }
 
 .template-item.favorite::before {
-    content: "⭐";
+    content: "📌";
     position: absolute;
     top: 5px;
     right: 8px;
-    color: #ffc107;
+    color: #dc3545;
     font-size: 1rem;
 }
 
