@@ -3575,6 +3575,8 @@ class TaskManagement {
                 assignee_id: formData.assignee_id,
                 frequency_type: formData.frequency_type,
                 frequency_day: formData.frequency_day,
+                due_day: formData.due_day,
+                create_days_before: formData.create_days_before,
                 is_active: formData.is_active,
                 next_run_date: formData.next_run_date
             };
@@ -3667,13 +3669,19 @@ class TaskManagement {
         // 想定時間（オプション）
         const estimatedTimeHours = document.getElementById('template-estimated-hours')?.value?.trim() || null;
 
-        // frequency_dayを計算（期限日から作成日数を引いた日）
+        // frequency_dayを計算（タスク作成日 = 期限日 - 作成日数前）
         const frequencyDay = parseInt(dueDay) - parseInt(createDaysBefore);
 
-        // 次回実行日を計算（来月の実行日）
+        // 有効な日付範囲をチェック（1-28日の範囲で）
+        if (frequencyDay < 1 || frequencyDay > 28) {
+            showToast('期限日と作成日数の組み合わせが無効です（作成日は1-28日の範囲で設定してください）', 'error');
+            return null;
+        }
+
+        // 次回実行日を計算（来月の作成日）
         const nextMonth = new Date();
         nextMonth.setMonth(nextMonth.getMonth() + 1);
-        nextMonth.setDate(Math.max(1, frequencyDay));
+        nextMonth.setDate(frequencyDay);
 
         const formData = {
             template_name: templateName, // テンプレート作成用
@@ -3683,7 +3691,9 @@ class TaskManagement {
             default_assignee_id: parseInt(assigneeId), // 既定の受託者
             assignee_id: parseInt(assigneeId),
             frequency_type: 'monthly',
-            frequency_day: Math.max(1, frequencyDay),
+            frequency_day: frequencyDay, // タスク作成日
+            due_day: parseInt(dueDay), // 期限日
+            create_days_before: parseInt(createDaysBefore), // 何日前に作成
             is_active: true,
             next_run_date: nextMonth.toISOString().split('T')[0]
         };
@@ -4228,6 +4238,10 @@ class TaskManagement {
         // 現在のテンプレート情報をクリア
         this.currentTemplate = null;
         this.currentTemplateType = null;
+        this.currentRecurringTask = null; // 月次タスク情報もクリア
+
+        // フォームのreadOnly状態をリセット
+        this.setFormReadOnlyV2(false);
 
         // タブナビゲーションを再有効化
         this.disableTabNavigation(false);
