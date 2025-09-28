@@ -391,7 +391,7 @@
 
     <!-- テンプレート作成・編集モーダル -->
     <div id="template-edit-modal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 465px;">
             <div class="modal-header">
                 <h2 id="template-edit-title">新規テンプレート作成</h2>
                 <span class="close" id="template-edit-close">&times;</span>
@@ -404,7 +404,7 @@
                     </div>
 
                     <!-- 基本情報セクション -->
-                    <div class="modal-section">
+                    <div class="modal-section" id="template-basic-section">
                         <div class="section-title">基本情報</div>
                         <div class="compact-form-row">
                             <label for="template-name-input">テンプレート名 <span class="required">*</span>:</label>
@@ -465,10 +465,9 @@
                     </div>
 
                     <!-- 作業内容セクション -->
-                    <div class="modal-section">
+                    <div class="modal-section" id="template-description-section">
                         <div class="section-title">作業内容</div>
                         <div class="content-form-group">
-                            <label for="template-description">作業内容:</label>
                             <textarea id="template-description" name="description" class="form-control content-textarea" rows="4" placeholder="作業の詳細を記入してください。URLを含む場合は自動的にリンクが生成されます。"></textarea>
                         </div>
                     </div>
@@ -477,7 +476,7 @@
                     <div class="modal-section">
                         <div class="section-title">表示設定</div>
                         <div class="compact-form-row">
-                            <label class="checkbox-label">
+                            <label class="checkbox-label" style="min-width: 179px;">
                                 <input type="checkbox" id="template-is-favorite" name="is_favorite">
                                 ⭐ お気に入り登録
                             </label>

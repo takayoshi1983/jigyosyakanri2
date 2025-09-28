@@ -3206,8 +3206,8 @@ class TaskManagement {
         }
 
         // 月次自動タスクの場合はテンプレート名のみ表示、他は非表示
-        const sectionsToShow = ['template-name-section'];
-        const sectionsToHide = ['template-task-section', 'template-description-section'];
+        const sectionsToShow = ['template-basic-section'];
+        const sectionsToHide = ['template-description-section'];
 
         sectionsToShow.forEach(sectionId => {
             const section = document.getElementById(sectionId);
@@ -3395,7 +3395,10 @@ class TaskManagement {
         console.log('📝 Getting recurring task form data...');
 
         // テンプレート名
-        const templateName = document.getElementById('template-name')?.value?.trim();
+        const templateNameElement = document.getElementById('template-name-input');
+        const templateName = templateNameElement?.value?.trim();
+        console.log('📝 Template name element:', templateNameElement, 'value:', templateName);
+
         if (!templateName) {
             showToast('テンプレート名を入力してください', 'error');
             return null;

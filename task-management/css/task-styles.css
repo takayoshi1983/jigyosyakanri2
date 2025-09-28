@@ -677,7 +677,7 @@
 }
 
 .modal-body {
-    padding: 20px;
+    padding: 0px;
 }
 
 .modal-footer {
@@ -1026,6 +1026,7 @@
 .compact-form-row .form-control {
     flex: 1;
     min-width: 0;
+    max-width: 250px
 }
 
 .content-form-group {
@@ -1391,7 +1392,7 @@
 .template-main-content {
     flex: 1;
     display: flex;
-    gap: 20px;
+    gap: 65px;
     padding: 20px;
     overflow: hidden;
 }
