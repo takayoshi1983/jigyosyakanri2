@@ -4261,10 +4261,20 @@ class TaskManagement {
         });
 
         this.setupSafeEventListener('template-edit-mode-btn', 'click', () => {
-            if (this.currentTemplate) {
+            if (this.currentTemplateType === 'recurring' && this.currentRecurringTask) {
+                // 月次タスクの場合
+                this.setRecurringTaskEditMode('edit', this.currentRecurringTask);
+                // フォームにデータを入力
+                if (!this.templateClientSelect) {
+                    this.initializeTemplateClientSelect();
+                }
+                this.populateRecurringTaskForm(this.currentRecurringTask);
+                this.setFormReadOnlyV2(false);
+            } else if (this.currentTemplate) {
+                // 通常のテンプレートの場合
                 this.setTemplateEditModeV2('edit', this.currentTemplate, this.currentTemplateType);
             } else {
-                console.warn('⚠️ currentTemplate is null, cannot switch to edit mode');
+                console.warn('⚠️ currentTemplate/currentRecurringTask is null, cannot switch to edit mode');
             }
         });
 

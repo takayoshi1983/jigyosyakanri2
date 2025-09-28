@@ -530,11 +530,19 @@
 
     <!-- Dashboard Toggle Functionality -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // ページが完全に読み込まれた後に実行
+        function initializeDashboardToggle() {
             const toggleButton = document.getElementById('toggle-dashboard-button');
             const dashboardSection = document.getElementById('summary-dashboard');
 
             console.log('Dashboard toggle elements:', { toggleButton, dashboardSection });
+
+            // 要素が見つからない場合は少し待って再試行
+            if (!toggleButton || !dashboardSection) {
+                console.log('Elements not found, retrying in 100ms...');
+                setTimeout(initializeDashboardToggle, 100);
+                return;
+            }
 
             // ローカルストレージから設定を読み込み（ログイン情報と組み合わせ）
             function getCurrentUser() {
@@ -582,7 +590,13 @@
                 // ローカルストレージに状態を保存
                 localStorage.setItem(storageKey, isDashboardVisible.toString());
             });
-        });
+        }
+
+        // DOMContentLoaded と window.load の両方で実行を試行
+        document.addEventListener('DOMContentLoaded', initializeDashboardToggle);
+        window.addEventListener('load', initializeDashboardToggle);
+        // さらに遅延実行（analytics.jsの処理完了後を想定）
+        setTimeout(initializeDashboardToggle, 1000);
     </script>
 
     <!-- URL Settings Modal -->
