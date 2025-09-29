@@ -1397,8 +1397,30 @@ class TaskManagement {
     filterByAssignee(assigneeId) {
         this.currentAssigneeFilter = assigneeId;
         this.renderAssigneeSidebar(); // ボタンの状態を更新
+        this.updateTaskPanelTitle(); // タイトルを更新
         this.updateDisplay(); // タスク表示を更新
         this.saveFilterState(); // 状態を保存
+    }
+
+    updateTaskPanelTitle() {
+        const titleElement = document.querySelector('.panel-header h3');
+        if (!titleElement) return;
+
+        let titleText = '📋 全体タスク管理';
+
+        if (this.currentAssigneeFilter !== null) {
+            // 特定の担当者でフィルタリング中
+            const assignee = this.staffs.find(staff => staff.id === this.currentAssigneeFilter);
+            if (assignee) {
+                titleText = `📋 ${assignee.name} タスク管理`;
+            }
+        }
+
+        // タスク件数部分を保持しつつタイトルを更新
+        const taskCountSpan = titleElement.querySelector('#total-task-count');
+        const taskCountHTML = taskCountSpan ? taskCountSpan.outerHTML : '';
+
+        titleElement.innerHTML = `${titleText} ${taskCountHTML}`;
     }
 
     switchDisplay(displayType) {
