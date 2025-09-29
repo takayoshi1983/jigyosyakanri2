@@ -3422,7 +3422,7 @@ class TaskManagement {
         };
 
         // 基本情報（recurring_tasksテーブルから直接）
-        setFieldValue('template-name-input', 'month-auto-task'); // 固定値または動的に生成
+        setFieldValue('template-name-input', '月次自動タスク'); // 固定値
         setFieldValue('template-task-name', recurringTask.task_name);
         setFieldValue('template-estimated-hours', recurringTask.estimated_time_hours);
         setFieldValue('template-reference-url', recurringTask.reference_url);
@@ -3721,7 +3721,7 @@ class TaskManagement {
         const priority = parseInt(document.getElementById('template-priority')?.value) || 2;
 
         const formData = {
-            template_name: templateName, // 廃止予定（互換性のため残す）
+            template_name: '月次自動タスク', // 固定値
             task_name: taskName, // 新規追加
             description: description, // 新規追加
             priority: priority, // 新規追加
@@ -4053,6 +4053,23 @@ class TaskManagement {
         const defaultAssigneeRow = document.getElementById('template-default-assignee-row');
         if (defaultAssigneeRow) {
             defaultAssigneeRow.style.display = type === 'recurring' ? 'none' : 'block';
+        }
+
+        // 月次自動タスクモード時のテンプレート名フィールド制御
+        const templateNameInput = document.getElementById('template-name-input');
+        if (templateNameInput) {
+            if (type === 'recurring') {
+                templateNameInput.value = '月次自動タスク';
+                templateNameInput.readOnly = true;
+                templateNameInput.style.backgroundColor = '#f8f9fa';
+                templateNameInput.style.color = '#6c757d';
+                templateNameInput.title = '月次自動タスクのテンプレート名は固定です';
+            } else {
+                templateNameInput.readOnly = false;
+                templateNameInput.style.backgroundColor = '';
+                templateNameInput.style.color = '';
+                templateNameInput.title = '';
+            }
         }
 
         // ボタン表示切り替え
