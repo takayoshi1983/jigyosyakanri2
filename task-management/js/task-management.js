@@ -1249,6 +1249,8 @@ class TaskManagement {
         // フィルター状態が復元された場合はUIも更新
         if (savedState) {
             this.updateFilterUI();
+            // タイトルも更新
+            this.updateTaskPanelTitle();
         }
     }
 
@@ -2842,7 +2844,7 @@ class TaskManagement {
         }
 
         // タスクリストを再描画
-        this.updateMyTasksDisplay();
+        this.updateMyTasks();
     }
 
     createCompactClickableStatus(task) {
