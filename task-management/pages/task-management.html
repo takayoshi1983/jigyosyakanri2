@@ -267,9 +267,20 @@
 
                     <!-- 受任タスク（自分が実行する） -->
                     <div class="my-assigned-tasks" style="margin-bottom: 15px;">
-                        <h4 style="margin: 0 0 6px 0; color: #dc3545; font-size: 0.9rem; display: flex; align-items: center; justify-content: flex-start; gap: 10px;">
-                            🎯 受任中のタスク
-                            <span id="assigned-count" style="background: #dc3545; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
+                        <h4 style="margin: 0 0 6px 0; color: #dc3545; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                🎯 受任中のタスク
+                                <span id="assigned-count" style="background: #dc3545; color: white; padding: 1px 6px; border-radius: 10px; font-size: 0.75rem;">0</span>
+                            </div>
+                            <div class="simple-view-toggle" style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #6c757d;">
+                                <span id="simple-view-label">📋 詳細表示</span>
+                                <label class="toggle-switch" style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                                    <input type="checkbox" id="simple-view-checkbox" style="opacity: 0; width: 0; height: 0;">
+                                    <span class="toggle-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px;">
+                                        <span class="toggle-knob" style="position: absolute; content: ''; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                                    </span>
+                                </label>
+                            </div>
                         </h4>
                         <div id="assigned-task-list" class="compact-task-list">
                             <!-- JavaScript で動的に生成 -->

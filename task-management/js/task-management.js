@@ -81,6 +81,9 @@ class TaskManagement {
         this.showCompleted = true; // 確認完了タスク表示
         this.showHidden = false; // 非表示タスク表示
 
+        // 簡易表示モード設定
+        this.isSimpleView = false; // 簡易表示モード
+
         this.init();
         this.setupHistoryManagement(); // 履歴管理システム初期化
     }
@@ -380,6 +383,21 @@ class TaskManagement {
         window.addEventListener('beforeunload', () => {
             this.saveFilterState();
         });
+
+        // 簡易表示トグルスイッチ
+        const simpleViewCheckbox = document.getElementById('simple-view-checkbox');
+        if (simpleViewCheckbox) {
+            simpleViewCheckbox.addEventListener('change', (e) => {
+                this.toggleSimpleView(e.target.checked);
+            });
+
+            // LocalStorageから設定を復元
+            const savedSimpleView = localStorage.getItem('taskManagement_simpleView');
+            if (savedSimpleView === 'true') {
+                simpleViewCheckbox.checked = true;
+                this.toggleSimpleView(true);
+            }
+        }
 
         // ソート（テーブルヘッダー）
         document.querySelectorAll('th[data-sort]').forEach(th => {
@@ -2755,9 +2773,9 @@ class TaskManagement {
         const linkColor = isCompleted ? '#6c757d' : (dueDateClass ? '#dc3545' : '#495057');
 
         item.innerHTML = `
-            <div style="display: flex; position: relative;">
+            <div class="task-header" style="display: flex; position: relative;">
                 <!-- 左側：メイン情報エリア -->
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding-right: 80px;">
+                <div class="task-details" style="flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding-right: 80px;">
                     <!-- 上段 -->
                     <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
                         <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
@@ -2765,7 +2783,7 @@ class TaskManagement {
                         <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
                     </div>
                     <!-- 下段 -->
-                    <div style="display: flex; align-items: center; gap: 14px; font-size: 0.7rem; color: ${textColor}; white-space: nowrap;">
+                    <div class="task-meta" style="display: flex; align-items: center; gap: 14px; font-size: 0.7rem; color: ${textColor}; white-space: nowrap;">
                         <span style="font-size: 0.7rem; flex: 0 0 30px; white-space: nowrap; color: ${textColor};" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
                         <span style="flex: 0 0 30px; text-align: center; white-space: nowrap;">${urlIcon}</span>
                         <span style="flex: 0 0 auto; white-space: nowrap; min-width: 80px; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
@@ -2774,9 +2792,16 @@ class TaskManagement {
                     </div>
                 </div>
 
+                <!-- 簡易表示用のデータ要素（通常は非表示） -->
+                <div class="task-info" style="display: none;">
+                    <span class="client-name">${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '-')}</span>
+                    <span class="task-name">${task.task_name || 'Untitled Task'}</span>
+                    <span class="due-date">${this.formatDueDateWithWarning(task.due_date)}</span>
+                </div>
+
                 <!-- 右側：ステータス（上下段をまたがって表示） -->
-                <div style="position: absolute; right: -5%; top: 50%; transform: translateY(-50%); display: flex; align-items: center; height: 100%;">
-                    ${clickableStatus}
+                <div class="task-actions" style="position: absolute; right: -5%; top: 50%; transform: translateY(-50%); display: flex; align-items: center; height: 100%;">
+                    <span class="status-badge">${clickableStatus}</span>
                 </div>
             </div>
         `;
@@ -2791,6 +2816,33 @@ class TaskManagement {
         });
 
         return item;
+    }
+
+    // 簡易表示モードの切り替え
+    toggleSimpleView(isSimple) {
+        this.isSimpleView = isSimple;
+
+        // LocalStorageに保存
+        localStorage.setItem('taskManagement_simpleView', isSimple.toString());
+
+        // ラベルとコンテナクラスを更新
+        const label = document.getElementById('simple-view-label');
+        const container = document.getElementById('assigned-task-list');
+
+        if (label) {
+            label.textContent = isSimple ? '📄 簡易表示' : '📋 詳細表示';
+        }
+
+        if (container) {
+            if (isSimple) {
+                container.classList.add('simple-view');
+            } else {
+                container.classList.remove('simple-view');
+            }
+        }
+
+        // タスクリストを再描画
+        this.updateMyTasksDisplay();
     }
 
     createCompactClickableStatus(task) {

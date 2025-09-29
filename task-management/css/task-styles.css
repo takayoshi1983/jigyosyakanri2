@@ -1,5 +1,67 @@
 /* タスク管理専用スタイル */
 
+/* 簡易表示トグルスイッチ */
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #007bff;
+}
+
+.toggle-switch input:checked + .toggle-slider .toggle-knob {
+    transform: translateX(20px);
+}
+
+.toggle-slider:hover {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* 簡易表示スタイル */
+.simple-view .task-item {
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+}
+
+.simple-view .task-item .task-header {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+}
+
+.simple-view .task-item .task-details,
+.simple-view .task-item .task-meta,
+.simple-view .task-item .task-actions {
+    display: none !important;
+}
+
+.simple-view .task-item .task-info {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 15px !important;
+    flex: 1 !important;
+}
+
+.simple-view .task-item .client-name {
+    min-width: 100px !important;
+    font-weight: 600 !important;
+    color: #0056b3 !important;
+}
+
+.simple-view .task-item .task-name {
+    flex: 1 !important;
+    font-weight: 500 !important;
+}
+
+.simple-view .task-item .due-date {
+    min-width: 80px !important;
+    font-size: 0.85rem !important;
+    color: #6c757d !important;
+}
+
+.simple-view .task-item .status-badge {
+    min-width: 70px !important;
+    text-align: center !important;
+}
+
 /* 履歴管理パネル */
 .history-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
