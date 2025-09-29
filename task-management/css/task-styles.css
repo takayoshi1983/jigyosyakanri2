@@ -90,6 +90,32 @@
     text-align: center !important;
 }
 
+/* タスク詳細モーダルのヘッダー調整 */
+#task-detail-info {
+    flex-shrink: 0;
+}
+
+#requester-info {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+#status-button-container .status-badge {
+    font-size: 0.85rem !important;
+    padding: 4px 8px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+#status-button-container .status-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 /* 履歴管理パネル */
 .history-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);

@@ -540,8 +540,17 @@
     <!-- タスク作成/編集モーダル -->
     <div id="task-modal" class="modal" style="display: none;">
         <div class="modal-content" style="max-width: 500px; margin-top:-150px;">
-            <div class="modal-header">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <h2 id="modal-title">新規タスク作成</h2>
+                <div id="task-detail-info" style="display: flex; align-items: center; gap: 15px; margin-right: 20px;">
+                    <div id="requester-info" style="display: none; font-size: 0.9rem; color: #495057;">
+                        <span style="font-weight: 600;">依頼者:</span>
+                        <span id="requester-name">-</span>
+                    </div>
+                    <div id="status-button-container" style="display: none;">
+                        <!-- ステータスボタンがここに動的に追加される -->
+                    </div>
+                </div>
                 <span class="close" id="modal-close">&times;</span>
             </div>
             <div class="modal-body">

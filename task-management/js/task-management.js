@@ -2323,12 +2323,20 @@ class TaskManagement {
                 if (deleteBtn) {
                     deleteBtn.style.display = task.requester_id === this.currentUser.id ? 'inline-block' : 'none';
                 }
+
+                // タスク詳細情報の表示（viewModeの場合のみ）
+                if (viewMode) {
+                    this.showTaskDetailInfo(task);
+                } else {
+                    this.hideTaskDetailInfo();
+                }
             }
             form.dataset.taskId = taskId;
         } else if (!templateMode) {
             title.textContent = template ? `テンプレートから作成: ${template.template_name}` : '新規タスク作成';
             form.dataset.taskId = '';
             this.setModalMode('edit'); // 新規作成は常に編集モード
+            this.hideTaskDetailInfo(); // 新規作成時は詳細情報を隠す
 
             // 検索可能プルダウンをクリア
             if (this.searchableSelect) {
@@ -2414,6 +2422,35 @@ class TaskManagement {
         const modal = document.getElementById('task-modal');
         modal.style.display = 'none';
         this.setUserInteracting(false); // モーダル閉じる時は操作中フラグOFF
+    }
+
+    // タスク詳細情報の表示
+    showTaskDetailInfo(task) {
+        const requesterInfo = document.getElementById('requester-info');
+        const requesterName = document.getElementById('requester-name');
+        const statusContainer = document.getElementById('status-button-container');
+
+        // 依頼者情報の表示
+        if (task.requester && task.requester.name) {
+            requesterName.textContent = task.requester.name;
+            requesterInfo.style.display = 'flex';
+        } else {
+            requesterInfo.style.display = 'none';
+        }
+
+        // ステータスボタンの表示
+        const statusButton = this.createClickableStatusBadge(task);
+        statusContainer.innerHTML = statusButton;
+        statusContainer.style.display = 'block';
+    }
+
+    // タスク詳細情報の非表示
+    hideTaskDetailInfo() {
+        const requesterInfo = document.getElementById('requester-info');
+        const statusContainer = document.getElementById('status-button-container');
+
+        requesterInfo.style.display = 'none';
+        statusContainer.style.display = 'none';
     }
 
     openTemplateModal() {
