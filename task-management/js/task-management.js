@@ -3356,9 +3356,9 @@ class TaskManagement {
                 return;
             }
 
-            // その他のクリック（詳細表示）
+            // その他のクリック（編集モード）
             if (!target.closest('.template-actions')) {
-                this.openRecurringTaskEditModal(recurringTask, 'view');
+                this.openRecurringTaskEditModal(recurringTask, 'edit');
             }
         });
 
