@@ -2830,19 +2830,24 @@ class TaskManagement {
 
         // ラベルとコンテナクラスを更新
         const label = document.getElementById('simple-view-label');
-        const container = document.getElementById('assigned-task-list');
+        const assignedContainer = document.getElementById('assigned-task-list');
+        const requestedContainer = document.getElementById('requested-task-list');
+        const completedContainer = document.getElementById('completed-task-list');
 
         if (label) {
             label.textContent = isSimple ? '📄 簡易表示' : '📋 詳細表示';
         }
 
-        if (container) {
-            if (isSimple) {
-                container.classList.add('simple-view');
-            } else {
-                container.classList.remove('simple-view');
+        // 全てのマイタスクコンテナに簡易表示クラスを適用
+        [assignedContainer, requestedContainer, completedContainer].forEach(container => {
+            if (container) {
+                if (isSimple) {
+                    container.classList.add('simple-view');
+                } else {
+                    container.classList.remove('simple-view');
+                }
             }
-        }
+        });
 
         // タスクリストを再描画
         this.updateMyTasks();
