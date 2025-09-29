@@ -387,9 +387,7 @@ class TaskManagement {
         // 簡易表示トグルスイッチ
         const simpleViewCheckbox = document.getElementById('simple-view-checkbox');
         if (simpleViewCheckbox) {
-            console.log('🔄 簡易表示トグルスイッチが見つかりました');
             simpleViewCheckbox.addEventListener('change', (e) => {
-                console.log('🔄 トグルスイッチがクリックされました:', e.target.checked);
                 this.toggleSimpleView(e.target.checked);
             });
 
@@ -399,8 +397,6 @@ class TaskManagement {
                 simpleViewCheckbox.checked = true;
                 this.toggleSimpleView(true);
             }
-        } else {
-            console.log('❌ 簡易表示トグルスイッチが見つかりません');
         }
 
         // ソート（テーブルヘッダー）
@@ -2685,8 +2681,9 @@ class TaskManagement {
         // 総タスク数（完了済みは除く）
         const totalMyTasks = assignedTasks.length + requestedTasks.length;
 
-        // カウント更新
-        document.getElementById('assigned-count').textContent = assignedTasks.length;
+        // カウント更新（受任タスクは「依頼中」のみをカウント）
+        const pendingAssignedTasks = assignedTasks.filter(task => task.status === '依頼中');
+        document.getElementById('assigned-count').textContent = pendingAssignedTasks.length;
         document.getElementById('requested-count').textContent = requestedTasks.length;
         document.getElementById('completed-count').textContent = completedTasks.length;
         document.getElementById('my-task-count').textContent = `${totalMyTasks}件`;
@@ -2722,8 +2719,8 @@ class TaskManagement {
         item.className = 'compact-task-item';
         item.dataset.taskId = task.id;
 
-        // 完了済みタスクの場合はグレーアウト
-        if (isCompleted) {
+        // 完了済みタスクまたは確認完了ステータスの場合はグレーアウト
+        if (isCompleted || task.status === '確認完了') {
             item.classList.add('task-completed-gray');
         }
 
@@ -2800,9 +2797,9 @@ class TaskManagement {
 
                 <!-- 簡易表示用のデータ要素（通常は非表示） -->
                 <div class="task-info" style="display: none;">
-                    <span class="client-name">${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '-')}</span>
+                    <span class="client-name" data-client-id="${task.client_id}" onclick="event.stopPropagation(); ${task.client_id === 0 ? '' : `window.location.href='../../details.html?id=${task.client_id}'`}">${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '-')}</span>
                     <span class="task-name">${task.task_name || 'Untitled Task'}</span>
-                    <span class="due-date">${this.formatDueDateWithWarning(task.due_date)}</span>
+                    <span class="due-date">期限：${this.formatDueDateWithWarning(task.due_date)}</span>
                 </div>
 
                 <!-- 右側：ステータス（上下段をまたがって表示） -->
@@ -2826,7 +2823,6 @@ class TaskManagement {
 
     // 簡易表示モードの切り替え
     toggleSimpleView(isSimple) {
-        console.log('🔄 toggleSimpleView called with:', isSimple);
         this.isSimpleView = isSimple;
 
         // LocalStorageに保存
@@ -2836,27 +2832,19 @@ class TaskManagement {
         const label = document.getElementById('simple-view-label');
         const container = document.getElementById('assigned-task-list');
 
-        console.log('🎯 ラベル要素:', label);
-        console.log('🎯 コンテナ要素:', container);
-
         if (label) {
             label.textContent = isSimple ? '📄 簡易表示' : '📋 詳細表示';
-            console.log('✅ ラベル更新:', label.textContent);
         }
 
         if (container) {
             if (isSimple) {
                 container.classList.add('simple-view');
-                console.log('✅ simple-view クラス追加');
             } else {
                 container.classList.remove('simple-view');
-                console.log('✅ simple-view クラス削除');
             }
-            console.log('📋 現在のクラス:', container.className);
         }
 
         // タスクリストを再描画
-        console.log('🔄 タスクリストを再描画します');
         this.updateMyTasks();
     }
 

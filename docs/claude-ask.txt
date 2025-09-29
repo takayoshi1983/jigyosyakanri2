@@ -1,20 +1,20 @@
-TaskManagement initialized for task-management page
-task-management.js:143 Current user: {id: 7, name: '吉冨', email: 'takaoyaji14@gmail.com', role: 'admin', created_at: '2025-09-08T07:10:14', …}
-task-management.js:194 Master data loaded: {clients: 95, staffs: 11}
-task-management.js:219 Templates loaded: 6
-task-management.js:244 Recurring tasks loaded: 2
+task-management.js:392 🔄 トグルスイッチがクリックされました: false
+task-management.js:2829 🔄 toggleSimpleView called with: false
+task-management.js:2839 🎯 ラベル要素: <span id=​"simple-view-label">​📋 詳細表示​</span>​
+task-management.js:2840 🎯 コンテナ要素: <div id=​"assigned-task-list" class=​"compact-task-list">​…​</div>​flex
+task-management.js:2844 ✅ ラベル更新: 📋 詳細表示
+task-management.js:2853 ✅ simple-view クラス削除
+task-management.js:2855 📋 現在のクラス: compact-task-list
+task-management.js:2859 🔄 タスクリストを再描画します
+task-management.js:392 🔄 トグルスイッチがクリックされました: true
+task-management.js:2829 🔄 toggleSimpleView called with: true
+task-management.js:2839 🎯 ラベル要素: <span id=​"simple-view-label">​📄 簡易表示​</span>​
+task-management.js:2840 🎯 コンテナ要素: <div id=​"assigned-task-list" class=​"compact-task-list simple-view">​…​</div>​flex
+task-management.js:2844 ✅ ラベル更新: 📄 簡易表示
+task-management.js:2850 ✅ simple-view クラス追加
+task-management.js:2855 📋 現在のクラス: compact-task-list simple-view
+task-management.js:2859 🔄 タスクリストを再描画します
 task-management.js:309 Tasks loaded: 27
-task-management.js:1241 Filter state restored: {assigneeFilter: 6, filters: {…}, display: 'list', timestamp: 1759149782129}
-task-management.js:168 Initialization error: TypeError: this.updateMyTasksDisplay is not a function
-    at TaskManagement.toggleSimpleView (task-management.js:2845:14)
-    at TaskManagement.setupEventListeners (task-management.js:398:22)
-    at TaskManagement.init (task-management.js:156:18)
-
-
-
-
-
-Task Management System initialized successfully
-task-management.js:2845 Uncaught TypeError: this.updateMyTasksDisplay is not a function
-    at TaskManagement.toggleSimpleView (task-management.js:2845:14)
-    at HTMLInputElement.<anonymous> (task-management.js:391:22)
+task-management.js:1245 Filter state restored: {assigneeFilter: 7, filters: {…}, display: 'list', timestamp: 1759180213422}
+task-management.js:1707 Tasks refreshed at: 6:10:21
+ment.js:391:22)

@@ -27,8 +27,7 @@
 }
 
 .simple-view .compact-task-item .task-details,
-.simple-view .compact-task-item .task-meta,
-.simple-view .compact-task-item .task-actions {
+.simple-view .compact-task-item .task-meta {
     display: none !important;
 }
 
@@ -44,6 +43,12 @@
     min-width: 100px !important;
     font-weight: 600 !important;
     color: #0056b3 !important;
+    cursor: pointer !important;
+    text-decoration: underline !important;
+}
+
+.simple-view .compact-task-item .client-name:hover {
+    color: #004494 !important;
 }
 
 .simple-view .compact-task-item .task-name {
@@ -52,9 +57,20 @@
 }
 
 .simple-view .compact-task-item .due-date {
-    min-width: 80px !important;
+    min-width: 120px !important;
     font-size: 0.85rem !important;
     color: #6c757d !important;
+    text-align: left !important;
+}
+
+.simple-view .compact-task-item .task-actions {
+    display: flex !important;
+    position: static !important;
+    transform: none !important;
+    right: auto !important;
+    top: auto !important;
+    height: auto !important;
+    justify-content: flex-end !important;
 }
 
 .simple-view .compact-task-item .status-badge {
@@ -407,9 +423,9 @@
 }
 
 .compact-status-completed {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: #e9ecef;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
     padding: 2px 6px;
     border-radius: 12px;
     font-size: 0.8rem;
@@ -438,9 +454,9 @@
 }
 
 .my-task-status-completed {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: #e9ecef;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
     padding: 2px 6px;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -911,8 +927,8 @@
 }
 
 .compact-status-completed {
-    background: #d4edda;
-    color: #155724;
+    background: #e9ecef;
+    color: #6c757d;
 }
 
 /* マイタスク専用ステータススタイル */
@@ -927,8 +943,8 @@
 }
 
 .my-task-status-completed {
-    background: #d4edda;
-    color: #155724;
+    background: #e9ecef;
+    color: #6c757d;
 }
 
 .my-task-status:hover {
