@@ -1468,8 +1468,9 @@ class TaskManagement {
 
         const filteredTasks = this.getFilteredTasks();
 
-        // タスク数カウント更新
-        document.getElementById('total-task-count').textContent = `${filteredTasks.length}件`;
+        // タスク数カウント更新（依頼中のタスクのみ）
+        const pendingTasks = filteredTasks.filter(task => task.status === '依頼中');
+        document.getElementById('total-task-count').textContent = `${pendingTasks.length}件`;
 
         // マイタスクパネルの更新
         this.updateMyTasks();
@@ -3225,8 +3226,9 @@ class TaskManagement {
             return this.getTaskPriorityScore(a) - this.getTaskPriorityScore(b);
         });
 
-        // 表示更新
-        document.getElementById('total-task-count').textContent = `${filtered.length}件`;
+        // 表示更新（依頼中のタスクのみカウント）
+        const pendingTasks = filtered.filter(task => task.status === '依頼中');
+        document.getElementById('total-task-count').textContent = `${pendingTasks.length}件`;
 
         if (this.currentDisplay === 'list') {
             this.updateListView(filtered);
