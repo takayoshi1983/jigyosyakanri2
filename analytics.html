@@ -19,6 +19,39 @@
     <link rel="stylesheet" href="custom-dropdown.css">
     <link rel="stylesheet" href="toast.css">
 
+    <style>
+    /* スマートダッシュボード表示制御 */
+    .dashboard-hidden {
+        display: none !important;
+    }
+
+    .dashboard-toggle-btn {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-left: 10px;
+    }
+
+    .dashboard-toggle-btn:hover {
+        background: linear-gradient(135deg, #20c997, #17a2b8);
+    }
+
+    .dashboard-toggle-btn.hidden-state {
+        background: linear-gradient(135deg, #6c757d, #495057);
+    }
+
+    .dashboard-toggle-btn.hidden-state:hover {
+        background: linear-gradient(135deg, #495057, #343a40);
+    }
+    </style>
+
     <!-- Chart.js CDN for weekly progress graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <!-- SortableJS CDN for drag and drop functionality -->
@@ -133,19 +166,7 @@
                     </button>
 
                     <!-- Dashboard Toggle Button -->
-                    <button id="toggle-dashboard-button" style="
-                        background: linear-gradient(135deg, #28a745, #20c997);
-                        color: white;
-                        border: none;
-                        padding: 12px 16px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        font-weight: bold;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        transition: all 0.3s ease;
-                        margin-left: 10px;
-                    " onmouseover="this.style.background='linear-gradient(135deg, #20c997, #17a2b8)'" onmouseout="this.style.background='linear-gradient(135deg, #28a745, #20c997)'">
+                    <button id="toggle-dashboard-button" class="dashboard-toggle-btn">
                         📊 グラフ非表示
                     </button>
 
@@ -528,76 +549,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="module" src="analytics.js"></script>
 
-    <!-- Dashboard Toggle Functionality -->
-    <script>
-        // ページが完全に読み込まれた後に実行
-        function initializeDashboardToggle() {
-            const toggleButton = document.getElementById('toggle-dashboard-button');
-            const dashboardSection = document.getElementById('summary-dashboard');
-
-            console.log('Dashboard toggle elements:', { toggleButton, dashboardSection });
-
-            // 要素が見つからない場合は少し待って再試行
-            if (!toggleButton || !dashboardSection) {
-                console.log('Elements not found, retrying in 100ms...');
-                setTimeout(initializeDashboardToggle, 100);
-                return;
-            }
-
-            // ローカルストレージから設定を読み込み（ログイン情報と組み合わせ）
-            function getCurrentUser() {
-                try {
-                    const userStr = localStorage.getItem('currentUser');
-                    return userStr ? JSON.parse(userStr) : null;
-                } catch (e) {
-                    return null;
-                }
-            }
-
-            const currentUser = getCurrentUser(); // 現在のユーザー情報を取得
-            const storageKey = currentUser ? `dashboard-visible-${currentUser.id}` : 'dashboard-visible-guest';
-            let isDashboardVisible = localStorage.getItem(storageKey) !== 'false'; // デフォルトは表示
-
-            // 初期表示を設定
-            if (!isDashboardVisible) {
-                dashboardSection.style.display = 'none';
-                toggleButton.innerHTML = '📊 グラフ表示';
-                toggleButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
-                toggleButton.onmouseover = function() { this.style.background = 'linear-gradient(135deg, #495057, #343a40)'; };
-                toggleButton.onmouseout = function() { this.style.background = 'linear-gradient(135deg, #6c757d, #495057)'; };
-            }
-
-            toggleButton.addEventListener('click', function() {
-                console.log('Toggle clicked, current state:', isDashboardVisible);
-                if (isDashboardVisible) {
-                    // ダッシュボードを非表示
-                    dashboardSection.style.display = 'none';
-                    toggleButton.innerHTML = '📊 グラフ表示';
-                    console.log('Dashboard hidden');
-                    toggleButton.style.background = 'linear-gradient(135deg, #6c757d, #495057)';
-                    toggleButton.onmouseover = function() { this.style.background = 'linear-gradient(135deg, #495057, #343a40)'; };
-                    toggleButton.onmouseout = function() { this.style.background = 'linear-gradient(135deg, #6c757d, #495057)'; };
-                } else {
-                    // ダッシュボードを表示
-                    dashboardSection.style.display = 'block';
-                    toggleButton.innerHTML = '📊 グラフ非表示';
-                    toggleButton.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
-                    toggleButton.onmouseover = function() { this.style.background = 'linear-gradient(135deg, #20c997, #17a2b8)'; };
-                    toggleButton.onmouseout = function() { this.style.background = 'linear-gradient(135deg, #28a745, #20c997)'; };
-                }
-                isDashboardVisible = !isDashboardVisible;
-
-                // ローカルストレージに状態を保存
-                localStorage.setItem(storageKey, isDashboardVisible.toString());
-            });
-        }
-
-        // DOMContentLoaded と window.load の両方で実行を試行
-        document.addEventListener('DOMContentLoaded', initializeDashboardToggle);
-        window.addEventListener('load', initializeDashboardToggle);
-        // さらに遅延実行（analytics.jsの処理完了後を想定）
-        setTimeout(initializeDashboardToggle, 1000);
-    </script>
+    <!-- Dashboard Toggle Functionality は analytics.js に統合されました -->
 
     <!-- URL Settings Modal -->
     <div id="url-settings-modal" class="modal">

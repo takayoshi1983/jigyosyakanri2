@@ -2324,7 +2324,11 @@ class TaskManagement {
             }
 
             // デフォルト値設定
-            if (this.currentUser) {
+            if (template && template.default_assignee_id) {
+                // テンプレートに既定の受任者が設定されている場合はそれを使用
+                document.getElementById('assignee-select').value = template.default_assignee_id;
+            } else if (this.currentUser) {
+                // テンプレートに既定の受任者がない場合は現在のユーザーを設定
                 document.getElementById('assignee-select').value = this.currentUser.id;
             }
 

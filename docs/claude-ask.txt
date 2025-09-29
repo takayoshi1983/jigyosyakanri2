@@ -1,19 +1,180 @@
-✅ 月次自動タスク編集モーダルが開かれました
-task-management.js:1783 User interaction ended - auto refresh resumed
-task-management.js:4662 ✅ タブナビゲーションを再有効化しました
-task-management.js:3372 🔄 月次自動タスク編集モーダルを開く: mode=view
-task-management.js:3410 📝 月次タスクフォームにデータを入力: {id: 13, template_id: 23, client_id: 1204, assignee_id: 6, frequency_type: 'monthly', …}
-task-management.js:3416 Set template-name-input = 月次給与計算
-task-management.js:3416 Set template-task-name = 月次給与計算
-task-management.js:3416 Set template-estimated-hours = undefined
-task-management.js:3416 Set template-reference-url = undefined
-task-management.js:3416 Set template-due-day = 20
-task-management.js:3416 Set template-create-days-before = 14
-task-management.js:3446 Uncaught TypeError: this.templateClientSelect.setValue is not a function
-    at TaskManagement.populateRecurringTaskForm (task-management.js:3446:43)
-    at TaskManagement.openRecurringTaskEditModal (task-management.js:3395:18)
-    at HTMLDivElement.<anonymous> (task-management.js:3363:22)
-populateRecurringTaskForm @ task-management.js:3446
-openRecurringTaskEditModal @ task-management.js:3395
-(anonymous) @ task-management.js:3363Understand this error
-task-management.js:1651 Auto refresh skipped: user is interacting
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.app_links (
+  id integer NOT NULL DEFAULT nextval('app_links_id_seq'::regclass),
+  name character varying NOT NULL,
+  url text NOT NULL,
+  display_order integer DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT app_links_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.backup_history (
+  id bigint NOT NULL DEFAULT nextval('backup_history_id_seq'::regclass),
+  backup_date timestamp with time zone DEFAULT now(),
+  backup_type text DEFAULT 'auto'::text,
+  status text DEFAULT 'pending'::text,
+  file_name text,
+  file_size_kb integer,
+  total_records integer,
+  error_message text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT backup_history_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.clients (
+  id integer NOT NULL DEFAULT nextval('clients_id_seq'::regclass),
+  name character varying NOT NULL,
+  fiscal_month integer CHECK (fiscal_month >= 1 AND fiscal_month <= 12),
+  staff_id integer,
+  accounting_method character varying DEFAULT '記帳代行'::character varying,
+  status character varying DEFAULT 'active'::character varying,
+  custom_tasks_by_year jsonb DEFAULT '{}'::jsonb,
+  finalized_years jsonb DEFAULT '[]'::jsonb,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  overall_memo text DEFAULT ''::text,
+  editing_user character varying,
+  editing_started_at timestamp without time zone,
+  CONSTRAINT clients_pkey PRIMARY KEY (id),
+  CONSTRAINT clients_staff_id_fkey FOREIGN KEY (staff_id) REFERENCES public.staffs(id)
+);
+CREATE TABLE public.default_tasks (
+  id integer NOT NULL DEFAULT nextval('default_tasks_id_seq'::regclass),
+  task_name character varying,
+  accounting_method character varying,
+  tasks jsonb,
+  display_order integer DEFAULT 0,
+  is_active boolean DEFAULT true,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT default_tasks_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.editing_sessions (
+  id integer NOT NULL DEFAULT nextval('editing_sessions_id_seq'::regclass),
+  client_id integer,
+  user_id character varying NOT NULL,
+  started_at timestamp without time zone DEFAULT now(),
+  last_activity timestamp without time zone DEFAULT now(),
+  CONSTRAINT editing_sessions_pkey PRIMARY KEY (id),
+  CONSTRAINT editing_sessions_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id)
+);
+CREATE TABLE public.monthly_tasks (
+  id integer NOT NULL DEFAULT nextval('monthly_tasks_id_seq'::regclass),
+  client_id integer,
+  month character varying NOT NULL,
+  tasks jsonb DEFAULT '{}'::jsonb,
+  status character varying DEFAULT 'pending'::character varying,
+  url text,
+  memo text,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  task_memos jsonb DEFAULT '{}'::jsonb,
+  completed boolean NOT NULL DEFAULT false,
+  CONSTRAINT monthly_tasks_pkey PRIMARY KEY (id),
+  CONSTRAINT monthly_tasks_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id)
+);
+CREATE TABLE public.recurring_tasks (
+  id bigint NOT NULL DEFAULT nextval('recurring_tasks_id_seq'::regclass),
+  template_id bigint,
+  client_id bigint,
+  assignee_id bigint,
+  frequency_type text CHECK (frequency_type = ANY (ARRAY['monthly'::text, 'weekly'::text, 'daily'::text])),
+  frequency_day integer,
+  is_active boolean DEFAULT true,
+  next_run_date date,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  create_days_before integer DEFAULT 3,
+  due_day integer DEFAULT 25,
+  display_order integer DEFAULT 0,
+  CONSTRAINT recurring_tasks_pkey PRIMARY KEY (id),
+  CONSTRAINT recurring_tasks_template_id_fkey FOREIGN KEY (template_id) REFERENCES public.task_templates(id),
+  CONSTRAINT recurring_tasks_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id),
+  CONSTRAINT recurring_tasks_assignee_id_fkey FOREIGN KEY (assignee_id) REFERENCES public.staffs(id)
+);
+CREATE TABLE public.settings (
+  key character varying NOT NULL,
+  value jsonb NOT NULL,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT settings_pkey PRIMARY KEY (key)
+);
+CREATE TABLE public.staffs (
+  id integer NOT NULL DEFAULT nextval('staffs_id_seq'::regclass),
+  name character varying NOT NULL,
+  email character varying,
+  role character varying DEFAULT 'staff'::character varying,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT staffs_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.task_comments (
+  id bigint NOT NULL DEFAULT nextval('task_comments_id_seq'::regclass),
+  task_id bigint,
+  user_id bigint,
+  comment text NOT NULL,
+  comment_type text DEFAULT 'comment'::text CHECK (comment_type = ANY (ARRAY['comment'::text, 'status_change'::text, 'system'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT task_comments_pkey PRIMARY KEY (id),
+  CONSTRAINT task_comments_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.tasks(id),
+  CONSTRAINT task_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.staffs(id)
+);
+CREATE TABLE public.task_templates (
+  id bigint NOT NULL DEFAULT nextval('task_templates_id_seq'::regclass),
+  template_name text NOT NULL,
+  task_name text,
+  description text,
+  estimated_time_hours numeric,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  staff_id integer,
+  is_global boolean DEFAULT false,
+  is_favorite boolean DEFAULT false,
+  display_order integer DEFAULT 0,
+  priority integer DEFAULT 1 CHECK (priority >= 1 AND priority <= 3),
+  reference_url text,
+  default_assignee_id bigint,
+  client_id bigint,
+  CONSTRAINT task_templates_pkey PRIMARY KEY (id),
+  CONSTRAINT task_templates_staff_id_fkey FOREIGN KEY (staff_id) REFERENCES public.staffs(id),
+  CONSTRAINT task_templates_default_assignee_id_fkey FOREIGN KEY (default_assignee_id) REFERENCES public.staffs(id),
+  CONSTRAINT task_templates_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id)
+);
+CREATE TABLE public.tasks (
+  id bigint NOT NULL DEFAULT nextval('tasks_id_seq'::regclass),
+  client_id bigint,
+  assignee_id bigint,
+  requester_id bigint,
+  task_name text NOT NULL,
+  description text,
+  reference_url text,
+  due_date date,
+  estimated_time_hours numeric,
+  completed_at timestamp with time zone,
+  confirmed_at timestamp with time zone,
+  status text DEFAULT '依頼中'::text CHECK (status = ANY (ARRAY['依頼中'::text, '作業完了'::text, '確認完了'::text])),
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  priority integer DEFAULT 2 CHECK (priority = ANY (ARRAY[1, 2, 3])),
+  work_date date,
+  CONSTRAINT tasks_pkey PRIMARY KEY (id),
+  CONSTRAINT tasks_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id),
+  CONSTRAINT tasks_assignee_id_fkey FOREIGN KEY (assignee_id) REFERENCES public.staffs(id),
+  CONSTRAINT tasks_requester_id_fkey FOREIGN KEY (requester_id) REFERENCES public.staffs(id)
+);
+CREATE TABLE public.weekly_progress_snapshots (
+  id integer NOT NULL DEFAULT nextval('weekly_progress_snapshots_id_seq'::regclass),
+  week_date date NOT NULL,
+  client_id integer,
+  staff_id integer,
+  progress_rate numeric,
+  completed_tasks integer,
+  total_tasks integer,
+  fiscal_month integer,
+  client_name text,
+  staff_name text,
+  created_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT weekly_progress_snapshots_pkey PRIMARY KEY (id),
+  CONSTRAINT weekly_progress_snapshots_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id),
+  CONSTRAINT weekly_progress_snapshots_staff_id_fkey FOREIGN KEY (staff_id) REFERENCES public.staffs(id)
+);

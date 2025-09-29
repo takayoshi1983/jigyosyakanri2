@@ -382,6 +382,9 @@ class AnalyticsPage {
 
         // リアルタイムフィルタリング
         this.setupRealtimeFilters();
+
+        // ダッシュボード表示制御
+        this.setupDashboardToggle();
     }
 
     setupRealtimeFilters() {
@@ -3438,6 +3441,114 @@ class AnalyticsPage {
         } catch (error) {
             console.error('コンパクト版週次グラフ更新エラー:', error);
             this.showNoCompactWeeklyData();
+        }
+    }
+
+    // スマートダッシュボード表示制御
+    setupDashboardToggle() {
+        const toggleButton = document.getElementById('toggle-dashboard-button');
+        const dashboardSection = document.getElementById('summary-dashboard');
+
+        if (!toggleButton || !dashboardSection) {
+            console.log('Dashboard toggle elements not found, setting up observer...');
+            this.observeDashboardElements();
+            return;
+        }
+
+        this.initializeDashboardToggle(toggleButton, dashboardSection);
+    }
+
+    // DOM要素の出現を監視（動的な要素生成に対応）
+    observeDashboardElements() {
+        if (this.dashboardObserver) {
+            this.dashboardObserver.disconnect();
+        }
+
+        this.dashboardObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'childList') {
+                    const toggleButton = document.getElementById('toggle-dashboard-button');
+                    const dashboardSection = document.getElementById('summary-dashboard');
+
+                    if (toggleButton && dashboardSection) {
+                        this.initializeDashboardToggle(toggleButton, dashboardSection);
+                        this.dashboardObserver.disconnect();
+                        break;
+                    }
+                }
+            }
+        });
+
+        this.dashboardObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    // ダッシュボード表示制御の初期化
+    initializeDashboardToggle(toggleButton, dashboardSection) {
+        // ユーザー固有のローカルストレージキー
+        const getCurrentUser = () => {
+            try {
+                const userStr = localStorage.getItem('currentUser');
+                return userStr ? JSON.parse(userStr) : null;
+            } catch (e) {
+                return null;
+            }
+        };
+
+        const currentUser = getCurrentUser();
+        const storageKey = currentUser ? `dashboard-visible-${currentUser.id}` : 'dashboard-visible-guest';
+
+        // 保存された状態を読み込み（デフォルトは表示）
+        const savedState = localStorage.getItem(storageKey);
+        this.dashboardVisible = savedState !== 'false';
+
+        // CSS クラスベースでの制御
+        this.updateDashboardVisibility(dashboardSection, toggleButton);
+
+        // クリックイベントリスナー
+        toggleButton.addEventListener('click', () => {
+            this.dashboardVisible = !this.dashboardVisible;
+            localStorage.setItem(storageKey, this.dashboardVisible.toString());
+            this.updateDashboardVisibility(dashboardSection, toggleButton);
+        });
+
+        // フィルター変更時の状態保持
+        this.preserveDashboardState = () => {
+            setTimeout(() => {
+                this.updateDashboardVisibility(dashboardSection, toggleButton);
+            }, 100);
+        };
+
+        // MutationObserverでダッシュボードの再表示を監視
+        const dashboardObserver = new MutationObserver(() => {
+            if (dashboardSection.style.display === 'block' && !this.dashboardVisible) {
+                this.updateDashboardVisibility(dashboardSection, toggleButton);
+            }
+        });
+
+        dashboardObserver.observe(dashboardSection, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+
+        console.log('✅ スマートダッシュボード制御を初期化しました');
+    }
+
+    // ダッシュボードの表示状態を更新
+    updateDashboardVisibility(dashboardSection, toggleButton) {
+        if (this.dashboardVisible) {
+            // 表示
+            dashboardSection.classList.remove('dashboard-hidden');
+            dashboardSection.style.display = 'block';
+            toggleButton.innerHTML = '📊 グラフ非表示';
+            toggleButton.className = 'dashboard-toggle-btn';
+        } else {
+            // 非表示
+            dashboardSection.classList.add('dashboard-hidden');
+            toggleButton.innerHTML = '📊 グラフ表示';
+            toggleButton.className = 'dashboard-toggle-btn hidden-state';
         }
     }
 }

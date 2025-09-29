@@ -258,10 +258,98 @@ updated_at
 timestamp
 DEFAULT now()
 
+9. task_templates
+
+Column
+Type
+Constraints / Default
+Keys
+id
+integer
+NOT NULL, DEFAULT nextval
+PK
+template_name
+varchar
+NOT NULL
+task_name
+varchar
+NOT NULL
+description
+text
+client_id
+integer
+FK → clients.id
+staff_id
+integer
+FK → staffs.id
+estimated_time_hours
+decimal
+reference_url
+text
+default_assignee_id
+integer
+FK → staffs.id
+is_shared
+boolean
+DEFAULT false
+created_at
+timestamp
+DEFAULT now()
+updated_at
+timestamp
+DEFAULT now()
+
+10. recurring_tasks
+
+Column
+Type
+Constraints / Default
+Keys
+id
+integer
+NOT NULL, DEFAULT nextval
+PK
+template_id
+integer
+FK → task_templates.id
+client_id
+integer
+FK → clients.id
+assignee_id
+integer
+FK → staffs.id
+frequency_type
+varchar
+NOT NULL
+create_days_before
+integer
+DEFAULT 3
+due_day
+integer
+DEFAULT 25
+display_order
+integer
+DEFAULT 0
+is_active
+boolean
+DEFAULT true
+created_at
+timestamp
+DEFAULT now()
+updated_at
+timestamp
+DEFAULT now()
+
 Relationships (Foreign Keys)
 clients.staff_id → staffs.id
 editing_sessions.client_id → clients.id
 monthly_tasks.client_id → clients.id
+task_templates.client_id → clients.id
+task_templates.staff_id → staffs.id
+task_templates.default_assignee_id → staffs.id
+recurring_tasks.template_id → task_templates.id
+recurring_tasks.client_id → clients.id
+recurring_tasks.assignee_id → staffs.id
 
 
   認証・セキュリティ
@@ -446,6 +534,48 @@ monthly_tasks.client_id → clients.id
   - **ツールチップ最適化**: 各グラフライン固有の詳細情報表示
   - **UI改善**: トグル表示・統計情報・最新記録日表示
 
+  11. テンプレート管理システム - 実装完了
+
+  **統合アプローチによる3列レイアウト設計**
+  - **既存タスク管理との統合**: task-management.htmlページ内に完全統合
+  - **3列レイアウト構成**: 月次自動タスク作成・個別テンプレート・共有テンプレートの並列表示
+  - **統一UI**: 既存タスク管理システムと同一のデザインシステム採用
+
+  **新規データベーステーブル拡張**
+  - **task_templatesテーブル**: client_id・reference_url・estimated_time_hours・default_assignee_id対応
+  - **recurring_tasksテーブル**: create_days_before・due_day・display_order列追加
+  - **データベースマイグレーション**: K-3-fix-client-column.sql・K-4-add-recurring-fields.sqlによる段階的拡張
+
+  **月次自動タスク作成機能**
+  - **定期実行設定**: 毎月の期限日・何日前作成の詳細設定
+  - **テンプレート連携**: task_templatesテーブルとの完全リレーション
+  - **自動化ロジック**: 設定した日数に基づく自動タスク生成システム
+  - **編集・削除機能**: 作成済み月次タスクの詳細編集・削除対応
+
+  **検索可能クライアント選択機能**
+  - **SearchableSelectコンポーネント**: 新規タスク作成と同一の検索機能実装
+  - **リアルタイム検索**: 日本語正規化対応・インクリメンタル検索
+  - **フォールバック機能**: コンポーネント初期化失敗時の通常selectフォールバック
+  - **3つのモーダル対応**: 月次自動・個別・共有テンプレート全てに実装
+
+  **テンプレート管理機能**
+  - **個別テンプレート**: クライアント専用テンプレート（既定受託者設定対応）
+  - **共有テンプレート**: 全クライアント共通テンプレート（既定受託者設定対応）
+  - **包括的CRUD操作**: 作成・編集・削除・表示の完全対応
+  - **データ整合性**: 外部キー制約・カスケード削除による安全な操作
+
+  **UI/UX最適化**
+  - **3列グリッドレイアウト**: CSS Grid による効率的レイアウト
+  - **統一フォームデザイン**: 事業者名・参照URL・想定時間・既定受託者の標準化
+  - **モード切り替え**: 表示モード・編集モードの明確な分離
+  - **エラーハンドリング**: 包括的エラー処理・ユーザーフレンドリーメッセージ
+
+  **データ連携・整合性**
+  - **マスターデータ活用**: clients・staffsテーブルとの完全連携
+  - **RLS対応**: Supabase Row Level Securityによるアクセス制御
+  - **JSON処理**: estimated_time_hours・reference_url等のデータ型対応
+  - **null値処理**: optional chaining・fallback値による堅牢な実装
+
   ユーザーインターフェース
 
   メイン画面（analytics.html）
@@ -532,9 +662,35 @@ monthly_tasks.client_id → clients.id
 
   (その他変更なし)
 
-  最新の進捗（2025年9月28日更新）
+  最新の進捗（2025年9月29日更新）
 
-#### 今回セッション（9/28）- タスク管理システム完全実装・履歴閲覧システム・時間ベース非表示機能
+#### 今回セッション（9/29）- テンプレート管理システム完全実装・データベーススキーマ最適化
+
+1. **テンプレート管理システム完全実装** - 完了
+   - **3列レイアウト統合**: task-management.htmlページ内に月次自動・個別・共有テンプレートの3列配置実装
+   - **データベーススキーマ最適化**: K-3-fix-client-column.sql・K-4-add-recurring-fields.sqlによる段階的マイグレーション
+   - **検索可能クライアント選択**: 新規タスク作成と同一のSearchableSelectコンポーネント実装
+   - **包括的CRUD操作**: テンプレート作成・編集・削除・表示の完全対応
+
+2. **月次自動タスク作成機能実装** - 完了
+   - **定期実行設定**: 毎月期限日・何日前作成の詳細設定機能
+   - **テンプレート連携**: task_templatesテーブルとのリレーション実装
+   - **編集・削除対応**: 既存月次タスクの詳細編集・削除機能
+   - **データ整合性**: 外部キー制約・カスケード削除による安全な操作
+
+3. **データベース統合・スキーマ修正** - 完了
+   - **client_name→client_id変換**: task_templatesテーブルの正規化実装
+   - **recurring_tasks拡張**: create_days_before・due_day・display_order列追加
+   - **フォールバック処理**: UI初期化失敗時の通常select要素フォールバック実装
+   - **null値対応**: optional chaining・fallback値による堅牢なデータ処理
+
+4. **UI/UX統合最適化** - 完了
+   - **統一デザインシステム**: 既存タスク管理と同一のCSS変数・コンポーネント活用
+   - **エラーハンドリング強化**: 包括的エラー処理・ユーザーフレンドリーメッセージ実装
+   - **モード切り替え**: 表示モード・編集モードの明確な分離
+   - **フォーム統一**: 事業者名・参照URL・想定時間・既定受託者の標準化実装
+
+#### 前回セッション（9/28）- タスク管理システム完全実装・履歴閲覧システム・時間ベース非表示機能
 
 1. **タスク管理システム完全実装** - 完了
    - **既存アプリとの統合**: 事業者管理アプリへの完全統合・マスターデータ連携
@@ -756,6 +912,7 @@ monthly_tasks.client_id → clients.id
 - **認証システム**: 100%完成（Google OAuth設定・リダイレクト統一完了）
 - **タスク管理システム**: 100%完成（統合アプローチ・高機能履歴閲覧システム・時間ベース非表示完了）
 - **通知システム**: 100%完成（スマート通知システム実装完了）
+- **テンプレート管理システム**: 100%完成（3列レイアウト・月次自動タスク・検索可能クライアント選択完了）
 - **高度機能**: 100%完成（進捗マトリクス視覚改善により完成）
 
 (以下、変更なし)
