@@ -387,7 +387,9 @@ class TaskManagement {
         // 簡易表示トグルスイッチ
         const simpleViewCheckbox = document.getElementById('simple-view-checkbox');
         if (simpleViewCheckbox) {
+            console.log('🔄 簡易表示トグルスイッチが見つかりました');
             simpleViewCheckbox.addEventListener('change', (e) => {
+                console.log('🔄 トグルスイッチがクリックされました:', e.target.checked);
                 this.toggleSimpleView(e.target.checked);
             });
 
@@ -397,6 +399,8 @@ class TaskManagement {
                 simpleViewCheckbox.checked = true;
                 this.toggleSimpleView(true);
             }
+        } else {
+            console.log('❌ 簡易表示トグルスイッチが見つかりません');
         }
 
         // ソート（テーブルヘッダー）
@@ -2822,6 +2826,7 @@ class TaskManagement {
 
     // 簡易表示モードの切り替え
     toggleSimpleView(isSimple) {
+        console.log('🔄 toggleSimpleView called with:', isSimple);
         this.isSimpleView = isSimple;
 
         // LocalStorageに保存
@@ -2831,19 +2836,27 @@ class TaskManagement {
         const label = document.getElementById('simple-view-label');
         const container = document.getElementById('assigned-task-list');
 
+        console.log('🎯 ラベル要素:', label);
+        console.log('🎯 コンテナ要素:', container);
+
         if (label) {
             label.textContent = isSimple ? '📄 簡易表示' : '📋 詳細表示';
+            console.log('✅ ラベル更新:', label.textContent);
         }
 
         if (container) {
             if (isSimple) {
                 container.classList.add('simple-view');
+                console.log('✅ simple-view クラス追加');
             } else {
                 container.classList.remove('simple-view');
+                console.log('✅ simple-view クラス削除');
             }
+            console.log('📋 現在のクラス:', container.className);
         }
 
         // タスクリストを再描画
+        console.log('🔄 タスクリストを再描画します');
         this.updateMyTasks();
     }
 
