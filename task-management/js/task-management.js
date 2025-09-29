@@ -228,11 +228,11 @@ class TaskManagement {
                 .from('recurring_tasks')
                 .select(`
                     *,
-                    template:task_templates(id, template_name, task_name, description, staff_id, estimated_time_hours, reference_url, client_id, default_assignee_id),
                     client:clients(id, name),
                     assignee:staffs(id, name)
                 `)
                 .eq('is_active', true)
+                .eq('created_by_email', this.currentUser.email)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -3248,10 +3248,8 @@ class TaskManagement {
             return;
         }
 
-        // 現在のユーザーが作成した月次自動タスクのみ表示（担当者は別の人でも可）
-        const recurringTasks = this.recurringTasks.filter(task =>
-            task.template?.staff_id === this.currentUser?.id && task.is_active
-        );
+        // データベースで既にフィルタリング済みなので、そのまま表示
+        const recurringTasks = this.recurringTasks;
 
         if (recurringTasks.length === 0) {
             container.innerHTML = `
@@ -3292,11 +3290,11 @@ class TaskManagement {
         const element = document.createElement('div');
         element.className = 'template-item recurring-task';
         element.dataset.recurringId = recurringTask.id;
-        element.dataset.templateId = recurringTask.template?.id; // ソート処理で使用
+        element.dataset.templateId = recurringTask.id; // ソート処理で使用
         element.dataset.templateType = 'recurring';
 
         // 月次自動タスクの情報を準備
-        const templateName = recurringTask.template?.template_name || '未設定';
+        const templateName = recurringTask.task_name || '未設定';
         const clientName = recurringTask.client?.name || '全事業者';
         const frequencyText = `毎月${recurringTask.frequency_day}日`;
         const nextRunDate = recurringTask.next_run_date ?
@@ -3423,13 +3421,12 @@ class TaskManagement {
             }
         };
 
-        // 基本情報（テンプレートから）
-        if (recurringTask.template) {
-            setFieldValue('template-name-input', recurringTask.template.template_name);
-            setFieldValue('template-task-name', recurringTask.template.task_name);
-            setFieldValue('template-estimated-hours', recurringTask.template.estimated_time_hours);
-            setFieldValue('template-reference-url', recurringTask.template.reference_url);
-        }
+        // 基本情報（recurring_tasksテーブルから直接）
+        setFieldValue('template-name-input', 'month-auto-task'); // 固定値または動的に生成
+        setFieldValue('template-task-name', recurringTask.task_name);
+        setFieldValue('template-estimated-hours', recurringTask.estimated_time_hours);
+        setFieldValue('template-reference-url', recurringTask.reference_url);
+        setFieldValue('template-priority', recurringTask.priority || 2);
 
         // 月次タスク設定
         setFieldValue('template-due-day', recurringTask.due_day);
@@ -3596,40 +3593,8 @@ class TaskManagement {
                 return; // バリデーションエラー
             }
 
-            let templateId = null;
-
-            // 1. テンプレートを作成または更新
-            if (!this.currentRecurringTask) {
-                // 新規作成の場合、先にテンプレートを作成
-                const templateData = {
-                    template_name: formData.template_name,
-                    task_name: formData.template_name,
-                    description: '月次自動タスク',
-                    estimated_time_hours: formData.estimated_time_hours,
-                    is_global: false,
-                    staff_id: this.currentUser.id,
-                    client_id: formData.client_id,
-                    reference_url: formData.reference_url,
-                    default_assignee_id: formData.default_assignee_id
-                };
-
-                const templateResult = await supabase
-                    .from('task_templates')
-                    .insert([templateData])
-                    .select('id')
-                    .single();
-
-                if (templateResult.error) throw templateResult.error;
-                templateId = templateResult.data.id;
-                console.log('✅ Template created with ID:', templateId);
-            } else {
-                // 編集の場合は既存のtemplate_idを使用
-                templateId = this.currentRecurringTask.template_id;
-            }
-
-            // 2. recurring_tasksを作成または更新
+            // recurring_tasksテーブルに直接保存（template_id不要）
             const recurringData = {
-                template_id: templateId,
                 client_id: formData.client_id,
                 assignee_id: formData.assignee_id,
                 frequency_type: formData.frequency_type,
@@ -3637,7 +3602,15 @@ class TaskManagement {
                 due_day: formData.due_day,
                 create_days_before: formData.create_days_before,
                 is_active: formData.is_active,
-                next_run_date: formData.next_run_date
+                next_run_date: formData.next_run_date,
+                // 新しく追加されたカラム
+                task_name: formData.task_name,
+                description: formData.description,
+                estimated_time_hours: formData.estimated_time_hours,
+                reference_url: formData.reference_url,
+                priority: formData.priority || 2,
+                // ユーザー識別用
+                created_by_email: this.currentUser.email
             };
 
             // 新規作成時のみdisplay_orderを設定
@@ -3742,8 +3715,16 @@ class TaskManagement {
         nextMonth.setMonth(nextMonth.getMonth() + 1);
         nextMonth.setDate(frequencyDay);
 
+        // タスク名と説明を取得
+        const taskName = document.getElementById('template-task-name')?.value?.trim();
+        const description = document.getElementById('template-description')?.value?.trim();
+        const priority = parseInt(document.getElementById('template-priority')?.value) || 2;
+
         const formData = {
-            template_name: templateName, // テンプレート作成用
+            template_name: templateName, // 廃止予定（互換性のため残す）
+            task_name: taskName, // 新規追加
+            description: description, // 新規追加
+            priority: priority, // 新規追加
             client_id: clientId, // 事業者指定（nullの場合は全事業者対象）
             reference_url: referenceUrl, // 参照URL
             estimated_time_hours: estimatedTimeHours, // 想定時間
@@ -4166,10 +4147,8 @@ class TaskManagement {
         const recurringId = evt.item.dataset.recurringId;
 
         try {
-            // 現在のユーザーの月次自動タスクを取得（表示順で）
-            const userRecurringTasks = this.recurringTasks.filter(task =>
-                task.template?.staff_id === this.currentUser?.id && task.is_active
-            );
+            // データベースで既にユーザー別フィルタリング済み
+            const userRecurringTasks = this.recurringTasks;
 
             // display_orderを再計算
             const reorderedTasks = [];
