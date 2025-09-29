@@ -1412,7 +1412,7 @@ class TaskManagement {
             // 特定の担当者でフィルタリング中
             const assignee = this.staffs.find(staff => staff.id === this.currentAssigneeFilter);
             if (assignee) {
-                titleText = `📋 ${assignee.name} タスク管理`;
+                titleText = `📋 ${assignee.name} 受任タスク一覧`;
             }
         }
 
