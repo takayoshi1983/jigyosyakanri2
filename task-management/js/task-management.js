@@ -2453,6 +2453,29 @@ class TaskManagement {
         statusContainer.style.display = 'none';
     }
 
+    // モーダル内のステータス表示を更新
+    updateModalStatusDisplay(taskId, newStatus) {
+        const modal = document.getElementById('task-modal');
+        const statusContainer = document.getElementById('status-button-container');
+
+        // モーダルが表示されていて、該当のタスクが開いている場合のみ更新
+        if (modal.style.display !== 'none' && statusContainer.style.display !== 'none') {
+            const form = document.getElementById('task-form');
+            const currentTaskId = parseInt(form.dataset.taskId);
+
+            if (currentTaskId === taskId) {
+                // 更新されたタスクデータを取得
+                const updatedTask = this.tasks.find(t => t.id === taskId);
+                if (updatedTask) {
+                    // ステータスボタンを再生成
+                    updatedTask.status = newStatus; // ステータスを更新
+                    const newStatusButton = this.createClickableStatusBadge(updatedTask);
+                    statusContainer.innerHTML = newStatusButton;
+                }
+            }
+        }
+    }
+
     openTemplateModal() {
         const modal = document.getElementById('template-modal');
         const templateList = document.getElementById('template-list');
@@ -2638,6 +2661,9 @@ class TaskManagement {
 
             showToast(`タスクを「${newStatus}」に更新しました`, 'success');
             await this.loadTasks(); // データ再読み込み
+
+            // モーダルが開いている場合、ステータス表示を更新
+            this.updateModalStatusDisplay(taskId, newStatus);
 
         } catch (error) {
             console.error('Update status error:', error);
