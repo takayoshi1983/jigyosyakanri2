@@ -3499,6 +3499,16 @@ class TaskManagement {
             defaultAssigneeRow.style.display = 'none'; // 月次自動タスクでは非表示
         }
 
+        // 月次自動タスクモード時のテンプレート名フィールド制御
+        const templateNameInput = document.getElementById('template-name-input');
+        if (templateNameInput) {
+            templateNameInput.value = '月次自動タスク';
+            templateNameInput.readOnly = true;
+            templateNameInput.style.backgroundColor = '#f8f9fa';
+            templateNameInput.style.color = '#6c757d';
+            templateNameInput.title = '月次自動タスクのテンプレート名は固定です';
+        }
+
         // 月次自動タスクの場合はテンプレート名のみ表示、他は非表示
         const sectionsToShow = ['template-basic-section'];
         const sectionsToHide = ['template-description-section'];
