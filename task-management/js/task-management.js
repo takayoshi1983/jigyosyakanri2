@@ -460,12 +460,8 @@ class TaskManagement {
         // テンプレート編集モーダル関連のイベントリスナー
         this.setupTemplateEditModalEvents();
 
-        // モーダル外クリックで閉じる
-        document.getElementById('task-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'task-modal') {
-                this.closeTaskModal();
-            }
-        });
+        // タスクモーダルは誤操作防止のため、モーダル外クリックでは閉じない
+        // （ユーザーからの要望により無効化）
 
         document.getElementById('template-modal').addEventListener('click', (e) => {
             if (e.target.id === 'template-modal') {
@@ -4020,9 +4016,15 @@ class TaskManagement {
             return;
         }
 
+        // テンプレートが存在する場合、そのis_globalフィールドからタイプを自動判定
+        let actualType = type;
+        if (template) {
+            actualType = template.is_global ? 'global' : 'personal';
+        }
+
         // 現在のテンプレート情報を保存
         this.currentTemplate = template;
-        this.currentTemplateType = type;
+        this.currentTemplateType = actualType;
 
         // フォームをリセット
         const form = document.getElementById('template-edit-form');
@@ -4031,7 +4033,7 @@ class TaskManagement {
         }
 
         // モードに応じてUI更新
-        this.setTemplateEditModeV2(mode, template, type);
+        this.setTemplateEditModeV2(mode, template, actualType);
 
         modal.style.display = 'block';
         this.setUserInteracting(true);
