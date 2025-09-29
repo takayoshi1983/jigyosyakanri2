@@ -116,6 +116,53 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* 参照URL表示の高さ制限 */
+#reference-url-display {
+    max-height: 60px !important;
+    overflow-y: auto !important;
+    padding: 8px !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+    background-color: #f8f9fa !important;
+    margin-top: 4px !important;
+    line-height: 1.4 !important;
+    font-size: 0.875rem !important;
+    scrollbar-width: thin !important;
+}
+
+#reference-url-display::-webkit-scrollbar {
+    width: 6px;
+}
+
+#reference-url-display::-webkit-scrollbar-thumb {
+    background-color: #ced4da;
+    border-radius: 3px;
+}
+
+#reference-url-display::-webkit-scrollbar-track {
+    background-color: #f8f9fa;
+}
+
+/* 作業内容のリンク表示部分も同様に制限 */
+.linked-text-display {
+    max-height: 80px !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+}
+
+.linked-text-display::-webkit-scrollbar {
+    width: 6px;
+}
+
+.linked-text-display::-webkit-scrollbar-thumb {
+    background-color: #ced4da;
+    border-radius: 3px;
+}
+
+.linked-text-display::-webkit-scrollbar-track {
+    background-color: #f8f9fa;
+}
+
 /* 履歴管理パネル */
 .history-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
