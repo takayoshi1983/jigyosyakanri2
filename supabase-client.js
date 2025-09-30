@@ -627,8 +627,15 @@ export class SupabaseAPI {
         if (error) throw error;
 
         if (user) {
-            // 現在のページを確認
+            // 担当者選択チェック
+            const selectedStaffId = sessionStorage.getItem('selected-staff-id');
             const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+            // select-user.html以外で担当者未選択の場合は選択画面へ
+            if (!selectedStaffId && currentPage !== 'select-user.html') {
+                window.location.replace('/select-user.html');
+                return null;
+            }
 
             // 設定画面への意図的アクセスかチェック
             const urlParams = new URLSearchParams(window.location.search);
@@ -649,6 +656,30 @@ export class SupabaseAPI {
         }
 
         return user;
+    }
+
+    // 選択された担当者IDを取得
+    static getSelectedStaffId() {
+        return sessionStorage.getItem('selected-staff-id');
+    }
+
+    // 選択された担当者情報を取得
+    static async getSelectedStaff() {
+        const staffId = this.getSelectedStaffId();
+        if (!staffId) return null;
+
+        const { data, error } = await supabase
+            .from('staffs')
+            .select('*')
+            .eq('id', parseInt(staffId))
+            .single();
+
+        if (error) {
+            console.error('Error fetching selected staff:', error);
+            return null;
+        }
+
+        return data;
     }
 
     // 設定画面用の専用リダイレクト関数

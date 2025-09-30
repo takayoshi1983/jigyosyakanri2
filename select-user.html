@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>担当者選択</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=1">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .user-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .select-wrapper {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            transition: all 0.3s ease;
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-icon">👤</div>
+        <h1>担当者選択</h1>
+        <p class="subtitle">あなたの名前を選択してください</p>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>読み込み中...</p>
+        </div>
+
+        <div id="main-content">
+            <div class="select-wrapper">
+                <select id="staff-select" required>
+                    <option value="">担当者を選択してください</option>
+                </select>
+            </div>
+
+            <button id="confirm-btn" disabled>この担当者で続ける</button>
+            <button class="logout-btn" id="logout-btn">ログアウト</button>
+
+            <div class="info-box">
+                <strong>💡 ヒント</strong><br>
+                あなたの担当者名を選択すると、担当するクライアントやタスクが表示されます。
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script type="module">
+        import { SupabaseAPI } from './supabase-client.js';
+
+        const staffSelect = document.getElementById('staff-select');
+        const confirmBtn = document.getElementById('confirm-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loading = document.getElementById('loading');
+        const mainContent = document.getElementById('main-content');
+
+        // 初期化
+        async function init() {
+            try {
+                loading.style.display = 'block';
+                mainContent.style.display = 'none';
+
+                // Google認証確認
+                const user = await SupabaseAPI.getCurrentUser();
+                if (!user) {
+                    // 未認証の場合はトップページへ
+                    window.location.replace('/');
+                    return;
+                }
+
+                // 既に担当者選択済みかチェック
+                const selectedStaffId = sessionStorage.getItem('selected-staff-id');
+                if (selectedStaffId) {
+                    // 既に選択済みの場合はホーム画面へ
+                    window.location.replace('/analytics.html');
+                    return;
+                }
+
+                // 担当者リストを取得
+                const staffs = await SupabaseAPI.getStaffs();
+
+                if (!staffs || staffs.length === 0) {
+                    alert('担当者データが取得できませんでした。');
+                    return;
+                }
+
+                // ドロップダウンに追加
+                staffs.forEach(staff => {
+                    const option = document.createElement('option');
+                    option.value = staff.id;
+                    option.textContent = `${staff.name} (${staff.email || 'メール未設定'})`;
+                    staffSelect.appendChild(option);
+                });
+
+                loading.style.display = 'none';
+                mainContent.style.display = 'block';
+
+            } catch (error) {
+                console.error('初期化エラー:', error);
+                alert('エラーが発生しました。再度お試しください。');
+                window.location.replace('/');
+            }
+        }
+
+        // 選択変更時
+        staffSelect.addEventListener('change', (e) => {
+            confirmBtn.disabled = !e.target.value;
+        });
+
+        // 確定ボタン
+        confirmBtn.addEventListener('click', async () => {
+            const staffId = staffSelect.value;
+            if (!staffId) return;
+
+            try {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = '処理中...';
+
+                // 選択した担当者IDをsessionStorageに保存
+                sessionStorage.setItem('selected-staff-id', staffId);
+
+                // 担当者情報も保存（名前表示用）
+                const selectedOption = staffSelect.options[staffSelect.selectedIndex];
+                sessionStorage.setItem('selected-staff-name', selectedOption.textContent.split(' (')[0]);
+
+                // ホーム画面へリダイレクト
+                window.location.replace('/analytics.html');
+
+            } catch (error) {
+                console.error('エラー:', error);
+                alert('エラーが発生しました。');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'この担当者で続ける';
+            }
+        });
+
+        // ログアウトボタン
+        logoutBtn.addEventListener('click', async () => {
+            if (confirm('ログアウトしますか？')) {
+                sessionStorage.removeItem('selected-staff-id');
+                sessionStorage.removeItem('selected-staff-name');
+                await SupabaseAPI.signOut();
+                window.location.replace('/');
+            }
+        });
+
+        // 初期化実行
+        init();
+    </script>
+</body>
+</html>
