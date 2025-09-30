@@ -1427,7 +1427,10 @@ class TaskManagement {
 
         let titleText = '📋 全体タスク管理';
 
-        if (this.currentAssigneeFilter !== null) {
+        // 履歴モードの場合
+        if (this.historyMode) {
+            titleText = '📋 履歴タスク管理';
+        } else if (this.currentAssigneeFilter !== null) {
             // 特定の担当者でフィルタリング中
             const assignee = this.staffs.find(staff => staff.id === this.currentAssigneeFilter);
             if (assignee) {
@@ -3270,9 +3273,11 @@ class TaskManagement {
             return this.getTaskPriorityScore(a) - this.getTaskPriorityScore(b);
         });
 
-        // 表示更新（依頼中のタスクのみカウント）
-        const pendingTasks = filtered.filter(task => task.status === '依頼中');
-        document.getElementById('total-task-count').textContent = `${pendingTasks.length}件`;
+        // 表示更新（履歴モードでは確認完了タスクの数を表示）
+        document.getElementById('total-task-count').textContent = `${filtered.length}件`;
+
+        // タイトルを更新（履歴タスク管理に変更）
+        this.updateTaskPanelTitle();
 
         if (this.currentDisplay === 'list') {
             this.updateListView(filtered);
