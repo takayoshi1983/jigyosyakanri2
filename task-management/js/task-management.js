@@ -131,15 +131,30 @@ class TaskManagement {
                 return;
             }
 
-            // 現在のユーザー情報取得
-            const { data: staffData } = await supabase
-                .from('staffs')
-                .select('*')
-                .eq('email', user.email)
-                .single();
+            // 選択された担当者IDを取得
+            const selectedStaffId = sessionStorage.getItem('selected-staff-id');
 
-            this.currentUser = staffData;
-            console.log('Current user:', this.currentUser);
+            if (selectedStaffId) {
+                // 担当者選択済みの場合：選択されたstaff_idで情報を取得
+                const { data: staffData } = await supabase
+                    .from('staffs')
+                    .select('*')
+                    .eq('id', parseInt(selectedStaffId))
+                    .single();
+
+                this.currentUser = staffData;
+                console.log('Current user (selected staff):', this.currentUser);
+            } else {
+                // 担当者未選択の場合：メールアドレスで情報を取得（後方互換性）
+                const { data: staffData } = await supabase
+                    .from('staffs')
+                    .select('*')
+                    .eq('email', user.email)
+                    .single();
+
+                this.currentUser = staffData;
+                console.log('Current user (email-based):', this.currentUser);
+            }
 
             // ユーザー情報表示
             this.displayCurrentUserInfo();

@@ -71,24 +71,26 @@ class AnalyticsPage {
             this.setupEventListeners();
             this.populateFilters();
 
-            // 選択された担当者でフィルターをデフォルト設定
-            const selectedStaffId = SupabaseAPI.getSelectedStaffId();
-            if (selectedStaffId) {
-                const staffSelect = document.getElementById('staff-filter');
-                if (staffSelect) {
-                    staffSelect.value = selectedStaffId;
-                    this.currentFilters.staffId = selectedStaffId;
-                }
-            }
-
             // リフレッシュパラメータチェック（削除後のデータ更新用）
             const refreshRequested = this.checkRefreshParameter();
 
             // URLパラメータから担当者を自動選択（復元前に処理）
             const hasUrlParameters = this.handleUrlParameters();
 
-            // URLパラメータまたはリフレッシュ要求がある場合は復元をスキップして新規分析
-            if (hasUrlParameters || refreshRequested) {
+            // 選択された担当者でフィルターをデフォルト設定
+            const selectedStaffId = SupabaseAPI.getSelectedStaffId();
+            let staffFilterApplied = false;
+            if (selectedStaffId) {
+                const staffSelect = document.getElementById('staff-filter');
+                if (staffSelect) {
+                    staffSelect.value = selectedStaffId;
+                    this.currentFilters.staffId = selectedStaffId;
+                    staffFilterApplied = true;
+                }
+            }
+
+            // URLパラメータ、リフレッシュ要求、または担当者フィルター適用時は新規分析
+            if (hasUrlParameters || refreshRequested || staffFilterApplied) {
                 if (refreshRequested) {
                     // 強制データ更新後に分析実行
                     setTimeout(async () => {
@@ -96,10 +98,14 @@ class AnalyticsPage {
                         await this.performAnalysis();
                         showToast('最新データで更新しました', 'success');
                     }, 500);
+                } else {
+                    // 担当者フィルター適用時は即座に分析実行
+                    setTimeout(async () => {
+                        await this.performAnalysis();
+                    }, 500);
                 }
-                // URLパラメータがある場合は新規分析を優先
             } else {
-                // URLパラメータがない場合のみ保存された分析結果を復元
+                // URLパラメータがなく、担当者フィルターもない場合のみ保存された分析結果を復元
                 const hasRestoredData = this.restoreAnalysisFromLocalStorage();
                 if (!hasRestoredData) {
                     // 初期データで自動集計を実行
