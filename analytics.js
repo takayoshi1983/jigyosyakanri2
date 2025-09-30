@@ -70,7 +70,17 @@ class AnalyticsPage {
             // UI初期化
             this.setupEventListeners();
             this.populateFilters();
-            
+
+            // 選択された担当者でフィルターをデフォルト設定
+            const selectedStaffId = SupabaseAPI.getSelectedStaffId();
+            if (selectedStaffId) {
+                const staffSelect = document.getElementById('staff-filter');
+                if (staffSelect) {
+                    staffSelect.value = selectedStaffId;
+                    this.currentFilters.staffId = selectedStaffId;
+                }
+            }
+
             // リフレッシュパラメータチェック（削除後のデータ更新用）
             const refreshRequested = this.checkRefreshParameter();
 

@@ -626,6 +626,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             console.error('manage-staff-button not found in DOM');
         }
+
+        // 担当者選択ボタン
+        const selectUserBtn = document.getElementById('select-user-button');
+        if (selectUserBtn) {
+            selectUserBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // sessionStorageをクリアして担当者選択画面へ
+                sessionStorage.removeItem('selected-staff-id');
+                sessionStorage.removeItem('selected-staff-name');
+                window.location.href = '/select-user.html';
+            });
+        }
         
         if (closeStaffModalButton) {
             closeStaffModalButton.addEventListener('click', closeStaffModal);

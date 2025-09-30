@@ -612,6 +612,11 @@ export class SupabaseAPI {
     }
     
     static async signOut() {
+        // 担当者選択情報をクリア
+        sessionStorage.removeItem('selected-staff-id');
+        sessionStorage.removeItem('selected-staff-name');
+        sessionStorage.removeItem('settings-access');
+
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
     }
