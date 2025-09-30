@@ -602,11 +602,12 @@ export class SupabaseAPI {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin + '/analytics.html',
+                // 担当者選択画面へリダイレクト
+                redirectTo: window.location.origin + '/select-user.html',
                 ...signInOptions
             }
         });
-        
+
         if (error) throw error;
         return data;
     }
