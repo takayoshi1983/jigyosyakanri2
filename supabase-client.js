@@ -654,7 +654,9 @@ export class SupabaseAPI {
     // 設定画面用の専用リダイレクト関数
     static redirectToSettings() {
         sessionStorage.setItem('settings-access', 'true');
-        window.location.href = 'index.html?settings=true';
+        // ルートからの絶対パスでリダイレクト（サブディレクトリからでも正しく動作）
+        const baseUrl = window.location.origin;
+        window.location.href = `${baseUrl}/index.html?settings=true`;
     }
 
     static async getUserRole() {

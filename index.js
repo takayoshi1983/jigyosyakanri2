@@ -679,7 +679,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 openUrlSettingsModal();
             });
         } else {
-            console.error('url-settings-button not found in DOM');
+            // URL設定ボタンはanalytics.htmlに移動済みのため、index.htmlでは不要
+            console.log('url-settings-button not found (expected on index.html - URL settings moved to analytics.html)');
         }
         
         if (closeUrlSettingsModalButton) {
