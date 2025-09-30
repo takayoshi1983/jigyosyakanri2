@@ -80,13 +80,19 @@ class AnalyticsPage {
             // 選択された担当者でフィルターをデフォルト設定
             const selectedStaffId = SupabaseAPI.getSelectedStaffId();
             let staffFilterApplied = false;
-            if (selectedStaffId) {
+
+            // staff_id が 1（管理者）の場合はフィルター無し、それ以外はフィルター適用
+            if (selectedStaffId && selectedStaffId !== '1') {
                 const staffSelect = document.getElementById('staff-filter');
                 if (staffSelect) {
                     staffSelect.value = selectedStaffId;
                     this.currentFilters.staffId = selectedStaffId;
                     staffFilterApplied = true;
                 }
+            } else if (selectedStaffId === '1') {
+                // 管理者の場合はフィルター無しで全体表示
+                console.log('管理者（staff_id: 1）でログイン - 全体表示');
+                staffFilterApplied = true; // 分析を実行するためフラグON
             }
 
             // URLパラメータ、リフレッシュ要求、または担当者フィルター適用時は新規分析
