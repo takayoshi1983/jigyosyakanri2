@@ -2535,9 +2535,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         hideRotateMessageOnDesktop();
     }, 100);
     initialize();
-    
+
     // レスポンシブ詳細テーブル機能を初期化
     setTimeout(() => {
         initResponsiveDetailsTable();
     }, 2000);
+
+    // 設定画面リンクのイベントリスナー
+    const settingsLink = document.querySelector('.nav-tab.settings');
+    if (settingsLink) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            SupabaseAPI.redirectToSettings();
+        });
+    }
 });
