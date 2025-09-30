@@ -80,8 +80,8 @@ class TaskManagement {
         this.allTasks = []; // 履歴含む全タスク
         // 履歴表示では「確認完了」のみ表示（チェックボックス削除済み）
 
-        // 簡易表示モード設定
-        this.isSimpleView = false; // 簡易表示モード
+        // 簡易表示モード設定（デフォルト: ON）
+        this.isSimpleView = true; // 簡易表示モード
 
         this.init();
         this.setupHistoryManagement(); // 履歴管理システム初期化
@@ -390,9 +390,15 @@ class TaskManagement {
                 this.toggleSimpleView(e.target.checked);
             });
 
-            // LocalStorageから設定を復元
+            // LocalStorageから設定を復元（未設定の場合はデフォルトON）
             const savedSimpleView = localStorage.getItem('taskManagement_simpleView');
-            if (savedSimpleView === 'true') {
+            if (savedSimpleView !== null) {
+                // 保存された設定がある場合はそれを使用
+                const isSimple = savedSimpleView === 'true';
+                simpleViewCheckbox.checked = isSimple;
+                this.toggleSimpleView(isSimple);
+            } else {
+                // 保存された設定がない場合はデフォルトON
                 simpleViewCheckbox.checked = true;
                 this.toggleSimpleView(true);
             }

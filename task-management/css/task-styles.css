@@ -1241,7 +1241,8 @@
 
 /* 参照URLフィールド用の調整 */
 #reference-url-display.linked-text-display {
-    min-height: 38px;
+    min-height: 38px !important;
+    max-height: 38px !important; /* 高さを固定して縦幅が広がらないようにする */
     padding: 8px 12px;
     line-height: 1.4;
     white-space: nowrap;
