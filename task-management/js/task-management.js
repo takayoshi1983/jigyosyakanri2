@@ -78,8 +78,7 @@ class TaskManagement {
         this.historyMode = false; // 履歴表示モード
         this.historyPeriod = 'current'; // 'current', '7days', '30days', 'all'
         this.allTasks = []; // 履歴含む全タスク
-        this.showCompleted = true; // 確認完了タスク表示
-        this.showHidden = false; // 非表示タスク表示
+        // 履歴表示では「確認完了」のみ表示（チェックボックス削除済み）
 
         // 簡易表示モード設定
         this.isSimpleView = false; // 簡易表示モード
@@ -2981,18 +2980,21 @@ class TaskManagement {
         const today = new Date(jstNow.getFullYear(), jstNow.getMonth(), jstNow.getDate());
 
         return tasks.filter(task => {
-            // 確認待ち（作業完了）タスクの受託者への非表示処理
-            if (task.status === '作業完了' && task.completed_at && task.assignee_id === this.currentUser.id) {
-                const completedDate = new Date(task.completed_at);
-                const jstCompletedDate = new Date(completedDate.getTime() + (jstOffset * 60 * 1000));
-                const completedDay = new Date(jstCompletedDate.getFullYear(), jstCompletedDate.getMonth(), jstCompletedDate.getDate());
-                const diffDays = Math.floor((today - completedDay) / (1000 * 60 * 60 * 24));
-
-                // 受託者のみ：翌日以降は非表示（依頼者には表示される）
-                if (diffDays >= 1) {
-                    return false;
-                }
-            }
+            // ========================================
+            // 【一時的にコメントアウト】確認待ち（作業完了）タスクの受託者への非表示処理
+            // TODO: 後で再実装する際は、以下のコメントを解除してください
+            // ========================================
+            // if (task.status === '作業完了' && task.completed_at && task.assignee_id === this.currentUser.id) {
+            //     const completedDate = new Date(task.completed_at);
+            //     const jstCompletedDate = new Date(completedDate.getTime() + (jstOffset * 60 * 1000));
+            //     const completedDay = new Date(jstCompletedDate.getFullYear(), jstCompletedDate.getMonth(), jstCompletedDate.getDate());
+            //     const diffDays = Math.floor((today - completedDay) / (1000 * 60 * 60 * 24));
+            //
+            //     // 受託者のみ：翌日以降は非表示（依頼者には表示される）
+            //     if (diffDays >= 1) {
+            //         return false;
+            //     }
+            // }
 
             // 確認完了タスクの全員への非表示処理（ステータスが「確認完了」でかつconfirmed_atがある場合のみ）
             if (task.status === '確認完了' && task.confirmed_at) {
@@ -3077,8 +3079,6 @@ class TaskManagement {
         const applyHistoryFilter = document.getElementById('apply-history-filter');
         const closeHistoryPanel = document.getElementById('close-history-panel');
         const historyPeriodSelect = document.getElementById('history-period-select');
-        const showCompletedCheckbox = document.getElementById('show-completed');
-        const showHiddenCheckbox = document.getElementById('show-hidden');
 
         if (applyHistoryFilter) {
             applyHistoryFilter.addEventListener('click', () => this.applyHistoryFilter());
@@ -3091,18 +3091,6 @@ class TaskManagement {
         if (historyPeriodSelect) {
             historyPeriodSelect.addEventListener('change', (e) => {
                 this.historyPeriod = e.target.value;
-            });
-        }
-
-        if (showCompletedCheckbox) {
-            showCompletedCheckbox.addEventListener('change', (e) => {
-                this.showCompleted = e.target.checked;
-            });
-        }
-
-        if (showHiddenCheckbox) {
-            showHiddenCheckbox.addEventListener('change', (e) => {
-                this.showHidden = e.target.checked;
             });
         }
 
@@ -3218,15 +3206,8 @@ class TaskManagement {
 
         let filtered = [...this.allTasks];
 
-        // ステータスフィルター適用
-        if (!this.showCompleted) {
-            filtered = filtered.filter(task => task.status !== '確認完了');
-        }
-
-        if (!this.showHidden) {
-            // 通常非表示のタスクを除外
-            filtered = this.applyTimeBasedVisibility(filtered);
-        }
+        // 履歴表示では「確認完了」のみを表示（依頼中・確認待ちは除外）
+        filtered = filtered.filter(task => task.status === '確認完了');
 
         // 担当者フィルター適用
         if (this.currentAssigneeFilter !== null) {
@@ -3303,9 +3284,7 @@ class TaskManagement {
     // 履歴設定をローカルストレージに保存
     saveHistorySettings() {
         const settings = {
-            historyPeriod: this.historyPeriod,
-            showCompleted: this.showCompleted,
-            showHidden: this.showHidden
+            historyPeriod: this.historyPeriod
         };
 
         localStorage.setItem('task-history-settings', JSON.stringify(settings));
@@ -3319,17 +3298,11 @@ class TaskManagement {
                 const settings = JSON.parse(saved);
 
                 this.historyPeriod = settings.historyPeriod || 'current';
-                this.showCompleted = settings.showCompleted !== undefined ? settings.showCompleted : true;
-                this.showHidden = settings.showHidden !== undefined ? settings.showHidden : false;
 
                 // UIを更新
                 const historyPeriodSelect = document.getElementById('history-period-select');
-                const showCompletedCheckbox = document.getElementById('show-completed');
-                const showHiddenCheckbox = document.getElementById('show-hidden');
 
                 if (historyPeriodSelect) historyPeriodSelect.value = this.historyPeriod;
-                if (showCompletedCheckbox) showCompletedCheckbox.checked = this.showCompleted;
-                if (showHiddenCheckbox) showHiddenCheckbox.checked = this.showHidden;
             }
         } catch (error) {
             console.error('Load history settings error:', error);
