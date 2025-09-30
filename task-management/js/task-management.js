@@ -2378,12 +2378,15 @@ class TaskManagement {
                 }
             }
 
-            // デフォルト値設定
+            // デフォルト値設定（優先順位: テンプレート既定受任者 > 担当者フィルター選択中 > ログインユーザー）
             if (template && template.default_assignee_id) {
                 // テンプレートに既定の受任者が設定されている場合はそれを使用
                 document.getElementById('assignee-select').value = template.default_assignee_id;
+            } else if (this.currentAssigneeFilter !== null) {
+                // 担当者フィルターで担当者を選択している場合はその担当者を設定
+                document.getElementById('assignee-select').value = this.currentAssigneeFilter;
             } else if (this.currentUser) {
-                // テンプレートに既定の受任者がない場合は現在のユーザーを設定
+                // どちらも設定されていない場合は現在のユーザーを設定
                 document.getElementById('assignee-select').value = this.currentUser.id;
             }
 
