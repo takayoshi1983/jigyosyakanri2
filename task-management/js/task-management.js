@@ -4858,4 +4858,21 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.log('TaskManagement initialization skipped - not on task-management page');
     }
+
+    // 設定画面リンクのイベントリスナー（全ページ共通）
+    const settingsLink = document.querySelector('.nav-tab.settings');
+    if (settingsLink) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            // supabase-client.jsのSupabaseAPIを使用
+            if (window.SupabaseAPI && window.SupabaseAPI.redirectToSettings) {
+                window.SupabaseAPI.redirectToSettings();
+            } else {
+                // フォールバック：直接import
+                import('../../supabase-client.js').then(module => {
+                    module.SupabaseAPI.redirectToSettings();
+                });
+            }
+        });
+    }
 });

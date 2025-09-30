@@ -1,20 +1,13 @@
-task-management.js:392 🔄 トグルスイッチがクリックされました: false
-task-management.js:2829 🔄 toggleSimpleView called with: false
-task-management.js:2839 🎯 ラベル要素: <span id=​"simple-view-label">​📋 詳細表示​</span>​
-task-management.js:2840 🎯 コンテナ要素: <div id=​"assigned-task-list" class=​"compact-task-list">​…​</div>​flex
-task-management.js:2844 ✅ ラベル更新: 📋 詳細表示
-task-management.js:2853 ✅ simple-view クラス削除
-task-management.js:2855 📋 現在のクラス: compact-task-list
-task-management.js:2859 🔄 タスクリストを再描画します
-task-management.js:392 🔄 トグルスイッチがクリックされました: true
-task-management.js:2829 🔄 toggleSimpleView called with: true
-task-management.js:2839 🎯 ラベル要素: <span id=​"simple-view-label">​📄 簡易表示​</span>​
-task-management.js:2840 🎯 コンテナ要素: <div id=​"assigned-task-list" class=​"compact-task-list simple-view">​…​</div>​flex
-task-management.js:2844 ✅ ラベル更新: 📄 簡易表示
-task-management.js:2850 ✅ simple-view クラス追加
-task-management.js:2855 📋 現在のクラス: compact-task-list simple-view
-task-management.js:2859 🔄 タスクリストを再描画します
-task-management.js:309 Tasks loaded: 27
-task-management.js:1245 Filter state restored: {assigneeFilter: 7, filters: {…}, display: 'list', timestamp: 1759180213422}
-task-management.js:1707 Tasks refreshed at: 6:10:21
-ment.js:391:22)
+config.js:10 Supabase config loaded: {url: 'https://jhjexgkzzbzxhhlezaoa.supabase.co'}
+supabase-client.js:224 📊 総データ件数: 1164件
+supabase-client.js:232 📊 バッチ取得中: range(0, 999)
+supabase-client.js:247 📊 取得結果: 1000件
+supabase-client.js:254 月次タスクデータ取得中: 1000件
+supabase-client.js:232 📊 バッチ取得中: range(1000, 1999)
+supabase-client.js:247 📊 取得結果: 164件
+supabase-client.js:254 月次タスクデータ取得中: 1164件
+supabase-client.js:258 📊 最後のバッチ (164件 < 1000件)
+supabase-client.js:265 月次タスクデータ取得完了: 総計1164件
+analytics.js:3536 ✅ スマートダッシュボード制御を初期化しました
+analytics.js:2834 📊 週次フィルター: {startPeriod: '2024-11', endPeriod: '2025-10', currentFilters: {…}}
+analytics.js:2853 📅 計算された期間: {startDate: '2024-11-01', endDate: '2025-10-31'}
