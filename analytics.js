@@ -806,19 +806,18 @@ class AnalyticsPage {
     }
 
     async calculateAnalytics() {
-        
+        console.time('⚡ Total Analytics');
+
         // フィルター適用済みクライアント取得
         const filteredClients = this.getFilteredClients();
-        
+
         // 期間内の月次タスクデータ取得
         const periodTasks = this.getPeriodTasks(filteredClients);
-        
-        // サマリー計算
-        const summary = this.calculateSummary(filteredClients, periodTasks);
-        
-        // マトリクス計算
-        const matrix = this.calculateMatrix(filteredClients, periodTasks);
-        
+
+        // 🚀 最適化: サマリーとマトリクスを1回のループで同時計算
+        const { summary, matrix } = this.calculateSummaryAndMatrix(filteredClients, periodTasks);
+
+        console.timeEnd('⚡ Total Analytics');
         return { summary, matrix };
     }
 
@@ -954,7 +953,7 @@ class AnalyticsPage {
 
             // 月別進捗データ
             const monthlyProgress = this.getMonthlyProgressForClient(client.id, tasks);
-            
+
             return {
                 clientId: client.id,
                 clientName: client.name,
@@ -967,6 +966,94 @@ class AnalyticsPage {
                 monthlyProgress
             };
         });
+    }
+
+    // 🚀 Step 2-1: サマリーとマトリクスを1回のループで同時計算
+    calculateSummaryAndMatrix(clients, tasks) {
+        console.time('⚡ Summary & Matrix unified');
+
+        // 全体集計用変数
+        let globalTotalTasks = 0;
+        let globalCompletedTasks = 0;
+        const attentionClients = [];
+        const matrix = [];
+
+        // 🚀 1回のループでサマリーとマトリクスを同時計算
+        clients.forEach(client => {
+            // 該当クライアントのタスクを抽出
+            const clientMonthlyTasks = tasks.filter(t => t.client_id === client.id);
+            let clientTotal = 0;
+            let clientCompleted = 0;
+            let hasDelayedStatus = false;
+
+            // タスク統計を集計
+            clientMonthlyTasks.forEach(monthlyTask => {
+                const stats = this.getTaskStats(monthlyTask);
+                clientTotal += stats.totalTasks;
+                clientCompleted += stats.completedTasks;
+
+                // 遅延・停滞ステータスチェック
+                if (monthlyTask.status === '遅延' || monthlyTask.status === '停滞') {
+                    hasDelayedStatus = true;
+                }
+            });
+
+            // 全体集計に加算
+            globalTotalTasks += clientTotal;
+            globalCompletedTasks += clientCompleted;
+
+            const clientProgressRate = clientTotal > 0 ? (clientCompleted / clientTotal) * 100 : 0;
+
+            // 要注意クライアントの判定
+            if ((clientProgressRate < 50 && clientTotal > 0) || hasDelayedStatus) {
+                const reason = hasDelayedStatus ? '遅延・停滞' : '進捗率低下';
+                const staff = this.getStaffById(client.staff_id);
+                const staffName = staff ? staff.name : '未設定';
+
+                attentionClients.push({
+                    id: client.id,
+                    name: client.name,
+                    progressRate: Math.round(clientProgressRate),
+                    staffName: staffName,
+                    fiscalMonth: client.fiscal_month,
+                    reason: reason
+                });
+            }
+
+            // マトリクス行を追加
+            const staff = this.getStaffById(client.staff_id);
+            const monthlyProgress = this.getMonthlyProgressForClient(client.id, tasks);
+
+            matrix.push({
+                clientId: client.id,
+                clientName: client.name,
+                staffName: staff ? staff.name : '未設定',
+                fiscalMonth: client.fiscal_month,
+                accountingMethod: client.accounting_method || '-',
+                progressRate: Math.round(clientProgressRate),
+                completedTasks: clientCompleted,
+                totalTasks: clientTotal,
+                monthlyProgress
+            });
+        });
+
+        // ステータス別構成を計算
+        const statusComposition = this.calculateStatusComposition(tasks);
+
+        // サマリーを作成
+        const progressRate = globalTotalTasks > 0 ? Math.round((globalCompletedTasks / globalTotalTasks) * 100) : 0;
+
+        const summary = {
+            progressRate,
+            completedTasks: globalCompletedTasks,
+            totalTasks: globalTotalTasks,
+            attentionClients,
+            statusComposition
+        };
+
+        console.timeEnd('⚡ Summary & Matrix unified');
+
+        return { summary, matrix };
     }
 
     getMonthlyProgressForClient(clientId, allTasks) {
