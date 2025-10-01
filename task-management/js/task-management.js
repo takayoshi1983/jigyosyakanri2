@@ -111,8 +111,8 @@ class TaskManagement {
         if (!userInfoElement || !this.currentUser) return;
 
         userInfoElement.innerHTML = `
-            <div style="font-weight: 600; color: #495057cc;">${this.currentUser.name || 'ユーザー名なし'}</div>
-            <div style="font-size: 15px; color: #6c757d;">${this.currentUser.email || 'メールなし'}</div>
+            <div style="font-weight: 600;font-size: 24px; color: #495057cc;">${this.currentUser.name || 'ユーザー名なし'}</div>
+            <div style="font-size: 13px; color: #6c757d;">${this.currentUser.email || 'メールなし'}</div>
         `;
     }
 
