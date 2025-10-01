@@ -425,11 +425,14 @@ export class SupabaseAPI {
             .select('*')
             .eq('accounting_method', accountingMethod)
             .eq('is_active', true)
-            .single();
-            
-        if (error && error.code !== 'PGRST116') throw error;
+            .maybeSingle();
+
+        if (error) {
+            console.error('Error fetching default tasks:', error);
+            throw error;
+        }
         if (!data) return [];
-        
+
         // Parse tasks JSON field
         try {
             return typeof data.tasks === 'string' ? JSON.parse(data.tasks) : data.tasks || [];
@@ -496,7 +499,21 @@ export class SupabaseAPI {
             // Get default tasks for this accounting method
             const defaultTasks = await this.getDefaultTasksByAccountingMethod(client.accounting_method);
             if (defaultTasks.length === 0) {
-                throw new Error(`${client.accounting_method}の初期項目が設定されていません`);
+                console.warn(`${client.accounting_method}の初期項目が設定されていません。空の項目で初期化します。`);
+                // 空の配列で初期化（エラーにしない）
+                const currentYear = new Date().getFullYear();
+                const customTasksByYear = client.custom_tasks_by_year || {};
+                customTasksByYear[currentYear] = [];
+
+                const updatedClient = await this.updateClient(clientId, {
+                    custom_tasks_by_year: customTasksByYear
+                });
+
+                return {
+                    client: updatedClient,
+                    tasks: [],
+                    year: currentYear
+                };
             }
             
             // Set up custom tasks for current year
