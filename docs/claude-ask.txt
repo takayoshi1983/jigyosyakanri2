@@ -1,4 +1,4 @@
-config.js:10 Supabase config loaded: {url: 'https://jhjexgkzzbzxhhlezaoa.supabase.co'}
+config.js:10 Supabase config loaded: Object
 supabase-client.js:224 📊 総データ件数: 1164件
 supabase-client.js:232 📊 バッチ取得中: range(0, 999)
 supabase-client.js:247 📊 取得結果: 1000件
@@ -8,6 +8,14 @@ supabase-client.js:247 📊 取得結果: 164件
 supabase-client.js:254 月次タスクデータ取得中: 1164件
 supabase-client.js:258 📊 最後のバッチ (164件 < 1000件)
 supabase-client.js:265 月次タスクデータ取得完了: 総計1164件
-analytics.js:3536 ✅ スマートダッシュボード制御を初期化しました
-analytics.js:2834 📊 週次フィルター: {startPeriod: '2024-11', endPeriod: '2025-10', currentFilters: {…}}
-analytics.js:2853 📅 計算された期間: {startDate: '2024-11-01', endDate: '2025-10-31'}
+analytics.js:3561 ✅ スマートダッシュボード制御を初期化しました
+analytics.js:3585 📊 マイタスク状況更新: Object
+analytics.js:3678 マイタスク状況の更新に失敗: TypeError: Cannot read properties of undefined (reading 'from')
+    at AnalyticsPage.updateMyTaskStatus (analytics.js:3600:18)
+    at AnalyticsPage.initialize (analytics.js:127:24)
+    at async HTMLDocument.<anonymous> (analytics.js:3690:9)
+updateMyTaskStatus @ analytics.js:3678
+analytics.js:2859 📊 週次フィルター: Object
+analytics.js:2891 ⚠️ フォールバック期間使用: Object
+analytics.js:2859 📊 週次フィルター: Object
+analytics.js:2878 📅 計算された期間: Object

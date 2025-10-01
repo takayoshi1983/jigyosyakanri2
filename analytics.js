@@ -1,5 +1,5 @@
 // 分析機能メインスクリプト
-import { SupabaseAPI } from './supabase-client.js';
+import { SupabaseAPI, supabase } from './supabase-client.js';
 import { normalizeText, toastThrottler } from './utils.js';
 import './toast.js'; // showToastはwindow.showToastとしてグローバルに利用可能
 
@@ -3595,8 +3595,8 @@ class AnalyticsPage {
         }
 
         try {
-            // tasksテーブルからタスクを取得
-            const { data: tasks, error } = await window.supabase
+            // tasksテーブルからタスクを取得（supabaseクライアント直接使用）
+            const { data: tasks, error } = await supabase
                 .from('tasks')
                 .select('*')
                 .in('status', ['依頼中', '作業完了']);
@@ -3606,7 +3606,12 @@ class AnalyticsPage {
                 return;
             }
 
-            console.log('✅ タスク取得成功:', tasks?.length, '件');
+            if (!tasks) {
+                console.error('❌ タスク取得に失敗しました（データがnull）');
+                return;
+            }
+
+            console.log('✅ タスク取得成功:', tasks.length, '件');
 
             // 受任中で「依頼中」ステータスのタスク数
             const pendingCount = tasks.filter(task =>
