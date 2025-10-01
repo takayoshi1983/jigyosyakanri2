@@ -1308,17 +1308,22 @@ class AnalyticsPage {
     }
 
     displayProgressMatrix(matrix) {
+        console.time('⚡ DOM Rendering');
+
         // テーブルヘッダーを更新（月別列を追加）
         this.updateTableHeaders();
-        
+
         const tbody = document.querySelector('#analytics-table tbody');
         tbody.innerHTML = '';
-        
+
+        // 🚀 Step 3-1: DocumentFragmentを使ってバッチでDOM追加
+        const fragment = document.createDocumentFragment();
+
         matrix.forEach(row => {
             const tr = document.createElement('tr');
 
-            // 関与終了クライアントのスタイル適用
-            const client = this.clients.find(c => c.id === row.clientId);
+            // 🚀 最適化: find()をMap検索に置き換え
+            const client = this.getClientById(row.clientId);
             if (client && (client.status === 'inactive' || client.status === 'deleted')) {
                 tr.classList.add('inactive-client');
             }
@@ -1350,16 +1355,21 @@ class AnalyticsPage {
                     </span>
                 </td>
             `;
-            
+
             // クライアント情報を渡して月別進捗列を追加
             const clientData = {
                 fiscalMonth: row.fiscalMonth,
                 clientName: row.clientName
             };
             this.addMonthlyProgressCells(tr, row.monthlyProgress, clientData);
-            
-            tbody.appendChild(tr);
+
+            fragment.appendChild(tr);
         });
+
+        // 🚀 1回のDOM操作で全行を追加
+        tbody.appendChild(fragment);
+
+        console.timeEnd('⚡ DOM Rendering');
     }
 
     updateTableHeaders() {
