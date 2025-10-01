@@ -420,22 +420,26 @@ export class SupabaseAPI {
     }
     
     static async getDefaultTasksByAccountingMethod(accountingMethod) {
+        // 複数レコードがある場合は最新のものを取得
         const { data, error } = await supabase
             .from('default_tasks')
             .select('*')
             .eq('accounting_method', accountingMethod)
             .eq('is_active', true)
-            .maybeSingle();
+            .order('display_order', { ascending: true })
+            .order('updated_at', { ascending: false })
+            .limit(1);
 
         if (error) {
             console.error('Error fetching default tasks:', error);
             throw error;
         }
-        if (!data) return [];
+        if (!data || data.length === 0) return [];
 
-        // Parse tasks JSON field
+        // Parse tasks JSON field from the first (and only) result
+        const record = data[0];
         try {
-            return typeof data.tasks === 'string' ? JSON.parse(data.tasks) : data.tasks || [];
+            return typeof record.tasks === 'string' ? JSON.parse(record.tasks) : record.tasks || [];
         } catch (e) {
             console.error('Error parsing tasks JSON:', e);
             return [];
