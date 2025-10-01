@@ -122,16 +122,19 @@ class AnalyticsPage {
             }
             
             showToast('分析機能を読み込みました', 'success');
-            
+
+            // マイタスク状況カードを表示・更新
+            await this.updateMyTaskStatus();
+
             // 詳細画面から戻ってきた場合の透明リフレッシュ
             const fromDetails = document.referrer && document.referrer.includes('details.html');
             const sessionFlag = sessionStorage.getItem('returnFromDetails');
-            
+
             if (fromDetails || sessionFlag) {
-                
+
                 // セッション フラグをクリア
                 sessionStorage.removeItem('returnFromDetails');
-                
+
                 // 少し遅延させてからリフレッシュ（DOM安定のため）
                 setTimeout(() => {
                     if (this.lastAnalysisData) {
@@ -139,7 +142,7 @@ class AnalyticsPage {
                     }
                 }, 1000);
             }
-            
+
         } catch (error) {
             console.error('Analytics initialization failed:', error);
             showToast('分析機能の初期化に失敗しました', 'error');
@@ -3571,6 +3574,93 @@ class AnalyticsPage {
             dashboardSection.classList.add('dashboard-hidden');
             toggleButton.innerHTML = '📊 グラフ表示';
             toggleButton.className = 'dashboard-toggle-btn hidden-state';
+        }
+    }
+
+    // マイタスク状況を取得・表示
+    async updateMyTaskStatus() {
+        const selectedStaffId = sessionStorage.getItem('selected-staff-id');
+        const selectedStaffName = sessionStorage.getItem('selected-staff-name');
+
+        // sessionStorageに担当者情報がない場合は非表示
+        if (!selectedStaffId || !selectedStaffName) {
+            const statusCard = document.getElementById('my-task-status-card');
+            if (statusCard) {
+                statusCard.style.display = 'none';
+            }
+            return;
+        }
+
+        try {
+            // tasksテーブルからタスクを取得
+            const { data: tasks, error } = await window.supabase
+                .from('tasks')
+                .select('*')
+                .in('status', ['依頼中', '作業完了']);
+
+            if (error) {
+                console.error('タスク取得エラー:', error);
+                return;
+            }
+
+            // 受任中で「依頼中」ステータスのタスク数
+            const pendingCount = tasks.filter(task =>
+                task.assignee_id === parseInt(selectedStaffId) &&
+                task.status === '依頼中'
+            ).length;
+
+            // 依頼したタスクで「作業完了」（確認待ち）のタスク数
+            const waitingCount = tasks.filter(task =>
+                task.requester_id === parseInt(selectedStaffId) &&
+                task.status === '作業完了'
+            ).length;
+
+            // カードを表示・更新
+            const statusCard = document.getElementById('my-task-status-card');
+            const pendingCountEl = document.getElementById('pending-task-count');
+            const waitingCountEl = document.getElementById('waiting-task-count');
+            const pendingCard = document.getElementById('pending-task-card');
+            const waitingCard = document.getElementById('waiting-task-card');
+
+            if (statusCard && pendingCountEl && waitingCountEl) {
+                statusCard.style.display = 'block';
+                pendingCountEl.textContent = `${pendingCount}件`;
+                waitingCountEl.textContent = `${waitingCount}件`;
+
+                // ホバー効果を追加
+                if (pendingCard) {
+                    pendingCard.onmouseover = function() {
+                        this.style.transform = 'translateY(-2px)';
+                        this.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
+                    };
+                    pendingCard.onmouseout = function() {
+                        this.style.transform = '';
+                        this.style.boxShadow = '';
+                    };
+                    // クリックでタスク管理画面へ遷移
+                    pendingCard.onclick = () => {
+                        window.location.href = 'task-management/pages/task-management.html';
+                    };
+                }
+
+                if (waitingCard) {
+                    waitingCard.onmouseover = function() {
+                        this.style.transform = 'translateY(-2px)';
+                        this.style.boxShadow = '0 4px 12px rgba(25, 118, 210, 0.3)';
+                    };
+                    waitingCard.onmouseout = function() {
+                        this.style.transform = '';
+                        this.style.boxShadow = '';
+                    };
+                    // クリックでタスク管理画面へ遷移
+                    waitingCard.onclick = () => {
+                        window.location.href = 'task-management/pages/task-management.html';
+                    };
+                }
+            }
+
+        } catch (error) {
+            console.error('マイタスク状況の更新に失敗:', error);
         }
     }
 }
