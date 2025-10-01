@@ -147,7 +147,7 @@
                 </div>
 
                 <!-- アクションボタン -->
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px;align-items: flex-end;">
 
                     <!-- Clear Filters Button -->
                     <button id="clear-analytics-filters-button" style="
@@ -188,17 +188,17 @@
                     </div>
 
                     <!-- マイタスク状況カード -->
-                    <div id="my-task-status-card" style="display: none; margin-left: 30px;">
-                        <div style="margin-bottom: 4px; font-size: 0.75rem; color: #6c757d; font-weight: 500;">
+                    <div id="my-task-status-card" style="display: none; margin-left: 40px;">
+                        <div style="margin-bottom: 4px; font-size: 20px; color: #6c757d; font-weight: 500;">
                             LoginUser: <span id="login-user-name" style="color: #495057; font-weight: 600;">-</span>
                             <span id="login-user-email" style="color: #6c757d; font-weight: 400;">(-)</span>
                         </div>
-                        <div style="display: flex; gap: 10px; background: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #dee2e6;">
+                        <div style="display: flex; gap: 10px; background: white; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; border: 1px solid #5482b08a;">
                             <!-- 依頼が来ているタスク -->
                             <div id="pending-task-card" style="flex: 1; padding: 6px 12px; background: linear-gradient(135deg, #fff5f5, #ffe5e5); border-right: 1px solid #dee2e6; cursor: pointer; transition: all 0.3s ease; min-width: 110px; text-align: center;">
                                 <div style="font-size: 0.7rem; color: #dc3545; font-weight: 600; margin-bottom: 2px; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                     <span>📥</span>
-                                    <span>依頼</span>
+                                    <span>依頼が来ているタスク</span>
                                 </div>
                                 <div id="pending-task-count" style="font-size: 1.3rem; font-weight: bold; color: #dc3545;">-</div>
                             </div>
@@ -206,7 +206,7 @@
                             <div id="waiting-task-card" style="flex: 1; padding: 6px 12px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); cursor: pointer; transition: all 0.3s ease; min-width: 110px; text-align: center;">
                                 <div style="font-size: 0.7rem; color: #1976d2; font-weight: 600; margin-bottom: 2px; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                     <span>🔔</span>
-                                    <span>確認待ち</span>
+                                    <span>確認待ちのタスク</span>
                                 </div>
                                 <div id="waiting-task-count" style="font-size: 1.3rem; font-weight: bold; color: #1976d2;">-</div>
                             </div>

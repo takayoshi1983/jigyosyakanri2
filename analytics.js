@@ -3713,7 +3713,7 @@ class AnalyticsPage {
             // 特定担当者でフィルタリングされている場合
             const staff = this.staffs.find(s => s.id === parseInt(staffId));
             if (staff) {
-                matrixStaffLabel.textContent = `（担当者: ${staff.name}）`;
+                matrixStaffLabel.textContent = `（検索対象の担当者: ${staff.name}）`;
             } else {
                 matrixStaffLabel.textContent = '';
             }
