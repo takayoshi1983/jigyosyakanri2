@@ -193,6 +193,9 @@
         const loading = document.getElementById('loading');
         const mainContent = document.getElementById('main-content');
 
+        // 担当者リストを保持するグローバル変数
+        let staffs = [];
+
         // 初期化
         async function init() {
             try {
@@ -216,7 +219,7 @@
                 }
 
                 // 担当者リストを取得
-                const staffs = await SupabaseAPI.getStaffs();
+                staffs = await SupabaseAPI.getStaffs();
 
                 if (!staffs || staffs.length === 0) {
                     alert('担当者データが取得できませんでした。');
