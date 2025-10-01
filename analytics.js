@@ -44,6 +44,7 @@ class AnalyticsPage {
         this.currentSort = null; // 現在のソート列
         this.sortDirection = 'asc'; // ソート方向
         this.refreshTimeout = null; // 透明リフレッシュ用タイマー
+        this.currentBusinessTypeFilter = 'all'; // 事業区分フィルター状態
 
         // 🚀 パフォーマンス最適化: インデックス構造
         this.tasksByClient = new Map(); // client_id -> tasks[]
@@ -694,14 +695,19 @@ class AnalyticsPage {
                 
                 // 結果表示
                 this.displaySummary(analysisData.summary);
-                
+
                 // ソート状態がある場合は適用、ない場合はデフォルト表示
                 if (this.currentSort) {
-                    const sortedMatrix = this.applySortToMatrix([...analysisData.matrix]);
+                    let sortedMatrix = this.applySortToMatrix([...analysisData.matrix]);
+                    // 事業区分フィルターを適用
+                    sortedMatrix = this.applyBusinessTypeFilter(sortedMatrix);
                     this.displayProgressMatrix(sortedMatrix);
                     this.updateSortIcons(this.currentSort);
                 } else {
-                    this.displayProgressMatrix(analysisData.matrix);
+                    let matrix = [...analysisData.matrix];
+                    // 事業区分フィルターを適用
+                    matrix = this.applyBusinessTypeFilter(matrix);
+                    this.displayProgressMatrix(matrix);
                 }
                 
                 // サマリーダッシュボード表示
@@ -779,12 +785,16 @@ class AnalyticsPage {
                 // 既存のソート状態を復元
                 this.currentSort = previousSortState.currentSort;
                 this.sortDirection = previousSortState.sortDirection;
-                
-                // ソートを適用して表示
-                const sortedMatrix = this.applySortToMatrix([...analysisData.matrix]);
+
+                // ソートを適用
+                let sortedMatrix = this.applySortToMatrix([...analysisData.matrix]);
+
+                // 事業区分フィルターを適用
+                sortedMatrix = this.applyBusinessTypeFilter(sortedMatrix);
+
                 this.displayProgressMatrix(sortedMatrix);
                 this.updateSortIcons(this.currentSort);
-                
+
             } else {
                 // デフォルト決算月ソートを適用
                 this.applyDefaultFiscalSort();
@@ -1525,18 +1535,21 @@ class AnalyticsPage {
 
         // ソート実行
         let sortedMatrix = [...this.lastAnalysisData.matrix];
-        
+
         sortedMatrix.sort((a, b) => {
             const aData = a.monthlyProgress[monthKey] || { rate: -1 };
             const bData = b.monthlyProgress[monthKey] || { rate: -1 };
-            
+
             const result = aData.rate - bData.rate;
             return this.sortDirection === 'asc' ? result : -result;
         });
 
+        // 事業区分フィルターを適用
+        sortedMatrix = this.applyBusinessTypeFilter(sortedMatrix);
+
         // ソートアイコン更新
         this.updateSortIcons(sortKey);
-        
+
         // 表示更新
         this.displayProgressMatrix(sortedMatrix);
         
@@ -1611,9 +1624,12 @@ class AnalyticsPage {
             return this.sortDirection === 'asc' ? result : -result;
         });
 
+        // 事業区分フィルターを適用
+        sortedMatrix = this.applyBusinessTypeFilter(sortedMatrix);
+
         // ソートアイコン更新
         this.updateSortIcons(sortBy);
-        
+
         // 表示更新
         this.displayProgressMatrix(sortedMatrix);
         
@@ -2953,16 +2969,19 @@ class AnalyticsPage {
         // デフォルト決算月ソートを設定
         this.currentSort = 'fiscal';
         this.sortDirection = 'asc';
-        
+
         // ソート適用（元データは変更せず、ソート済みデータのみ表示用として生成）
-        const sortedMatrix = this.applySortToMatrix([...this.lastAnalysisData.matrix]);
-        
+        let sortedMatrix = this.applySortToMatrix([...this.lastAnalysisData.matrix]);
+
+        // 事業区分フィルターを適用
+        sortedMatrix = this.applyBusinessTypeFilter(sortedMatrix);
+
         // 表示更新
         this.displayProgressMatrix(sortedMatrix);
-        
+
         // ソートアイコン更新
         this.updateSortIcons('fiscal');
-        
+
         // ソート状態をローカルストレージに保存（元データは生データのまま保持）
         this.saveAnalysisToLocalStorage(this.lastAnalysisData, this.currentFilters);
         
@@ -3820,34 +3839,55 @@ class AnalyticsPage {
     setupBusinessTypeFilter() {
         const radioButtons = document.querySelectorAll('input[name="business-type-filter"]');
 
+        // localStorageから復元
+        const savedFilter = localStorage.getItem('analytics_business_type_filter');
+        if (savedFilter) {
+            this.currentBusinessTypeFilter = savedFilter;
+            radioButtons.forEach(radio => {
+                if (radio.value === savedFilter) {
+                    radio.checked = true;
+                }
+            });
+        }
+
         radioButtons.forEach(radio => {
             radio.addEventListener('change', (e) => {
-                this.filterTableByBusinessType(e.target.value);
+                const selectedValue = e.target.value;
+                this.currentBusinessTypeFilter = selectedValue;
+                // localStorageに保存
+                localStorage.setItem('analytics_business_type_filter', selectedValue);
+                this.filterTableByBusinessType(selectedValue);
             });
+        });
+    }
+
+    // 事業区分フィルターを適用（ヘルパーメソッド）
+    applyBusinessTypeFilter(matrix) {
+        if (this.currentBusinessTypeFilter === 'all') {
+            return matrix;
+        }
+
+        return matrix.filter(row => {
+            const client = this.getClientById(row.clientId);
+            return client && (client.business_type === this.currentBusinessTypeFilter);
         });
     }
 
     // 事業区分でテーブルをフィルタリング
     filterTableByBusinessType(businessType) {
         if (!this.lastAnalysisData || !this.lastAnalysisData.matrix) {
-            showToast('先に集計を実行してください', 'info');
             return;
         }
 
         let filteredMatrix = [...this.lastAnalysisData.matrix];
 
-        // 事業区分でフィルタリング
-        if (businessType !== 'all') {
-            filteredMatrix = filteredMatrix.filter(row => {
-                const client = this.getClientById(row.clientId);
-                return client && (client.business_type === businessType);
-            });
-        }
-
         // 現在のソート状態を適用
         if (this.currentSort) {
             filteredMatrix = this.applySortToMatrix(filteredMatrix);
         }
+
+        // 事業区分フィルターを適用
+        filteredMatrix = this.applyBusinessTypeFilter(filteredMatrix);
 
         // テーブルを再描画
         this.displayProgressMatrix(filteredMatrix);
