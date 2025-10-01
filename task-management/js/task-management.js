@@ -2851,11 +2851,11 @@ class TaskManagement {
 
         // 事業者リンク（完了済みの場合は通常テキスト）
         const clientLink = task.client_id === 0 ?
-            `<span style="color: ${isCompleted ? '#6c757d' : '#495057'}; font-size: 0.75rem;">その他業務</span>` :
+            `<span style="color: ${isCompleted ? '#6c757d' : '#495057'}; font-size: 15px;">その他業務</span>` :
             task.clients?.name ?
             (isCompleted ?
-                `<span style="color: #6c757d; font-size: 0.75rem;">${task.clients.name}</span>` :
-                `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 0.75rem;">${task.clients.name}</a>`
+                `<span style="color: #6c757d; font-size: 15px;">${task.clients.name}</span>` :
+                `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 15px;">${task.clients.name}</a>`
             ) : '-';
 
         // 参照URLアイコン（完了済みの場合はグレー）
