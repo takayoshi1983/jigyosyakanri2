@@ -535,6 +535,9 @@ class AnalyticsPage {
         // リアルタイムフィルタリング
         this.setupRealtimeFilters();
 
+        // 事業区分フィルター
+        this.setupBusinessTypeFilter();
+
         // ダッシュボード表示制御
         this.setupDashboardToggle();
     }
@@ -3810,6 +3813,48 @@ class AnalyticsPage {
             dashboardSection.classList.add('dashboard-hidden');
             toggleButton.innerHTML = '📊 グラフ表示';
             toggleButton.className = 'dashboard-toggle-btn hidden-state';
+        }
+    }
+
+    // 事業区分フィルター設定
+    setupBusinessTypeFilter() {
+        const radioButtons = document.querySelectorAll('input[name="business-type-filter"]');
+
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.filterTableByBusinessType(e.target.value);
+            });
+        });
+    }
+
+    // 事業区分でテーブルをフィルタリング
+    filterTableByBusinessType(businessType) {
+        if (!this.lastAnalysisData || !this.lastAnalysisData.matrix) {
+            showToast('先に集計を実行してください', 'info');
+            return;
+        }
+
+        let filteredMatrix = [...this.lastAnalysisData.matrix];
+
+        // 事業区分でフィルタリング
+        if (businessType !== 'all') {
+            filteredMatrix = filteredMatrix.filter(row => {
+                const client = this.getClientById(row.clientId);
+                return client && (client.business_type === businessType);
+            });
+        }
+
+        // 現在のソート状態を適用
+        if (this.currentSort) {
+            filteredMatrix = this.applySortToMatrix(filteredMatrix);
+        }
+
+        // テーブルを再描画
+        this.displayProgressMatrix(filteredMatrix);
+
+        // ソートアイコンを更新
+        if (this.currentSort) {
+            this.updateSortIcons(this.currentSort);
         }
     }
 
