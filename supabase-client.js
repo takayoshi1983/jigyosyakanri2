@@ -774,25 +774,31 @@ export class SupabaseAPI {
             // CSVデータの検証と分類
             for (let i = 1; i < csvData.length; i++) {
                 const row = csvData[i];
-                if (row.length < 6) {
-                    errors.push(`行 ${i + 1}: 列数が不足しています`);
+                if (row.length < 7) {
+                    errors.push(`行 ${i + 1}: 列数が不足しています（7列必要: ID、事業所名、決算月、担当者名、経理方式、事業区分、ステータス）`);
                     continue;
                 }
-                
-                const [id, name, fiscal_month, staff_name, accounting_method, status] = row;
-                
+
+                const [id, name, fiscal_month, staff_name, accounting_method, business_type, status] = row;
+
                 // 必須項目チェック
                 if (!name?.trim()) {
                     errors.push(`行 ${i + 1}: 事業所名が空です`);
                     continue;
                 }
-                
+
                 // 経理方式チェック
                 if (accounting_method && !['記帳代行', '自計'].includes(accounting_method.trim())) {
                     errors.push(`行 ${i + 1}: 経理方式は「記帳代行」または「自計」である必要があります`);
                     continue;
                 }
-                
+
+                // 事業区分チェック
+                if (business_type && !['法人', '個人事業'].includes(business_type.trim())) {
+                    errors.push(`行 ${i + 1}: 事業区分は「法人」または「個人事業」である必要があります`);
+                    continue;
+                }
+
                 // 担当者存在チェック
                 let staff_id = null;
                 if (staff_name?.trim()) {
@@ -802,12 +808,13 @@ export class SupabaseAPI {
                         continue;
                     }
                 }
-                
+
                 const clientData = {
                     name: name.trim(),
                     fiscal_month: fiscal_month ? parseInt(fiscal_month) : null,
                     staff_id: staff_id,
                     accounting_method: accounting_method?.trim() || null,
+                    business_type: business_type?.trim() || '法人',
                     status: status?.trim() || 'active'
                 };
                 
