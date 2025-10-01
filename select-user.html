@@ -258,9 +258,14 @@
                 // 選択した担当者IDをsessionStorageに保存
                 sessionStorage.setItem('selected-staff-id', staffId);
 
-                // 担当者情報も保存（名前表示用）
-                const selectedOption = staffSelect.options[staffSelect.selectedIndex];
-                sessionStorage.setItem('selected-staff-name', selectedOption.textContent.split(' (')[0]);
+                // 選択された担当者の詳細情報を取得
+                const selectedStaff = staffs.find(s => s.id === parseInt(staffId));
+
+                // 担当者情報も保存（名前・メールアドレス表示用）
+                if (selectedStaff) {
+                    sessionStorage.setItem('selected-staff-name', selectedStaff.name);
+                    sessionStorage.setItem('selected-staff-email', selectedStaff.email || '');
+                }
 
                 // ホーム画面へリダイレクト
                 window.location.replace('/analytics.html');
@@ -278,6 +283,7 @@
             if (confirm('ログアウトしますか？')) {
                 sessionStorage.removeItem('selected-staff-id');
                 sessionStorage.removeItem('selected-staff-name');
+                sessionStorage.removeItem('selected-staff-email');
                 await SupabaseAPI.signOut();
                 window.location.replace('/');
             }

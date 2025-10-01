@@ -616,6 +616,7 @@ export class SupabaseAPI {
         // 担当者選択情報をクリア
         sessionStorage.removeItem('selected-staff-id');
         sessionStorage.removeItem('selected-staff-name');
+        sessionStorage.removeItem('selected-staff-email');
         sessionStorage.removeItem('settings-access');
 
         const { error } = await supabase.auth.signOut();

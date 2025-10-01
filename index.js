@@ -636,6 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // sessionStorageをクリアして担当者選択画面へ
                 sessionStorage.removeItem('selected-staff-id');
                 sessionStorage.removeItem('selected-staff-name');
+                sessionStorage.removeItem('selected-staff-email');
                 window.location.href = '/select-user.html';
             });
         }

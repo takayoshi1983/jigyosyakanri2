@@ -3647,13 +3647,13 @@ class AnalyticsPage {
                 // ログインユーザー情報を表示
                 const loginUserNameEl = document.getElementById('login-user-name');
                 const loginUserEmailEl = document.getElementById('login-user-email');
-                const currentUser = await SupabaseAPI.getCurrentUser();
+                const selectedStaffEmail = sessionStorage.getItem('selected-staff-email');
 
                 if (loginUserNameEl && selectedStaffName) {
                     loginUserNameEl.textContent = selectedStaffName;
                 }
-                if (loginUserEmailEl && currentUser?.email) {
-                    loginUserEmailEl.textContent = `(${currentUser.email})`;
+                if (loginUserEmailEl && selectedStaffEmail) {
+                    loginUserEmailEl.textContent = `(${selectedStaffEmail})`;
                 }
 
                 statusCard.style.display = 'block';
