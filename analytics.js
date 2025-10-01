@@ -972,6 +972,17 @@ class AnalyticsPage {
     calculateSummaryAndMatrix(clients, tasks) {
         console.time('⚡ Summary & Matrix unified');
 
+        // 🚀 Step 2-2: 期間フィルタ済みタスクのクライアント別Mapを構築
+        console.time('⚡ Build filtered tasks map');
+        const filteredTasksByClient = new Map();
+        tasks.forEach(task => {
+            if (!filteredTasksByClient.has(task.client_id)) {
+                filteredTasksByClient.set(task.client_id, []);
+            }
+            filteredTasksByClient.get(task.client_id).push(task);
+        });
+        console.timeEnd('⚡ Build filtered tasks map');
+
         // 全体集計用変数
         let globalTotalTasks = 0;
         let globalCompletedTasks = 0;
@@ -980,8 +991,8 @@ class AnalyticsPage {
 
         // 🚀 1回のループでサマリーとマトリクスを同時計算
         clients.forEach(client => {
-            // 該当クライアントのタスクを抽出
-            const clientMonthlyTasks = tasks.filter(t => t.client_id === client.id);
+            // 🚀 O(1)でタスク取得
+            const clientMonthlyTasks = filteredTasksByClient.get(client.id) || [];
             let clientTotal = 0;
             let clientCompleted = 0;
             let hasDelayedStatus = false;
@@ -1022,7 +1033,7 @@ class AnalyticsPage {
 
             // マトリクス行を追加
             const staff = this.getStaffById(client.staff_id);
-            const monthlyProgress = this.getMonthlyProgressForClient(client.id, tasks);
+            const monthlyProgress = this.getMonthlyProgressForClient(client.id, clientMonthlyTasks);
 
             matrix.push({
                 clientId: client.id,
@@ -1056,14 +1067,14 @@ class AnalyticsPage {
         return { summary, matrix };
     }
 
-    getMonthlyProgressForClient(clientId, allTasks) {
-        const clientTasks = allTasks.filter(t => t.client_id === clientId);
+    getMonthlyProgressForClient(clientId, clientTasks) {
+        // 🚀 Step 2-2: 既にフィルタ済みのclientTasksを受け取るので追加フィルタ不要
         const monthlyData = {};
-        
+
         // 期間内の各月について集計
         const startDate = new Date(this.currentFilters.startPeriod + '-01');
         const endDate = new Date(this.currentFilters.endPeriod + '-01');
-        
+
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             const monthTasks = clientTasks.filter(t => t.month === monthKey);
