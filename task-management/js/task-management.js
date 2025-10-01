@@ -2191,7 +2191,7 @@ class TaskManagement {
             <div style="display: flex; flex-direction: column; gap: 3px; padding: 6px;">
                 <!-- 上段：事業者名とタスク名を最大限活用 -->
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 0.75rem; flex: 0 0 auto; white-space: nowrap;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
+                    <span style="font-size: 15px; flex: 0 0 auto; white-space: nowrap;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
                     <span style="font-size: 0.8rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                     <span style="font-size: 0.7rem; flex: 0 0 auto; color: #6c757d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60px;" title="${task.description || ''}">${truncatedDescription}</span>
                 </div>
@@ -2199,10 +2199,10 @@ class TaskManagement {
                 <div style="display: flex; align-items: center; gap: 4px; font-size: 0.7rem; color: ${textColor};">
                     <span style="flex: 0 0 20px; color: ${textColor};" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
                     <span style="flex: 0 0 auto; text-align: center;">${urlIcon}</span>
-                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.requester?.name || ''}">依頼：${requesterName}</span>
-                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.assignee?.name || ''}">受任：${assigneeName}</span>
-                    <span style="flex: 0 0 auto; color: ${linkColor}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>
-                    <span style="flex: 0 0 auto; white-space: nowrap;" title="${task.work_date || ''}">${workDateDisplay}</span>
+                    <span style="flex: 1; overflow: hidden;font-size: 13px; text-overflow: ellipsis; white-space: nowrap;" title="${task.requester?.name || ''}">依頼：${requesterName}</span>
+                    <span style="flex: 1; overflow: hidden;font-size: 13px; text-overflow: ellipsis; white-space: nowrap;" title="${task.assignee?.name || ''}">受任：${assigneeName}</span>
+                    <span style="flex: 0 0 auto;font-size: 13px; color: ${linkColor}; white-space: nowrap;" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                    <span style="flex: 0 0 auto;font-size: 13px; white-space: nowrap;" title="${task.work_date || ''}">${workDateDisplay}</span>
                 </div>
             </div>
         `;
