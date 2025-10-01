@@ -44,6 +44,11 @@ class AnalyticsPage {
         this.currentSort = null; // 現在のソート列
         this.sortDirection = 'asc'; // ソート方向
         this.refreshTimeout = null; // 透明リフレッシュ用タイマー
+
+        // 🚀 パフォーマンス最適化: インデックス構造
+        this.tasksByClient = new Map(); // client_id -> tasks[]
+        this.staffsMap = new Map(); // staff_id -> staff object
+        this.clientsMap = new Map(); // client_id -> client object
     }
 
 
@@ -150,7 +155,7 @@ class AnalyticsPage {
     }
 
     async loadInitialData() {
-        
+
         // 並列でデータを取得
         const [clientsResult, staffsResult, tasksResult] = await Promise.all([
             SupabaseAPI.getClients(),
@@ -162,6 +167,51 @@ class AnalyticsPage {
         this.staffs = staffsResult || [];
         this.monthlyTasks = tasksResult || [];
 
+        // 🚀 パフォーマンス最適化: インデックスを構築
+        this.buildIndexes();
+
+    }
+
+    // 🚀 パフォーマンス最適化: 高速検索用インデックスを構築
+    buildIndexes() {
+        console.time('⚡ Index building');
+
+        // clientsMap構築
+        this.clientsMap.clear();
+        this.clients.forEach(client => {
+            this.clientsMap.set(client.id, client);
+        });
+
+        // staffsMap構築
+        this.staffsMap.clear();
+        this.staffs.forEach(staff => {
+            this.staffsMap.set(staff.id, staff);
+        });
+
+        // tasksByClient構築（client_idごとにタスクをグループ化）
+        this.tasksByClient.clear();
+        this.monthlyTasks.forEach(task => {
+            if (!this.tasksByClient.has(task.client_id)) {
+                this.tasksByClient.set(task.client_id, []);
+            }
+            this.tasksByClient.get(task.client_id).push(task);
+        });
+
+        console.timeEnd('⚡ Index building');
+        console.log(`📊 Indexed: ${this.clientsMap.size} clients, ${this.staffsMap.size} staffs, ${this.tasksByClient.size} client-task groups`);
+    }
+
+    // 🚀 パフォーマンス最適化: 高速検索メソッド
+    getClientById(clientId) {
+        return this.clientsMap.get(clientId);
+    }
+
+    getStaffById(staffId) {
+        return this.staffsMap.get(staffId);
+    }
+
+    getTasksByClientId(clientId) {
+        return this.tasksByClient.get(clientId) || [];
     }
 
     loadDisplaySettings() {
@@ -801,26 +851,27 @@ class AnalyticsPage {
 
     calculateMatrix(clients, tasks) {
         return clients.map(client => {
-            const clientMonthlyTasks = tasks.filter(t => t.client_id === client.id);
+            // 🚀 最適化: filter()をインデックス検索に置き換え
+            const clientMonthlyTasks = this.getTasksByClientId(client.id);
             let totalTasks = 0;
             let completedTasks = 0;
-            
+
             // クライアントの全タスクを計算
             clientMonthlyTasks.forEach(monthlyTask => {
                 if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
                     const tasksList = Object.values(monthlyTask.tasks);
                     totalTasks += tasksList.length;
-                    
+
                     const completedCount = tasksList.filter(task => task === true || task === '完了').length;
                     completedTasks += completedCount;
                 }
             });
-            
+
             const progressRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            
-            // 担当者名取得
-            const staff = this.staffs.find(s => s.id === client.staff_id);
-            
+
+            // 🚀 最適化: find()をMap検索に置き換え
+            const staff = this.getStaffById(client.staff_id);
+
             // 月別進捗データ
             const monthlyProgress = this.getMonthlyProgressForClient(client.id, tasks);
             

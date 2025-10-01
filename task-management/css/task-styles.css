@@ -445,7 +445,7 @@
 #tasks-table th {
     padding: 6px 8px; /* Bootstrapのデフォルトから80%に縮小 (通常12px → 6px) */
     vertical-align: middle;
-    line-height: 1; /* 行の高さを少し圧縮 */
+    line-height: 18px; /* 行の高さを少し圧縮 */
 }
 
 #tasks-table th {
