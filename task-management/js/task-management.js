@@ -1776,7 +1776,9 @@ class TaskManagement {
 
     // 新規タスクメッセージ作成
     createNewTaskMessage(task) {
-        const requesterName = task.requester?.name || '不明';
+        // sessionStorageから選択された担当者名を取得、なければDB名を使用
+        const selectedStaffName = sessionStorage.getItem('selected-staff-name');
+        const requesterName = selectedStaffName || task.requester?.name || '不明';
         const taskName = task.task_name || 'タスク';
 
         if (task.assignee_id === this.currentUser.id) {
@@ -1882,6 +1884,10 @@ class TaskManagement {
         const urlIcon = task.reference_url ?
             `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()">🔗</a>` : '-';
 
+        // 想定時間表示（4h, 5.5hの形式）
+        const timeHours = task.estimated_time_hours ?
+            `${task.estimated_time_hours}h` : '-';
+
         // 事業者名（クリック可能）
         const clientName = task.client_id === 0 ? 'その他業務' :
             task.clients?.name ?
@@ -1892,6 +1898,7 @@ class TaskManagement {
             <td style="padding: 4px 6px;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientName}</td>
             <td style="padding: 4px 6px;" title="${task.task_name || ''}">${truncate(task.task_name, 15)}</td>
             <td style="padding: 4px 6px;" title="${task.description || ''}">${truncate(task.description, 12)}</td>
+            <td style="text-align: center; padding: 4px 6px; font-size: 0.85rem;">${timeHours}</td>
             <td style="text-align: center; padding: 4px 6px;">${urlIcon}</td>
             <td style="padding: 4px 6px;" title="${task.requester?.name || ''}">${truncate(task.requester?.name, 8)}</td>
             <td style="padding: 4px 6px;" title="${task.assignee?.name || ''}">${truncate(task.assignee?.name, 8)}</td>
@@ -2421,6 +2428,7 @@ class TaskManagement {
         const inputs = form.querySelectorAll('input, select, textarea');
         const viewModeButtons = document.getElementById('view-mode-buttons');
         const editModeButtons = document.getElementById('edit-mode-buttons');
+        const deleteBtn = document.getElementById('delete-task-btn');
 
         if (mode === 'view') {
             // 閲覧モード
@@ -2441,6 +2449,17 @@ class TaskManagement {
             });
             viewModeButtons.style.display = 'none';
             editModeButtons.style.display = 'flex';
+
+            // 削除ボタンの表示制御（自分が作成したタスクのみ表示）
+            const taskId = form.dataset.taskId;
+            if (taskId && deleteBtn) {
+                const task = this.tasks.find(t => t.id === parseInt(taskId));
+                if (task && task.requester_id === this.currentUser.id) {
+                    deleteBtn.style.display = 'inline-block';
+                } else {
+                    deleteBtn.style.display = 'none';
+                }
+            }
         }
     }
 
