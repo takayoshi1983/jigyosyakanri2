@@ -300,7 +300,14 @@
 
 .assignee-btn.active {
     background: linear-gradient(135deg, #ffa7a7 0%, #ff0000 100%);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.2),
+        2px 4px 12px rgba(255, 0, 0, 0.4),  /* 右側の赤い影 */
+        0 0 20px rgba(255, 0, 0, 0.3);      /* グロー効果 */
+    transform: translateX(8px) scale(1.05);  /* 右に8px + 5%拡大 */
+    border-left: 4px solid #ff0000;         /* 左境界の強調 */
+    z-index: 20;                            /* 他のタブより前面に */
+    font-size: 15px;                        /* わずかに文字を大きく */
 }
 
 .assignee-btn .initial {
