@@ -94,7 +94,29 @@
                     </div>
                 </div>
             </div>
-            
+
+            <!-- マイタスク状況カード -->
+            <div id="my-task-status-card" style="display: none; margin: 15px auto 10px; width: fit-content;">
+                <div style="display: flex; gap: 15px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; border: 2px solid #e9ecef;">
+                    <!-- 依頼が来ているタスク -->
+                    <div id="pending-task-card" style="flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #fff5f5, #ffe5e5); border-right: 1px solid #dee2e6; cursor: pointer; transition: all 0.3s ease; min-width: 180px; text-align: center;">
+                        <div style="font-size: 0.85rem; color: #dc3545; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <span>📥</span>
+                            <span>依頼が来ているタスク</span>
+                        </div>
+                        <div id="pending-task-count" style="font-size: 2rem; font-weight: bold; color: #dc3545;">-</div>
+                    </div>
+                    <!-- 確認待ちのタスク -->
+                    <div id="waiting-task-card" style="flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); cursor: pointer; transition: all 0.3s ease; min-width: 180px; text-align: center;">
+                        <div style="font-size: 0.85rem; color: #1976d2; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <span>🔔</span>
+                            <span>確認待ちのタスク</span>
+                        </div>
+                        <div id="waiting-task-count" style="font-size: 2rem; font-weight: bold; color: #1976d2;">-</div>
+                    </div>
+                </div>
+            </div>
+
             <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: end;">
                 <!-- 期間選択 -->
                 <div>
@@ -144,28 +166,6 @@
                 <div>
                     <label for="business-name-filter" style="display: block; margin-bottom: 5px; font-weight: bold;">事業者名:</label>
                     <input type="text" id="business-name-filter" placeholder="事業者名を検索..." style="padding: 9px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; min-width: 150px;max-width: 170px;">
-                </div>
-
-                <!-- マイタスク状況カード -->
-                <div id="my-task-status-card" style="display: none; position: absolute; left: 50%; transform: translateX(-50%); top: 85px; z-index: 10;">
-                    <div style="display: flex; gap: 15px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; border: 2px solid #e9ecef;">
-                        <!-- 依頼が来ているタスク -->
-                        <div id="pending-task-card" style="flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #fff5f5, #ffe5e5); border-right: 1px solid #dee2e6; cursor: pointer; transition: all 0.3s ease; min-width: 180px; text-align: center;">
-                            <div style="font-size: 0.85rem; color: #dc3545; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                                <span>📥</span>
-                                <span>依頼が来ているタスク</span>
-                            </div>
-                            <div id="pending-task-count" style="font-size: 2rem; font-weight: bold; color: #dc3545;">-</div>
-                        </div>
-                        <!-- 確認待ちのタスク -->
-                        <div id="waiting-task-card" style="flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #e3f2fd, #bbdefb); cursor: pointer; transition: all 0.3s ease; min-width: 180px; text-align: center;">
-                            <div style="font-size: 0.85rem; color: #1976d2; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                                <span>🔔</span>
-                                <span>確認待ちのタスク</span>
-                            </div>
-                            <div id="waiting-task-count" style="font-size: 2rem; font-weight: bold; color: #1976d2;">-</div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- アクションボタン -->

@@ -3582,8 +3582,11 @@ class AnalyticsPage {
         const selectedStaffId = sessionStorage.getItem('selected-staff-id');
         const selectedStaffName = sessionStorage.getItem('selected-staff-name');
 
+        console.log('📊 マイタスク状況更新:', { selectedStaffId, selectedStaffName });
+
         // sessionStorageに担当者情報がない場合は非表示
         if (!selectedStaffId || !selectedStaffName) {
+            console.log('⚠️ sessionStorageに担当者情報がないため非表示');
             const statusCard = document.getElementById('my-task-status-card');
             if (statusCard) {
                 statusCard.style.display = 'none';
@@ -3599,9 +3602,11 @@ class AnalyticsPage {
                 .in('status', ['依頼中', '作業完了']);
 
             if (error) {
-                console.error('タスク取得エラー:', error);
+                console.error('❌ タスク取得エラー:', error);
                 return;
             }
+
+            console.log('✅ タスク取得成功:', tasks?.length, '件');
 
             // 受任中で「依頼中」ステータスのタスク数
             const pendingCount = tasks.filter(task =>
@@ -3615,6 +3620,8 @@ class AnalyticsPage {
                 task.status === '作業完了'
             ).length;
 
+            console.log('📊 タスク数:', { pendingCount, waitingCount });
+
             // カードを表示・更新
             const statusCard = document.getElementById('my-task-status-card');
             const pendingCountEl = document.getElementById('pending-task-count');
@@ -3622,10 +3629,18 @@ class AnalyticsPage {
             const pendingCard = document.getElementById('pending-task-card');
             const waitingCard = document.getElementById('waiting-task-card');
 
+            console.log('🎨 DOM要素:', {
+                statusCard: !!statusCard,
+                pendingCountEl: !!pendingCountEl,
+                waitingCountEl: !!waitingCountEl
+            });
+
             if (statusCard && pendingCountEl && waitingCountEl) {
                 statusCard.style.display = 'block';
                 pendingCountEl.textContent = `${pendingCount}件`;
                 waitingCountEl.textContent = `${waitingCount}件`;
+
+                console.log('✅ カードを表示しました');
 
                 // ホバー効果を追加
                 if (pendingCard) {
