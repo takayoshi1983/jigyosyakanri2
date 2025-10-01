@@ -270,6 +270,9 @@
                     sessionStorage.setItem('selected-staff-email', selectedStaff.email || '');
                 }
 
+                // 担当者を選択した直後フラグを設定（LocalStorageより優先）
+                sessionStorage.setItem('staff-just-selected', 'true');
+
                 // ホーム画面へリダイレクト
                 window.location.replace('/analytics.html');
 

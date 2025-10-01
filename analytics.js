@@ -86,14 +86,24 @@ class AnalyticsPage {
             // URLパラメータから担当者を自動選択（復元前に処理）
             const hasUrlParameters = this.handleUrlParameters();
 
+            // 担当者選択直後かをチェック（select-user.htmlから遷移直後）
+            const staffJustSelected = sessionStorage.getItem('staff-just-selected') === 'true';
+            if (staffJustSelected) {
+                // フラグを削除（1回限り）
+                sessionStorage.removeItem('staff-just-selected');
+                // LocalStorageもクリア（新しい担当者で再集計）
+                this.clearAnalysisFromLocalStorage();
+            }
+
             // 🚀 LocalStorageに保存されたデータがあるかチェック
             const hasSavedData = this.checkSavedData();
 
-            // 選択された担当者でフィルターをデフォルト設定（保存データがない場合のみ）
+            // 選択された担当者でフィルターをデフォルト設定
+            // （担当者選択直後 または 保存データがない場合に適用）
             const selectedStaffId = SupabaseAPI.getSelectedStaffId();
             let staffFilterApplied = false;
 
-            if (!hasSavedData) {
+            if (staffJustSelected || !hasSavedData) {
                 // staff_id が 1（管理者）の場合はフィルター無し、それ以外はフィルター適用
                 if (selectedStaffId && selectedStaffId !== '1') {
                     const staffSelect = document.getElementById('staff-filter');
