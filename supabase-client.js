@@ -723,9 +723,9 @@ export class SupabaseAPI {
             
             // CSVヘッダー
             const csvHeaders = [
-                'ID', '事業所名', '決算月', '担当者名', '経理方式', 'ステータス'
+                'ID', '事業所名', '決算月', '担当者名', '経理方式', '事業区分', 'ステータス'
             ];
-            
+
             // CSVデータ生成
             const csvData = [csvHeaders];
             clients.forEach(client => {
@@ -735,6 +735,7 @@ export class SupabaseAPI {
                     client.fiscal_month || '',
                     client.staffs?.name || '',
                     client.accounting_method || '',
+                    client.business_type || '法人',
                     client.status || 'active'
                 ]);
             });
