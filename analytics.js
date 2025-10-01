@@ -648,13 +648,16 @@ class AnalyticsPage {
             // コンパクト版週次グラフを更新
             await this.updateCompactWeeklyChart();
 
+            // 進捗マトリクス表のタイトルに担当者名を表示
+            this.updateMatrixStaffLabel();
+
             // 検索による集計の場合は控えめな通知
             if (this.currentFilters.businessName && this.currentFilters.businessName.trim() !== '') {
                 toastThrottler.showSearchToast('検索結果を更新しました', 'success');
             } else {
                 toastThrottler.showToast('集計が完了しました', 'success');
             }
-            
+
         } catch (error) {
             console.error('Analysis failed:', error);
             toastThrottler.showToast('集計に失敗しました', 'error');
@@ -3641,6 +3644,18 @@ class AnalyticsPage {
             });
 
             if (statusCard && pendingCountEl && waitingCountEl) {
+                // ログインユーザー情報を表示
+                const loginUserNameEl = document.getElementById('login-user-name');
+                const loginUserEmailEl = document.getElementById('login-user-email');
+                const currentUser = await SupabaseAPI.getCurrentUser();
+
+                if (loginUserNameEl && selectedStaffName) {
+                    loginUserNameEl.textContent = selectedStaffName;
+                }
+                if (loginUserEmailEl && currentUser?.email) {
+                    loginUserEmailEl.textContent = `(${currentUser.email})`;
+                }
+
                 statusCard.style.display = 'block';
                 pendingCountEl.textContent = `${pendingCount}件`;
                 waitingCountEl.textContent = `${waitingCount}件`;
@@ -3681,6 +3696,27 @@ class AnalyticsPage {
 
         } catch (error) {
             console.error('マイタスク状況の更新に失敗:', error);
+        }
+    }
+
+    // 進捗マトリクス表のタイトルに担当者名を表示
+    updateMatrixStaffLabel() {
+        const matrixStaffLabel = document.getElementById('matrix-staff-filter-label');
+        if (!matrixStaffLabel) return;
+
+        const staffId = this.currentFilters.staffId;
+
+        if (!staffId || staffId === '') {
+            // 全員表示の場合
+            matrixStaffLabel.textContent = '（全担当者）';
+        } else {
+            // 特定担当者でフィルタリングされている場合
+            const staff = this.staffs.find(s => s.id === parseInt(staffId));
+            if (staff) {
+                matrixStaffLabel.textContent = `（担当者: ${staff.name}）`;
+            } else {
+                matrixStaffLabel.textContent = '';
+            }
         }
     }
 }
