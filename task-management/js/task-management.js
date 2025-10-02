@@ -514,6 +514,24 @@ class TaskManagement {
         this.initializeSearchableSelect();
         this.initializeFilterSearchableSelect();
         this.initializeTemplateClientSelect();
+
+        // 「随時」チェックボックスの制御
+        const isAnytimeCheckbox = document.getElementById('is-anytime');
+        const dueDateInput = document.getElementById('due-date');
+        if (isAnytimeCheckbox && dueDateInput) {
+            isAnytimeCheckbox.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    // 随時にチェックが入ったら期限日をグレーアウト＆クリア
+                    dueDateInput.disabled = true;
+                    dueDateInput.value = '';
+                    dueDateInput.style.backgroundColor = '#e9ecef';
+                } else {
+                    // 随時のチェックを外したら期限日を有効化
+                    dueDateInput.disabled = false;
+                    dueDateInput.style.backgroundColor = '';
+                }
+            });
+        }
     }
 
     initializeLinkedTextDisplay() {
@@ -1867,7 +1885,7 @@ class TaskManagement {
 
         // 期限の色分け
         const dueDateClass = this.getDueDateClass(task.due_date);
-        const dueDateText = this.formatDueDateWithWarning(task.due_date);
+        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime);
         const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
         const createdDateText = task.created_at ? this.formatMonthDay(task.created_at) : '-';
 
@@ -2001,7 +2019,8 @@ class TaskManagement {
         return `${month}/${day}`;
     }
 
-    formatDueDateWithWarning(dueDate) {
+    formatDueDateWithWarning(dueDate, isAnytime = false) {
+        if (isAnytime) return '【随時】';
         if (!dueDate) return '-';
 
         const today = new Date();
@@ -2148,7 +2167,7 @@ class TaskManagement {
             card.classList.add('task-completed-gray');
         }
 
-        const dueDateText = this.formatDueDateWithWarning(task.due_date);
+        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime);
         const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
         const dueDateClass = this.getDueDateClass(task.due_date);
 
@@ -2340,6 +2359,20 @@ class TaskManagement {
                 document.getElementById('estimated-hours').value = task.estimated_time_hours || '';
                 document.getElementById('task-description').value = task.description || '';
                 document.getElementById('reference-url').value = task.reference_url || '';
+
+                // 随時チェックボックスの設定
+                const isAnytimeCheckbox = document.getElementById('is-anytime');
+                const dueDateInput = document.getElementById('due-date');
+                if (isAnytimeCheckbox) {
+                    isAnytimeCheckbox.checked = task.is_anytime || false;
+                    if (task.is_anytime) {
+                        dueDateInput.disabled = true;
+                        dueDateInput.style.backgroundColor = '#e9ecef';
+                    } else {
+                        dueDateInput.disabled = false;
+                        dueDateInput.style.backgroundColor = '';
+                    }
+                }
 
                 // URL自動リンク表示を更新
                 if (this.linkedTextDisplay) {
@@ -2615,17 +2648,20 @@ class TaskManagement {
         const clientSelectValue = document.getElementById('client-select').value;
         const parsedClientId = clientSelectValue !== '' ? parseInt(clientSelectValue) : null;
 
+        const isAnytime = document.getElementById('is-anytime').checked;
+
         const taskData = {
             task_name: document.getElementById('task-name').value.trim(),
             // client_id が 0（その他業務）の場合は null として保存（フロントエンドで表示時に0として扱う）
             client_id: parsedClientId === 0 ? null : parsedClientId,
             assignee_id: parseInt(document.getElementById('assignee-select').value) || null,
             priority: parseInt(document.getElementById('priority-select').value) || 2,
-            due_date: document.getElementById('due-date').value || null,
+            due_date: isAnytime ? null : (document.getElementById('due-date').value || null),
             work_date: document.getElementById('work-date').value || null,
             estimated_time_hours: parseFloat(document.getElementById('estimated-hours').value) || null,
             description: document.getElementById('task-description').value.trim() || null,
-            reference_url: document.getElementById('reference-url').value.trim() || null
+            reference_url: document.getElementById('reference-url').value.trim() || null,
+            is_anytime: isAnytime
         };
 
         // テンプレート保存モード
@@ -2839,7 +2875,7 @@ class TaskManagement {
             item.classList.add('task-completed-gray');
         }
 
-        const dueDateText = this.formatDueDateWithWarning(task.due_date);
+        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime);
         const dueDateClass = this.getDueDateClass(task.due_date);
 
         const statusConfig = {
@@ -2914,7 +2950,7 @@ class TaskManagement {
                 <div class="task-info" style="display: none;">
                     <span class="client-name" data-client-id="${task.client_id}" onclick="event.stopPropagation(); ${(task.client_id === 0 || task.client_id === null) ? '' : `window.location.href='../../details.html?id=${task.client_id}'`}">${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '-')}</span>
                     <span class="task-name">${task.task_name || 'Untitled Task'}</span>
-                    <span class="due-date">期限：${this.formatDueDateWithWarning(task.due_date)}</span>
+                    <span class="due-date">期限：${this.formatDueDateWithWarning(task.due_date, task.is_anytime)}</span>
                 </div>
 
                 <!-- 右側：ステータス（上下段をまたがって表示） -->

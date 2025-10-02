@@ -1,27 +1,2 @@
-task-management.js:4891 TaskManagement initialized for task-management page
-task-management.js:146 Current user (selected staff): {id: 8, name: '平井', email: 'zeirishimori9878@gmail.com', role: 'staff', created_at: '2025-09-08T07:10:48', …}
-task-management.js:208 Master data loaded: {clients: 171, staffs: 11}
-task-management.js:233 Templates loaded: 6
-task-management.js:258 Recurring tasks loaded: 0
-task-management.js:323 Tasks loaded: 23
-task-management.js:1261 Filter state restored: {assigneeFilter: 8, filters: {…}, display: 'list', timestamp: 1759430003239}
-task-management.js:4424 ⚙️ テンプレート編集モーダルのイベントリスナーを設定中...
-task-management.js:4486 ✅ テンプレート編集モーダルのイベントリスナー設定完了
-task-management.js:1699 Auto refresh started: 60秒間隔
-task-management.js:180 Task Management System initialized successfully
-task-management.js:1845 User interaction started - auto refresh paused
-task-management.js:1713 Auto refresh skipped: user is interacting
-index.js:1  POST https://jhjexgkzzbzxhhlezaoa.supabase.co/rest/v1/tasks?columns=%22task_name%22%2C%22client_id%22%2C%22assignee_id%22%2C%22priority%22%2C%22due_date%22%2C%22work_date%22%2C%22estimated_time_hours%22%2C%22description%22%2C%22reference_url%22%2C%22requester_id%22%2C%22status%22 409 (Conflict)
-(anonymous) @ index.js:1
-(anonymous) @ index.js:1
-i @ index.js:1
-Promise.then
-u @ index.js:1
-(anonymous) @ index.js:1
-I @ index.js:1
-(anonymous) @ index.js:1
-then @ wrapper.mjs:1
-task-management.js:2683 Save task error: {code: '23503', details: 'Key is not present in table "clients".', hint: null, message: 'insert or update on table "tasks" violates foreign key constraint "tasks_client_id_fkey"'}
-saveTask @ task-management.js:2683
-await in saveTask
-(anonymous) @ task-management.js:465
+id,client_id,assignee_id,requester_id,task_name,description,reference_url,due_date,estimated_time_hours,completed_at,confirmed_at,status,created_at,updated_at,priority,work_date
+38,702,6,2,月次入力,８月９月分入力,,2025-10-10,,,,依頼中,2025-10-02 01:07:38.314639+00,2025-10-02 01:07:38.314639+00,1,
