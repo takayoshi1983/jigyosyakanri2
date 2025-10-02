@@ -2326,11 +2326,11 @@ class TaskManagement {
                 document.getElementById('task-name').value = task.task_name || '';
 
                 // 検索可能プルダウンに値を設定（nullの場合は0=その他業務）
-                const clientIdForDisplay = task.client_id === null ? 0 : task.client_id;
+                const clientIdForDisplay = task.client_id === null ? 0 : (task.client_id ?? '');
                 if (this.searchableSelect) {
-                    this.searchableSelect.setValue(clientIdForDisplay || '');
+                    this.searchableSelect.setValue(clientIdForDisplay);
                 } else {
-                    document.getElementById('client-select').value = clientIdForDisplay || '';
+                    document.getElementById('client-select').value = clientIdForDisplay;
                 }
 
                 document.getElementById('assignee-select').value = task.assignee_id || '';
@@ -2387,10 +2387,12 @@ class TaskManagement {
 
                 // 事業者IDを設定（検索可能ドロップダウン）（nullの場合は0=その他業務）
                 const templateClientId = template.client_id === null ? 0 : template.client_id;
-                if (templateClientId && this.searchableSelect) {
-                    this.searchableSelect.setValue(templateClientId);
-                } else if (templateClientId) {
-                    document.getElementById('client-select').value = templateClientId;
+                if (templateClientId !== null && templateClientId !== undefined) {
+                    if (this.searchableSelect) {
+                        this.searchableSelect.setValue(templateClientId);
+                    } else {
+                        document.getElementById('client-select').value = templateClientId;
+                    }
                 }
 
                 // URL自動リンク表示を更新
