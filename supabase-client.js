@@ -718,6 +718,23 @@ export class SupabaseAPI {
         window.location.href = `${baseUrl}/index.html?settings=true`;
     }
 
+    // ブラウザズームレベルをチェックして通知
+    static checkBrowserZoom() {
+        const zoomLevel = Math.round(window.devicePixelRatio * 100);
+
+        if (zoomLevel !== 100) {
+            const lastWarningDate = localStorage.getItem('zoom-warning-date');
+            const today = new Date().toDateString();
+
+            if (lastWarningDate !== today) {
+                setTimeout(() => {
+                    alert(`ブラウザの表示倍率が${zoomLevel}%です。「Ctrl + 0」で100％表示に戻せます。`);
+                    localStorage.setItem('zoom-warning-date', today);
+                }, 1000);
+            }
+        }
+    }
+
     static async getUserRole() {
         const { data, error } = await supabase.rpc('get_user_role');
         if (error) {

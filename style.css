@@ -3,6 +3,9 @@ body {
     margin: 20px;
     background-color: #f4f7f6;
     color: #333;
+    zoom: 1; /* ブラウザのズームを100%にリセット */
+    -moz-transform: scale(1); /* Firefox用 */
+    -moz-transform-origin: 0 0;
 }
 
 /* 編集ボタンのスタイル */

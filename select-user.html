@@ -202,6 +202,9 @@
                 loading.style.display = 'block';
                 mainContent.style.display = 'none';
 
+                // ブラウザズームレベルをチェック
+                SupabaseAPI.checkBrowserZoom();
+
                 // Google認証確認
                 const user = await SupabaseAPI.getCurrentUser();
                 if (!user) {

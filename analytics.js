@@ -58,7 +58,7 @@ class AnalyticsPage {
 
 
     async initialize() {
-        
+
         try {
             // 認証状態確認
             const user = await SupabaseAPI.getCurrentUser();
@@ -67,6 +67,9 @@ class AnalyticsPage {
                 window.location.href = 'index.html';
                 return;
             }
+
+            // ブラウザズームレベルをチェック
+            SupabaseAPI.checkBrowserZoom();
 
             // ページ可視性変更の監視を設定（他ページからの戻り検出）
             this.setupPageVisibilityListener();
