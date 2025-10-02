@@ -65,7 +65,7 @@
 }
 
 .simple-view .compact-task-item .task-name {
-    flex: 1 !important;
+    flex: none;
     font-weight: 500 !important;
 }
 
