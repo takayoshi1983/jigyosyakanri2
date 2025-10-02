@@ -1,2 +1,0 @@
-id,client_id,assignee_id,requester_id,task_name,description,reference_url,due_date,estimated_time_hours,completed_at,confirmed_at,status,created_at,updated_at,priority,work_date
-38,702,6,2,月次入力,８月９月分入力,,2025-10-10,,,,依頼中,2025-10-02 01:07:38.314639+00,2025-10-02 01:07:38.314639+00,1,
