@@ -53,6 +53,7 @@
 
 .simple-view .compact-task-item .client-name {
     min-width: 100px !important;
+    max-width: 100px !important;
     font-weight: 600 !important;
     color: #0056b3 !important;
     cursor: pointer !important;
@@ -72,7 +73,7 @@
     min-width: 120px !important;
     font-size: 0.85rem !important;
     color: #6c757d !important;
-    text-align: left !important;
+    text-align: center;
 }
 
 .simple-view .compact-task-item .task-actions {

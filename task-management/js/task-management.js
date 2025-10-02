@@ -2933,8 +2933,8 @@ class TaskManagement {
                     <!-- 上段 -->
                     <div style="display: flex; align-items: center; gap: 0.5em; width: 100%; min-width: 0;">
                         <span style="font-size: clamp(12px, 0.9em, 15px); flex: 0 0 auto; white-space: nowrap; min-width: 12em; max-width: 12em; overflow: hidden; text-overflow: ellipsis;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
-                        <span style="font-size: clamp(11px, 0.8em, 13px); font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
-                        <span style="font-size: clamp(9px, 0.7em, 11px); flex: auto; max-width: 18em; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
+                        <span style="font-size: clamp(12px, 0.8em, 13px); font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
+                        <span style="font-size: clamp(12px, 0.7em, 13px); flex: auto; max-width: 18em; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
                     </div>
                     <!-- 下段 -->
                     <div class="task-meta" style="display: flex; align-items: center; gap: 0.8em; font-size: clamp(9px, 0.7em, 11px); color: ${textColor}; white-space: nowrap; width: 100%; min-width: 0;">
