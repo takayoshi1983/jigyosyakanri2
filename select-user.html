@@ -222,7 +222,13 @@
                 staffs = await SupabaseAPI.getStaffs();
 
                 if (!staffs || staffs.length === 0) {
-                    alert('担当者データが取得できませんでした。');
+                    alert('担当者データが取得できませんでした。ログイン画面に戻ります。');
+                    // ログアウト処理
+                    sessionStorage.removeItem('selected-staff-id');
+                    sessionStorage.removeItem('selected-staff-name');
+                    sessionStorage.removeItem('selected-staff-email');
+                    await SupabaseAPI.signOut();
+                    window.location.replace('/');
                     return;
                 }
 
