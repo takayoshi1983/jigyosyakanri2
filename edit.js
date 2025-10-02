@@ -140,7 +140,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     function populateFormFields(client) {
         clientNoInput.value = client.id || '';
         clientNameInput.value = client.name || '';
-        
+
+        // Business type selection
+        const businessType = client.business_type || '法人';
+        if (businessType === '個人事業') {
+            document.getElementById('business-type-individual').checked = true;
+        } else {
+            document.getElementById('business-type-corporate').checked = true;
+        }
+
         // Staff selection
         if (client.staff_id) {
             staffSelect.value = client.staff_id;
@@ -337,11 +345,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveToast = toast.loading('保存中...');
 
             // Validate form data
+            // Get business type from radio buttons
+            const businessTypeRadio = document.querySelector('input[name="business-type"]:checked');
+            const businessType = businessTypeRadio ? businessTypeRadio.value : '法人';
+
             const formData = {
                 name: clientNameInput.value.trim(),
                 staff_id: staffSelect.value ? parseInt(staffSelect.value) : null,
                 fiscal_month: fiscalMonthSelect.value ? parseInt(fiscalMonthSelect.value) : null,
-                accounting_method: accountingMethodSelect.value || null
+                accounting_method: accountingMethodSelect.value || null,
+                business_type: businessType
             };
 
             // Add ID if specified in new mode
