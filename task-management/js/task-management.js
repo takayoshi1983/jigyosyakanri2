@@ -1906,16 +1906,16 @@ class TaskManagement {
         const timeHours = task.estimated_time_hours ?
             `${task.estimated_time_hours}h` : '-';
 
-        // 事業者名（クリック可能）
+        // 事業者名（クリック可能）- 最低8文字表示
         const clientName = (task.client_id === 0 || task.client_id === null) ? 'その他業務' :
             task.clients?.name ?
-            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none;">${truncate(task.clients.name, 10)}</a>` : '-';
+            `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none;">${truncate(task.clients.name, 15)}</a>` : '-';
 
         tr.innerHTML = `
             <td style="text-align: center; padding: 4px 6px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</td>
-            <td style="padding: 4px 6px;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientName}</td>
-            <td style="padding: 4px 6px;" title="${task.task_name || ''}">${truncate(task.task_name, 15)}</td>
-            <td style="padding: 4px 6px;" title="${task.description || ''}">${truncate(task.description, 12)}</td>
+            <td style="padding: 4px 6px; min-width: 8em;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientName}</td>
+            <td style="padding: 4px 6px; min-width: 10em;" title="${task.task_name || ''}">${truncate(task.task_name, 15)}</td>
+            <td style="padding: 4px 6px; text-align: center; min-width: 8em;" title="${task.description || ''}">${truncate(task.description, 20)}</td>
             <td style="text-align: center; padding: 4px 6px; font-size: 0.85rem;">${timeHours}</td>
             <td style="text-align: center; padding: 4px 6px;">${urlIcon}</td>
             <td style="padding: 4px 6px;" title="${task.requester?.name || ''}">${truncate(task.requester?.name, 8)}</td>
@@ -2210,9 +2210,9 @@ class TaskManagement {
             <div style="display: flex; flex-direction: column; gap: 3px; padding: 0.4em; width: 100%; min-width: 0;">
                 <!-- 上段：事業者名とタスク名を最大限活用 -->
                 <div style="display: flex; align-items: center; gap: 0.5em; width: 100%; min-width: 0;">
-                    <span style="font-size: clamp(12px, 0.9em, 15px); flex: 0 0 auto; white-space: nowrap; min-width: 4em; max-width: 8em; overflow: hidden; text-overflow: ellipsis;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
-                    <span style="font-size: clamp(11px, 0.8em, 13px); font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
-                    <span style="font-size: clamp(9px, 0.7em, 11px); flex: 0 0 auto; color: #6c757d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 4em;" title="${task.description || ''}">${truncatedDescription}</span>
+                    <span style="font-size: clamp(12px, 0.9em, 12px); flex: 0 0 auto; white-space: nowrap; min-width: 4em; max-width: 8em; overflow: hidden; text-overflow: ellipsis;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
+                    <span style="font-size: clamp(11px, 0.8em, 12px); font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
+                    <span style="font-size: clamp(9px, 0.7em, 11px); flex: 0 0 auto; color: #6c757d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 12em;" title="${task.description || ''}">${truncatedDescription}</span>
                 </div>
                 <!-- 下段：重要度+詳細情報 -->
                 <div style="display: flex; align-items: center; gap: 0.3em; font-size: clamp(9px, 0.7em, 11px); color: ${textColor}; width: 100%; min-width: 0;">
