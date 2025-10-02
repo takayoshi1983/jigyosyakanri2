@@ -2749,6 +2749,8 @@ class TaskManagement {
 
             showToast(`タスクを「${newStatus}」に更新しました`, 'success');
             await this.loadTasks(); // データ再読み込み
+            this.updateDisplay(); // 画面更新
+            this.updateSummary(); // サマリー更新
 
             // モーダルが開いている場合、ステータス表示を更新
             this.updateModalStatusDisplay(taskId, newStatus);
