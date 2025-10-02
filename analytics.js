@@ -109,9 +109,25 @@ class AnalyticsPage {
                 if (selectedStaffId && selectedStaffId !== '1') {
                     const staffSelect = document.getElementById('staff-filter');
                     if (staffSelect) {
-                        staffSelect.value = selectedStaffId;
-                        this.currentFilters.staffId = selectedStaffId;
-                        staffFilterApplied = true;
+                        // 仮フィルター適用してデータ件数チェック
+                        const tempFilteredClients = this.clients.filter(client =>
+                            client.staff_id == selectedStaffId &&
+                            (client.status === 'active' || (!this.hideInactiveClients && (client.status === 'inactive' || client.status === 'deleted')))
+                        );
+
+                        if (tempFilteredClients.length > 0) {
+                            // データがある場合はフィルター適用
+                            staffSelect.value = selectedStaffId;
+                            this.currentFilters.staffId = selectedStaffId;
+                            staffFilterApplied = true;
+                            console.log(`担当者フィルター適用: ${tempFilteredClients.length}件のクライアント`);
+                        } else {
+                            // データが0件の場合はフィルター無しで全体表示
+                            console.log('担当者のクライアントが0件のため、全体表示します');
+                            staffSelect.value = '';
+                            this.currentFilters.staffId = '';
+                            staffFilterApplied = true; // 分析は実行する
+                        }
                     }
                 } else if (selectedStaffId === '1') {
                     // 管理者の場合はフィルター無しで全体表示
