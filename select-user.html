@@ -211,12 +211,17 @@
                 }
 
                 // 既に担当者選択済みかチェック
-                const selectedStaffId = sessionStorage.getItem('selected-staff-id');
+                let selectedStaffId = sessionStorage.getItem('selected-staff-id');
                 if (selectedStaffId) {
                     // 既に選択済みの場合はホーム画面へ
                     window.location.replace('/analytics.html');
                     return;
                 }
+
+                // sessionStorageが空でもlocalStorageに前回の選択があれば復元
+                const lastStaffId = localStorage.getItem('last-staff-id');
+                const lastStaffName = localStorage.getItem('last-staff-name');
+                const lastStaffEmail = localStorage.getItem('last-staff-email');
 
                 // 担当者リストを取得
                 staffs = await SupabaseAPI.getStaffs();
@@ -239,6 +244,18 @@
                     option.textContent = `${staff.name} (${staff.email || 'メール未設定'})`;
                     staffSelect.appendChild(option);
                 });
+
+                // 前回の選択があれば自動選択
+                if (lastStaffId) {
+                    const staffExists = staffs.some(s => s.id === parseInt(lastStaffId));
+                    if (staffExists) {
+                        staffSelect.value = lastStaffId;
+                        confirmBtn.disabled = false;
+                        // 前回の選択を通知
+                        const infoBox = document.querySelector('.info-box');
+                        infoBox.innerHTML = `<strong>💡 前回の選択</strong><br>前回は「${lastStaffName}」でログインしていました。そのまま続ける場合は「この担当者で続ける」をクリックしてください。`;
+                    }
+                }
 
                 loading.style.display = 'none';
                 mainContent.style.display = 'block';
@@ -274,6 +291,11 @@
                 if (selectedStaff) {
                     sessionStorage.setItem('selected-staff-name', selectedStaff.name);
                     sessionStorage.setItem('selected-staff-email', selectedStaff.email || '');
+
+                    // localStorageにも保存（ブラウザ閉じた後の復元用）
+                    localStorage.setItem('last-staff-id', staffId);
+                    localStorage.setItem('last-staff-name', selectedStaff.name);
+                    localStorage.setItem('last-staff-email', selectedStaff.email || '');
                 }
 
                 // 担当者を選択した直後フラグを設定（LocalStorageより優先）
