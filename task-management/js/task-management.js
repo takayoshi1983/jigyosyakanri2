@@ -2182,7 +2182,7 @@ class TaskManagement {
             task.clients?.name ?
             (isCompleted ?
                 `<span style="color: #6c757d; font-size: 15px;">${task.clients.name}</span>` :
-                `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 15px;">${task.clients.name}</a>`
+                `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none; font-size: 12px;">${task.clients.name}</a>`
             ) : '-';
 
         // 参照URLアイコン（完了済みの場合はグレー）
@@ -2210,7 +2210,7 @@ class TaskManagement {
             <div style="display: flex; flex-direction: column; gap: 3px; padding: 0.4em; width: 100%; min-width: 0;">
                 <!-- 上段：事業者名とタスク名を最大限活用 -->
                 <div style="display: flex; align-items: center; gap: 0.5em; width: 100%; min-width: 0;">
-                    <span style="font-size: clamp(12px, 0.9em, 12px); flex: 0 0 auto; white-space: nowrap; min-width: 4em; max-width: 8em; overflow: hidden; text-overflow: ellipsis;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
+                    <span style="font-size: clamp(12px, 0.9em, 12px); flex: 0 0 auto; white-space: nowrap; min-width: 15em; max-width: 15em; overflow: hidden; text-overflow: ellipsis;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
                     <span style="font-size: clamp(11px, 0.8em, 12px); font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                     <span style="font-size: clamp(9px, 0.7em, 11px); flex: 0 0 auto; color: #6c757d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 12em;" title="${task.description || ''}">${truncatedDescription}</span>
                 </div>
