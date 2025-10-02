@@ -1351,6 +1351,9 @@ class AnalyticsPage {
                 tr.classList.add('inactive-client');
             }
 
+            // 事業区分ラベル
+            const businessTypeLabel = client?.business_type === '個人事業' ? '(個)' : '(法)';
+
             // 基本列（新しい順序：ID、名前、担当者、決算月、進捗率）
             tr.innerHTML = `
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center; position: relative;">
@@ -1361,16 +1364,17 @@ class AnalyticsPage {
                         ${row.clientId}
                     </a>
                 </td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center; position: relative;">
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center; position: relative; max-width: 200px;">
                     <a href="details.html?id=${row.clientId}"
-                       style="color: #007bff; text-decoration: none; cursor: pointer;"
+                       style="color: #007bff; text-decoration: none; cursor: pointer; font-size: 0.9em; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
                        onmouseover="this.style.textDecoration='underline'; showCustomTooltip(this, '詳細画面へ移動');"
-                       onmouseout="this.style.textDecoration='none'; hideCustomTooltip(this);">
+                       onmouseout="this.style.textDecoration='none'; hideCustomTooltip(this);"
+                       title="${row.clientName}">
                         ${row.clientName}
                     </a>
                 </td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.staffName}</td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月<span style="font-size: 0.75em; color: #6c757d;">${businessTypeLabel}</span></td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.accountingMethod}</td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                     <span style="font-weight: bold; color: ${this.getProgressColor(row.progressRate)};">
@@ -2951,8 +2955,20 @@ class AnalyticsPage {
         let aDistance = (aMonth - sortStartMonth + 12) % 12;
         let bDistance = (bMonth - sortStartMonth + 12) % 12;
 
-        // 決算月が同じ場合は進捗率でソート
+        // 決算月が同じ場合は事業区分→進捗率でソート
         if (aDistance === bDistance) {
+            // まず事業区分で比較（法人を優先）
+            const aClient = this.getClientById(a.clientId);
+            const bClient = this.getClientById(b.clientId);
+            const aBusinessType = aClient?.business_type || '法人';
+            const bBusinessType = bClient?.business_type || '法人';
+
+            if (aBusinessType !== bBusinessType) {
+                // 法人 < 個人事業 でソート（法人が上に来る）
+                return aBusinessType === '法人' ? -1 : 1;
+            }
+
+            // 事業区分も同じ場合は進捗率でソート
             const result = b.progressRate - a.progressRate; // 進捗率の高い順
             return this.sortDirection === 'asc' ? -result : result;
         }
