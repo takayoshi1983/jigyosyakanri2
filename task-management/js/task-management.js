@@ -1536,7 +1536,7 @@ class TaskManagement {
             const normalizedSearch = normalizeText(this.currentFilters.search);
 
             filtered = filtered.filter(task => {
-                const clientName = task.client_id === 0 ? 'その他業務' : (task.clients?.name || '');
+                const clientName = (task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '');
 
                 // 従来の検索
                 const basicMatch = task.task_name.toLowerCase().includes(search) ||
@@ -1562,8 +1562,8 @@ class TaskManagement {
 
                 // 特別な処理が必要なフィールド
                 if (field === 'client_name') {
-                    aVal = a.client_id === 0 ? 'その他業務' : (a.clients?.name || '');
-                    bVal = b.client_id === 0 ? 'その他業務' : (b.clients?.name || '');
+                    aVal = (a.client_id === 0 || a.client_id === null) ? 'その他業務' : (a.clients?.name || '');
+                    bVal = (b.client_id === 0 || b.client_id === null) ? 'その他業務' : (b.clients?.name || '');
                 } else if (field === 'assignee_name') {
                     aVal = a.assignee?.name || '';
                     bVal = b.assignee?.name || '';
@@ -1889,13 +1889,13 @@ class TaskManagement {
             `${task.estimated_time_hours}h` : '-';
 
         // 事業者名（クリック可能）
-        const clientName = task.client_id === 0 ? 'その他業務' :
+        const clientName = (task.client_id === 0 || task.client_id === null) ? 'その他業務' :
             task.clients?.name ?
             `<a href="../../details.html?id=${task.client_id}" title="${task.clients.name}" onclick="event.stopPropagation()" style="color: #007bff; text-decoration: none;">${truncate(task.clients.name, 10)}</a>` : '-';
 
         tr.innerHTML = `
             <td style="text-align: center; padding: 4px 6px;" title="${this.getPriorityText(task.priority)}">${priorityStars}</td>
-            <td style="padding: 4px 6px;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientName}</td>
+            <td style="padding: 4px 6px;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientName}</td>
             <td style="padding: 4px 6px;" title="${task.task_name || ''}">${truncate(task.task_name, 15)}</td>
             <td style="padding: 4px 6px;" title="${task.description || ''}">${truncate(task.description, 12)}</td>
             <td style="text-align: center; padding: 4px 6px; font-size: 0.85rem;">${timeHours}</td>
@@ -2158,7 +2158,7 @@ class TaskManagement {
             (task.description.length > 12 ? task.description.substring(0, 12) + '…' : task.description) : '-';
 
         // 事業者リンク（省略なし、完了済みの場合は通常テキスト）
-        const clientLink = task.client_id === 0 ?
+        const clientLink = (task.client_id === 0 || task.client_id === null) ?
             `<span style="color: ${isCompleted ? '#6c757d' : '#495057'}; font-size: 15px;">その他業務</span>` :
             task.clients?.name ?
             (isCompleted ?
@@ -2191,7 +2191,7 @@ class TaskManagement {
             <div style="display: flex; flex-direction: column; gap: 3px; padding: 6px;">
                 <!-- 上段：事業者名とタスク名を最大限活用 -->
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 15px; flex: 0 0 auto; white-space: nowrap;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
+                    <span style="font-size: 15px; flex: 0 0 auto; white-space: nowrap;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
                     <span style="font-size: 0.8rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                     <span style="font-size: 0.7rem; flex: 0 0 auto; color: #6c757d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60px;" title="${task.description || ''}">${truncatedDescription}</span>
                 </div>
@@ -2325,11 +2325,12 @@ class TaskManagement {
                 title.textContent = viewMode ? 'タスク詳細' : 'タスク編集';
                 document.getElementById('task-name').value = task.task_name || '';
 
-                // 検索可能プルダウンに値を設定
+                // 検索可能プルダウンに値を設定（nullの場合は0=その他業務）
+                const clientIdForDisplay = task.client_id === null ? 0 : task.client_id;
                 if (this.searchableSelect) {
-                    this.searchableSelect.setValue(task.client_id || '');
+                    this.searchableSelect.setValue(clientIdForDisplay || '');
                 } else {
-                    document.getElementById('client-select').value = task.client_id || '';
+                    document.getElementById('client-select').value = clientIdForDisplay || '';
                 }
 
                 document.getElementById('assignee-select').value = task.assignee_id || '';
@@ -2384,11 +2385,12 @@ class TaskManagement {
                 document.getElementById('estimated-hours').value = template.estimated_time_hours || '';
                 document.getElementById('reference-url').value = template.reference_url || '';
 
-                // 事業者IDを設定（検索可能ドロップダウン）
-                if (template.client_id && this.searchableSelect) {
-                    this.searchableSelect.setValue(template.client_id);
-                } else if (template.client_id) {
-                    document.getElementById('client-select').value = template.client_id;
+                // 事業者IDを設定（検索可能ドロップダウン）（nullの場合は0=その他業務）
+                const templateClientId = template.client_id === null ? 0 : template.client_id;
+                if (templateClientId && this.searchableSelect) {
+                    this.searchableSelect.setValue(templateClientId);
+                } else if (templateClientId) {
+                    document.getElementById('client-select').value = templateClientId;
                 }
 
                 // URL自動リンク表示を更新
@@ -2609,10 +2611,12 @@ class TaskManagement {
 
         // フォームデータ取得
         const clientSelectValue = document.getElementById('client-select').value;
+        const parsedClientId = clientSelectValue !== '' ? parseInt(clientSelectValue) : null;
 
         const taskData = {
             task_name: document.getElementById('task-name').value.trim(),
-            client_id: clientSelectValue !== '' ? parseInt(clientSelectValue) : null,
+            // client_id が 0（その他業務）の場合は null として保存（フロントエンドで表示時に0として扱う）
+            client_id: parsedClientId === 0 ? null : parsedClientId,
             assignee_id: parseInt(document.getElementById('assignee-select').value) || null,
             priority: parseInt(document.getElementById('priority-select').value) || 2,
             due_date: document.getElementById('due-date').value || null,
@@ -2640,8 +2644,8 @@ class TaskManagement {
             return;
         }
 
-        // client_id が null または undefined の場合のみエラー（0は有効な値）
-        if (taskData.client_id === null || taskData.client_id === undefined) {
+        // client_id が未選択の場合のみエラー（0は「その他業務」として有効）
+        if (parsedClientId === null || parsedClientId === undefined || isNaN(parsedClientId)) {
             showToast('事業者を選択してください', 'error');
             return;
         }
@@ -2850,7 +2854,7 @@ class TaskManagement {
             (task.description.length > 15 ? task.description.substring(0, 15) + '…' : task.description) : '-';
 
         // 事業者リンク（完了済みの場合は通常テキスト）
-        const clientLink = task.client_id === 0 ?
+        const clientLink = (task.client_id === 0 || task.client_id === null) ?
             `<span style="color: ${isCompleted ? '#6c757d' : '#495057'}; font-size: 15px;">その他業務</span>` :
             task.clients?.name ?
             (isCompleted ?
@@ -2890,7 +2894,7 @@ class TaskManagement {
                 <div class="task-details" style="flex: 1; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding-right: 80px;">
                     <!-- 上段 -->
                     <div style="display: flex; align-items: center; gap: 8px; white-space: nowrap;">
-                        <span style="font-size: 15px; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
+                        <span style="font-size: 15px; flex: 0 0 auto; white-space: nowrap; min-width: 80px;" title="${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '')}">${clientLink}</span>
                         <span style="font-size: 13px; font-weight: 600; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: ${textColor};" title="${task.task_name || 'Untitled Task'}">${task.task_name || 'Untitled Task'}</span>
                         <span style="font-size: 0.7rem; flex: 0 0 90px; color: #6c757d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;" title="${task.description || ''}">${truncatedDescription}</span>
                     </div>
@@ -2906,7 +2910,7 @@ class TaskManagement {
 
                 <!-- 簡易表示用のデータ要素（通常は非表示） -->
                 <div class="task-info" style="display: none;">
-                    <span class="client-name" data-client-id="${task.client_id}" onclick="event.stopPropagation(); ${task.client_id === 0 ? '' : `window.location.href='../../details.html?id=${task.client_id}'`}">${task.client_id === 0 ? 'その他業務' : (task.clients?.name || '-')}</span>
+                    <span class="client-name" data-client-id="${task.client_id}" onclick="event.stopPropagation(); ${(task.client_id === 0 || task.client_id === null) ? '' : `window.location.href='../../details.html?id=${task.client_id}'`}">${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '-')}</span>
                     <span class="task-name">${task.task_name || 'Untitled Task'}</span>
                     <span class="due-date">期限：${this.formatDueDateWithWarning(task.due_date)}</span>
                 </div>
@@ -3274,7 +3278,7 @@ class TaskManagement {
             const normalizedSearch = normalizeText(this.currentFilters.search);
 
             filtered = filtered.filter(task => {
-                const clientName = task.client_id === 0 ? 'その他業務' : (task.clients?.name || '');
+                const clientName = (task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '');
 
                 const basicMatch = task.task_name.toLowerCase().includes(search) ||
                                    clientName.toLowerCase().includes(search) ||
@@ -3296,8 +3300,8 @@ class TaskManagement {
                 let bVal = b[field];
 
                 if (field === 'client_name') {
-                    aVal = a.client_id === 0 ? 'その他業務' : (a.clients?.name || '');
-                    bVal = b.client_id === 0 ? 'その他業務' : (b.clients?.name || '');
+                    aVal = (a.client_id === 0 || a.client_id === null) ? 'その他業務' : (a.clients?.name || '');
+                    bVal = (b.client_id === 0 || b.client_id === null) ? 'その他業務' : (b.clients?.name || '');
                 } else if (field === 'assignee_name') {
                     aVal = a.assignee?.name || '';
                     bVal = b.assignee?.name || '';
