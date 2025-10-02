@@ -159,11 +159,13 @@ class TaskManagement {
             // ユーザー情報表示
             this.displayCurrentUserInfo();
 
-            // 基本データ読み込み
-            await this.loadMasterData();
-            await this.loadTemplates();
-            await this.loadRecurringTasks();
-            await this.loadTasks();
+            // 基本データ読み込み（並列実行で高速化）
+            await Promise.all([
+                this.loadMasterData(),
+                this.loadTemplates(),
+                this.loadRecurringTasks(),
+                this.loadTasks()
+            ]);
 
             // UI初期化
             this.initializeUI();
