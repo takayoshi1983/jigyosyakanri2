@@ -171,6 +171,11 @@ class TaskManagement {
             this.initializeUI();
             this.setupEventListeners();
 
+            // 担当者サイドバーの初期化（全データロード完了後に実行）
+            this.initializeAssigneeSidebar();
+            this.updateDisplay();
+            this.updateSummary();
+
             // スマート通知システム開始
             this.startSmartNotificationSystem();
 
@@ -328,12 +333,6 @@ class TaskManagement {
             if (this.lastTaskCount === 0) {
                 this.lastTaskCount = this.tasks.length;
             }
-
-            // 担当者サイドバーの初期化（フィルター状態復元含む）
-            this.initializeAssigneeSidebar();
-
-            this.updateDisplay();
-            this.updateSummary();
 
         } catch (error) {
             console.error('Tasks loading error:', error);
