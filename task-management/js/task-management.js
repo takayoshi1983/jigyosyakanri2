@@ -2349,7 +2349,7 @@ class TaskManagement {
 
     updateGanttChart(tasks) {
         // Frappe Ganttライブラリが読み込まれているかチェック
-        if (typeof Frappe === 'undefined') {
+        if (typeof Gantt === 'undefined') {
             console.warn('Frappe Gantt library not loaded yet, retrying...');
             // 100ms後に再試行
             setTimeout(() => this.updateGanttChart(tasks), 100);
@@ -2400,7 +2400,7 @@ class TaskManagement {
 
         // ガントチャート初期化
         try {
-            this.gantt = new Frappe.Gantt('#gantt-chart', ganttData, {
+            this.gantt = new Gantt('#gantt-chart', ganttData, {
                 view_mode: this.ganttViewMode || 'Week',
                 language: 'ja',
                 bar_height: 30,
