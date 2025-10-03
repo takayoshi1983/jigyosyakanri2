@@ -423,6 +423,14 @@ class TaskManagement {
             });
         }
 
+        // ガントチャート：休みの追加ボタン
+        const addHolidayBtn = document.getElementById('gantt-add-holiday-btn');
+        if (addHolidayBtn) {
+            addHolidayBtn.addEventListener('click', () => {
+                alert('作成中\n\nこの機能は現在開発中です。近日中に実装予定です。');
+            });
+        }
+
         // ガントチャート：確認待ち折りたたみ
         const workingHeader = document.getElementById('working-tasks-header');
         const workingList = document.getElementById('working-tasks-list');
@@ -2341,29 +2349,35 @@ class TaskManagement {
     }
 
     updateCalendarView(tasks) {
+        // 依頼中タスクにアルファベット識別子を付与
+        const pendingTasks = tasks.filter(task => task.status === '依頼中');
+        pendingTasks.forEach((task, index) => {
+            task.alphabetId = this.getAlphabetId(index);
+        });
+
         // ガントチャート表示
-        this.updateGanttChart(tasks);
-        this.updateAnytimeTasks(tasks);
-        this.updateCompletedTasksSections(tasks);
+        this.updateGanttChart(pendingTasks);
+        this.updateAllTasksCards(pendingTasks, tasks);
+    }
+
+    // アルファベット識別子を生成（A, B, C, ..., Z, AA, AB, ...）
+    getAlphabetId(index) {
+        let result = '';
+        let num = index;
+        while (true) {
+            result = String.fromCharCode(65 + (num % 26)) + result;
+            num = Math.floor(num / 26);
+            if (num === 0) break;
+            num--;
+        }
+        return result;
     }
 
     updateGanttChart(tasks) {
-        // Frappe Ganttライブラリが読み込まれているかチェック
-        if (typeof Gantt === 'undefined') {
-            console.warn('Frappe Gantt library not loaded yet, retrying...');
-            // 100ms後に再試行
-            setTimeout(() => this.updateGanttChart(tasks), 100);
-            return;
-        }
-
         // 依頼中タスクのみをフィルタリング（随時タスク除外）
-        const pendingTasks = tasks.filter(task =>
-            task.status === '依頼中' &&
-            !task.is_anytime &&
-            task.due_date
-        );
+        const ganttTasks = tasks.filter(task => !task.is_anytime && task.due_date);
 
-        if (pendingTasks.length === 0) {
+        if (ganttTasks.length === 0) {
             document.getElementById('gantt-chart-container').innerHTML = `
                 <p style="text-align: center; padding: 30px; color: #6c757d;">
                     表示するタスクがありません
@@ -2372,63 +2386,123 @@ class TaskManagement {
             return;
         }
 
-        // Frappe Gantt用のデータに変換
-        const ganttData = pendingTasks.map(task => {
-            const taskName = task.task_name || 'Untitled';
-            const clientName = (task.client_id === 0 || task.client_id === null)
-                ? 'その他業務'
-                : (task.clients?.name || '');
-            const displayName = clientName ? `${clientName} - ${taskName}` : taskName;
+        // 今日から30日後までの日付を生成
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const endDate = new Date(today);
+        endDate.setDate(today.getDate() + 30);
 
-            // 開始日: work_date または created_at
-            const startDate = task.work_date || task.created_at?.split('T')[0] || new Date().toISOString().split('T')[0];
-
-            return {
-                id: `task-${task.id}`,
-                name: displayName.length > 40 ? displayName.substring(0, 40) + '...' : displayName,
-                start: startDate,
-                end: task.due_date,
-                progress: 0,
-                custom_class: 'bar-cyan',
-                taskId: task.id
-            };
-        });
-
-        // 既存のSVGをクリア
-        const container = document.getElementById('gantt-chart-container');
-        container.innerHTML = '<svg id="gantt-chart"></svg>';
-
-        // ガントチャート初期化
-        try {
-            this.gantt = new Gantt('#gantt-chart', ganttData, {
-                view_mode: this.ganttViewMode || 'Week',
-                bar_height: 30,
-                bar_corner_radius: 3,
-                arrow_curve: 5,
-                padding: 18,
-                on_click: (task) => {
-                    // タスククリックで編集モーダル表示
-                    this.editTask(task.taskId);
-                },
-                on_date_change: async (task, start, end) => {
-                    // ドラッグ&ドロップで日付変更
-                    const confirmMessage = `${task.name}\nの期限を ${end} に変更しますか？`;
-                    if (confirm(confirmMessage)) {
-                        await this.updateTaskDates(task.taskId, start, end);
-                    } else {
-                        // キャンセル時は再描画して元に戻す
-                        this.updateGanttChart(this.getFilteredTasks());
-                    }
-                }
-            });
-        } catch (error) {
-            console.error('Gantt chart rendering error:', error);
-            container.innerHTML = `
-                <p style="text-align: center; padding: 30px; color: #dc3545;">
-                    ガントチャートの描画に失敗しました
-                </p>
-            `;
+        const dates = [];
+        for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
+            dates.push(new Date(d));
         }
+
+        // カスタムガントチャートHTML生成
+        const container = document.getElementById('gantt-chart-container');
+        container.innerHTML = this.renderCustomGanttChart(ganttTasks, dates);
+    }
+
+    renderCustomGanttChart(tasks, dates) {
+        const rowHeight = 30;
+        const cellWidth = 30;
+
+        // 月ごとにグループ化
+        const monthGroups = [];
+        let currentMonth = null;
+        let monthStart = 0;
+
+        dates.forEach((date, index) => {
+            const month = date.getMonth();
+            if (month !== currentMonth) {
+                if (currentMonth !== null) {
+                    monthGroups.push({ month: currentMonth, start: monthStart, end: index - 1 });
+                }
+                currentMonth = month;
+                monthStart = index;
+            }
+        });
+        monthGroups.push({ month: currentMonth, start: monthStart, end: dates.length - 1 });
+
+        // 日付ヘッダー
+        const monthHeaders = monthGroups.map(group => {
+            const monthName = `${group.month + 1}月`;
+            const width = (group.end - group.start + 1) * cellWidth;
+            return `<div style="flex: 0 0 ${width}px; text-align: center; font-weight: 600; color: #495057; background: ${group.month % 2 === 0 ? '#f8f9fa' : '#fff9e6'};">${monthName}</div>`;
+        }).join('');
+
+        const dateHeaders = dates.map((date, index) => {
+            const day = date.getDate();
+            const dayOfWeek = date.getDay();
+            const isSaturday = dayOfWeek === 6;
+            const isSunday = dayOfWeek === 0;
+            const bgColor = isSunday ? '#ffe6e6' : isSaturday ? '#e6f2ff' : '#fff';
+
+            return `
+                <div style="flex: 0 0 ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0;">
+                    ${day}
+                </div>
+            `;
+        }).join('');
+
+        // タスク行
+        const taskRows = tasks.map((task, taskIndex) => {
+            const startDate = new Date(task.work_date || task.created_at?.split('T')[0] || dates[0]);
+            const dueDate = new Date(task.due_date);
+            startDate.setHours(0, 0, 0, 0);
+            dueDate.setHours(0, 0, 0, 0);
+
+            const startIndex = dates.findIndex(d => d.getTime() === startDate.getTime());
+            const dueIndex = dates.findIndex(d => d.getTime() === dueDate.getTime());
+
+            if (startIndex === -1 || dueIndex === -1) return '';
+
+            const barStart = startIndex * cellWidth;
+            const barWidth = (dueIndex - startIndex + 1) * cellWidth;
+
+            return `
+                <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
+                    <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #007bff; background: #f8f9fa; border-right: 2px solid #dee2e6;">
+                        ${task.alphabetId}
+                    </div>
+                    <div style="flex: 1; position: relative;">
+                        ${dates.map((date, i) => {
+                            const dayOfWeek = date.getDay();
+                            const isSaturday = dayOfWeek === 6;
+                            const isSunday = dayOfWeek === 0;
+                            const bgColor = isSunday ? '#ffe6e6' : isSaturday ? '#e6f2ff' : 'transparent';
+
+                            return `<div style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
+                        }).join('')}
+                        <div style="position: absolute; left: ${barStart}px; width: ${barWidth}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: pointer; border-right: 4px solid #dc3545; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" onclick="taskManager.editTask(${task.id})" title="${task.task_name}">
+                            ${task.alphabetId}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div style="overflow-x: auto; background: white; border-radius: 8px;">
+                <div style="min-width: ${40 + dates.length * cellWidth}px;">
+                    <!-- 月ヘッダー -->
+                    <div style="display: flex; border-bottom: 2px solid #dee2e6;">
+                        <div style="flex: 0 0 40px;"></div>
+                        <div style="flex: 1; display: flex;">
+                            ${monthHeaders}
+                        </div>
+                    </div>
+                    <!-- 日付ヘッダー -->
+                    <div style="display: flex; border-bottom: 2px solid #dee2e6;">
+                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa;">ID</div>
+                        <div style="flex: 1; display: flex;">
+                            ${dateHeaders}
+                        </div>
+                    </div>
+                    <!-- タスク行 -->
+                    ${taskRows}
+                </div>
+            </div>
+        `;
     }
 
     async updateTaskDates(taskId, startDate, endDate) {
@@ -2457,33 +2531,63 @@ class TaskManagement {
         }
     }
 
-    updateAnytimeTasks(tasks) {
-        // 随時タスク（依頼中のみ）
-        const anytimeTasks = tasks.filter(task =>
-            task.is_anytime &&
-            task.status === '依頼中'
-        );
+    // 全タスクを統一カード形式で表示（5列レイアウト）
+    updateAllTasksCards(pendingTasks, allTasks) {
+        // 随時タスク
+        const anytimeTasks = pendingTasks.filter(task => task.is_anytime);
+        // 非随時・依頼中タスク（ガントチャート表示対象）
+        const ganttTasks = pendingTasks.filter(task => !task.is_anytime && task.due_date);
+        // 確認待ちタスク
+        const workingTasks = allTasks.filter(task => task.status === '作業完了');
+        // 確認完了タスク
+        const completedTasks = allTasks.filter(task => task.status === '確認完了');
 
-        const listContainer = document.getElementById('anytime-tasks-list');
+        // 随時タスク表示
+        this.renderTaskCards('anytime-tasks-list', anytimeTasks, '随時タスクはありません', true);
 
-        if (anytimeTasks.length === 0) {
-            listContainer.innerHTML = '<p style="margin: 0; color: #856404;">随時タスクはありません</p>';
+        // 確認待ちタスク表示
+        this.renderTaskCards('working-tasks-list', workingTasks, '確認待ちタスクはありません', false, true);
+        document.getElementById('working-tasks-count').textContent = workingTasks.length;
+
+        // 確認完了タスク表示
+        this.renderTaskCards('completed-tasks-list', completedTasks, '確認完了タスクはありません', false, true, true);
+        document.getElementById('completed-tasks-count').textContent = completedTasks.length;
+    }
+
+    // タスクカードレンダリング（5列統一レイアウト）
+    renderTaskCards(containerId, tasks, emptyMessage, isAnytime = false, showRestoreBtn = false, showDueDate = false) {
+        const container = document.getElementById(containerId);
+
+        if (tasks.length === 0) {
+            container.innerHTML = `<p style="margin: 0; color: #856404;">${emptyMessage}</p>`;
             return;
         }
 
-        listContainer.innerHTML = `
+        container.innerHTML = `
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                ${anytimeTasks.map(task => {
+                ${tasks.map(task => {
                     const clientName = (task.client_id === 0 || task.client_id === null)
                         ? 'その他業務'
                         : (task.clients?.name || '-');
+
+                    // バッジ（右上）
+                    const badge = isAnytime
+                        ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">随</div>`
+                        : task.alphabetId
+                        ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #007bff; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${task.alphabetId}</div>`
+                        : '';
+
+                    const dueDate = showDueDate && task.due_date ? this.formatMonthDay(task.due_date) : '';
+
                     return `
                         <div style="
-                            flex: 0 1 calc(25% - 10px);
-                            min-width: 180px;
+                            position: relative;
+                            flex: 0 1 calc(20% - 10px);
+                            min-width: 160px;
                             padding: 10px;
+                            padding-right: ${badge ? '45px' : '10px'};
                             background: #fff;
-                            border: 1px solid #ffc107;
+                            border: 1px solid ${isAnytime ? '#ffc107' : showDueDate ? '#28a745' : '#ffc107'};
                             border-radius: 6px;
                             cursor: pointer;
                             transition: all 0.2s;
@@ -2492,12 +2596,31 @@ class TaskManagement {
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
                         onclick="taskManager.editTask(${task.id})">
-                            <div style="font-weight: 600; font-size: 13px; color: #856404; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
+                            ${badge}
+                            <div style="font-weight: 600; font-size: 13px; color: #495057; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
                                 ${task.task_name || 'Untitled'}
                             </div>
-                            <div style="font-size: 12px; color: #856404; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientName}">
+                            <div style="font-size: 12px; color: #6c757d; opacity: 0.9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientName}">
                                 ${clientName}
                             </div>
+                            ${dueDate ? `<div style="font-size: 11px; color: #6c757d; opacity: 0.7; margin-top: 4px;">期限: ${dueDate}</div>` : ''}
+                            ${showRestoreBtn ? `
+                                <button class="btn btn-sm" style="
+                                    position: absolute;
+                                    bottom: 8px;
+                                    right: 8px;
+                                    background: #007bff;
+                                    color: white;
+                                    padding: 2px 8px;
+                                    font-size: 10px;
+                                    border: none;
+                                    border-radius: 3px;
+                                    cursor: pointer;
+                                "
+                                onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
+                                    復帰
+                                </button>
+                            ` : ''}
                         </div>
                     `;
                 }).join('')}
@@ -2505,115 +2628,6 @@ class TaskManagement {
         `;
     }
 
-    updateCompletedTasksSections(tasks) {
-        // 確認待ちタスク
-        const workingTasks = tasks.filter(task => task.status === '作業完了');
-        document.getElementById('working-tasks-count').textContent = workingTasks.length;
-
-        const workingListContainer = document.getElementById('working-tasks-list');
-        if (workingTasks.length === 0) {
-            workingListContainer.innerHTML = '<p style="margin: 0;">確認待ちタスクはありません</p>';
-        } else {
-            workingListContainer.innerHTML = `
-                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    ${workingTasks.map(task => {
-                        const clientName = (task.client_id === 0 || task.client_id === null)
-                            ? 'その他業務'
-                            : (task.clients?.name || '-');
-                        return `
-                            <div style="
-                                flex: 0 1 calc(33.333% - 10px);
-                                min-width: 200px;
-                                padding: 10px;
-                                background: #fff;
-                                border: 1px solid #ffc107;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                transition: all 0.2s;
-                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                                gap: 8px;
-                            "
-                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
-                            onclick="taskManager.editTask(${task.id})">
-                                <div style="flex: 1; min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 13px; color: #856404; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
-                                        ${task.task_name || 'Untitled'}
-                                    </div>
-                                    <div style="font-size: 12px; color: #856404; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientName}">
-                                        ${clientName}
-                                    </div>
-                                </div>
-                                <button class="btn btn-sm" style="background: #007bff; color: white; padding: 4px 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
-                                        onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
-                                    復帰
-                                </button>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-
-        // 確認完了タスク
-        const completedTasks = tasks.filter(task => task.status === '確認完了');
-        document.getElementById('completed-tasks-count').textContent = completedTasks.length;
-
-        const completedListContainer = document.getElementById('completed-tasks-list');
-        if (completedTasks.length === 0) {
-            completedListContainer.innerHTML = '<p style="margin: 0;">確認完了タスクはありません</p>';
-        } else {
-            completedListContainer.innerHTML = `
-                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                    ${completedTasks.map(task => {
-                        const clientName = (task.client_id === 0 || task.client_id === null)
-                            ? 'その他業務'
-                            : (task.clients?.name || '-');
-                        const dueDate = task.due_date ? this.formatMonthDay(task.due_date) : '-';
-                        return `
-                            <div style="
-                                flex: 0 1 calc(33.333% - 10px);
-                                min-width: 200px;
-                                padding: 10px;
-                                background: #fff;
-                                border: 1px solid #28a745;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                transition: all 0.2s;
-                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                                display: flex;
-                                justify-content: space-between;
-                                align-items: center;
-                                gap: 8px;
-                            "
-                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
-                            onclick="taskManager.editTask(${task.id})">
-                                <div style="flex: 1; min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 13px; color: #155724; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
-                                        ${task.task_name || 'Untitled'}
-                                    </div>
-                                    <div style="font-size: 12px; color: #155724; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientName}">
-                                        ${clientName}
-                                    </div>
-                                    <div style="font-size: 11px; color: #155724; opacity: 0.6; margin-top: 2px;">
-                                        期限: ${dueDate}
-                                    </div>
-                                </div>
-                                <button class="btn btn-sm" style="background: #007bff; color: white; padding: 4px 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
-                                        onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
-                                    復帰
-                                </button>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-    }
 
     updateSummary() {
         const totalTasks = this.tasks.length;
