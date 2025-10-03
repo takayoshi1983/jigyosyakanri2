@@ -3015,7 +3015,7 @@ class TaskManagement {
         };
 
         const config = statusConfig[task.status] || statusConfig['依頼中'];
-        return `<span class="my-task-status ${config.class}" style="cursor: pointer; padding: 4px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; min-width: 70px; text-align: center; border: 1px solid #d2b866;"
+        return `<span class="my-task-status ${config.class}" style="cursor: pointer; padding: 4px 8px; border-radius: 12px; font-size: 13px; font-weight: 500; min-width: 70px; text-align: center; border: 1px solid #d2b866;"
                       title="クリックで「${config.next}」に変更"
                       onclick="event.stopPropagation(); taskManager.cycleTaskStatus(${task.id})">${config.text}</span>`;
     }
