@@ -2010,3 +2010,46 @@
         gap: 10px;
     }
 }
+
+/* ガントチャート用スタイル */
+.bar-cyan {
+    fill: url(#cyan-gradient) !important;
+}
+
+/* SVG用グラデーション定義は動的に追加 */
+#gantt-chart .bar {
+    cursor: pointer;
+}
+
+#gantt-chart .bar:hover {
+    opacity: 0.8;
+}
+
+/* ガントチャートのバーに水色グラデーションを適用 */
+.gantt .bar-wrapper .bar {
+    fill: #17a2b8 !important;
+    stroke: #138496 !important;
+    stroke-width: 1.5 !important;
+}
+
+.gantt .bar-wrapper .bar-progress {
+    fill: #0c7c8c !important;
+}
+
+.gantt .bar-wrapper:hover .bar {
+    fill: #20c9e0 !important;
+    opacity: 0.9;
+}
+
+/* 今日の線を強調 */
+.gantt .today-highlight {
+    stroke: #ff6b6b !important;
+    stroke-width: 2 !important;
+}
+
+/* ガントチャートのフォント調整 */
+.gantt .bar-label {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    fill: #fff !important;
+}

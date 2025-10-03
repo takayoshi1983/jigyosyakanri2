@@ -399,6 +399,58 @@ class TaskManagement {
             this.saveFilterState();
         });
 
+        // ガントチャート：週表示/月表示切替ボタン
+        const weekBtn = document.getElementById('gantt-view-week');
+        const monthBtn = document.getElementById('gantt-view-month');
+
+        if (weekBtn && monthBtn) {
+            weekBtn.addEventListener('click', () => {
+                this.ganttViewMode = 'Week';
+                weekBtn.style.background = '#007bff';
+                monthBtn.style.background = '#6c757d';
+                if (this.gantt) {
+                    this.gantt.change_view_mode('Week');
+                }
+            });
+
+            monthBtn.addEventListener('click', () => {
+                this.ganttViewMode = 'Month';
+                monthBtn.style.background = '#007bff';
+                weekBtn.style.background = '#6c757d';
+                if (this.gantt) {
+                    this.gantt.change_view_mode('Month');
+                }
+            });
+        }
+
+        // ガントチャート：確認待ち折りたたみ
+        const workingHeader = document.getElementById('working-tasks-header');
+        const workingList = document.getElementById('working-tasks-list');
+        if (workingHeader && workingList) {
+            workingHeader.addEventListener('click', () => {
+                const isVisible = workingList.style.display !== 'none';
+                workingList.style.display = isVisible ? 'none' : 'block';
+                workingHeader.innerHTML = workingHeader.innerHTML.replace(
+                    isVisible ? '▼' : '▶',
+                    isVisible ? '▶' : '▼'
+                );
+            });
+        }
+
+        // ガントチャート：確認完了折りたたみ
+        const completedHeader = document.getElementById('completed-tasks-header');
+        const completedList = document.getElementById('completed-tasks-list');
+        if (completedHeader && completedList) {
+            completedHeader.addEventListener('click', () => {
+                const isVisible = completedList.style.display !== 'none';
+                completedList.style.display = isVisible ? 'none' : 'block';
+                completedHeader.innerHTML = completedHeader.innerHTML.replace(
+                    isVisible ? '▼' : '▶',
+                    isVisible ? '▶' : '▼'
+                );
+            });
+        }
+
         // 簡易表示トグルスイッチ
         const simpleViewCheckbox = document.getElementById('simple-view-checkbox');
         if (simpleViewCheckbox) {
@@ -2289,14 +2341,194 @@ class TaskManagement {
     }
 
     updateCalendarView(tasks) {
-        // カレンダー表示は今後実装
-        const calendarContainer = document.getElementById('task-calendar');
-        calendarContainer.innerHTML = `
-            <p style="text-align: center; padding: 50px; color: #6c757d;">
-                📅 カレンダー表示は今後実装予定です<br>
-                <small>現在: ${tasks.length}件のタスクがあります</small>
-            </p>
-        `;
+        // ガントチャート表示
+        this.updateGanttChart(tasks);
+        this.updateAnytimeTasks(tasks);
+        this.updateCompletedTasksSections(tasks);
+    }
+
+    updateGanttChart(tasks) {
+        // 依頼中タスクのみをフィルタリング（随時タスク除外）
+        const pendingTasks = tasks.filter(task =>
+            task.status === '依頼中' &&
+            !task.is_anytime &&
+            task.due_date
+        );
+
+        if (pendingTasks.length === 0) {
+            document.getElementById('gantt-chart-container').innerHTML = `
+                <p style="text-align: center; padding: 30px; color: #6c757d;">
+                    表示するタスクがありません
+                </p>
+            `;
+            return;
+        }
+
+        // Frappe Gantt用のデータに変換
+        const ganttData = pendingTasks.map(task => {
+            const taskName = task.task_name || 'Untitled';
+            const clientName = (task.client_id === 0 || task.client_id === null)
+                ? 'その他業務'
+                : (task.clients?.name || '');
+            const displayName = clientName ? `${clientName} - ${taskName}` : taskName;
+
+            // 開始日: work_date または created_at
+            const startDate = task.work_date || task.created_at?.split('T')[0] || new Date().toISOString().split('T')[0];
+
+            return {
+                id: `task-${task.id}`,
+                name: displayName.length > 40 ? displayName.substring(0, 40) + '...' : displayName,
+                start: startDate,
+                end: task.due_date,
+                progress: 0,
+                custom_class: 'bar-cyan',
+                taskId: task.id
+            };
+        });
+
+        // 既存のSVGをクリア
+        const container = document.getElementById('gantt-chart-container');
+        container.innerHTML = '<svg id="gantt-chart"></svg>';
+
+        // ガントチャート初期化
+        try {
+            this.gantt = new Frappe.Gantt('#gantt-chart', ganttData, {
+                view_mode: this.ganttViewMode || 'Week',
+                language: 'ja',
+                bar_height: 30,
+                bar_corner_radius: 3,
+                arrow_curve: 5,
+                padding: 18,
+                view_modes: ['Day', 'Week', 'Month'],
+                on_click: (task) => {
+                    // タスククリックで編集モーダル表示
+                    this.editTask(task.taskId);
+                },
+                on_date_change: async (task, start, end) => {
+                    // ドラッグ&ドロップで日付変更
+                    const confirmMessage = `${task.name}\nの期限を ${end} に変更しますか？`;
+                    if (confirm(confirmMessage)) {
+                        await this.updateTaskDates(task.taskId, start, end);
+                    } else {
+                        // キャンセル時は再描画して元に戻す
+                        this.updateGanttChart(this.getFilteredTasks());
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Gantt chart rendering error:', error);
+            container.innerHTML = `
+                <p style="text-align: center; padding: 30px; color: #dc3545;">
+                    ガントチャートの描画に失敗しました
+                </p>
+            `;
+        }
+    }
+
+    async updateTaskDates(taskId, startDate, endDate) {
+        try {
+            const updateData = {
+                work_date: startDate,
+                due_date: endDate
+            };
+
+            const { error } = await supabase
+                .from('tasks')
+                .update(updateData)
+                .eq('id', taskId);
+
+            if (error) throw error;
+
+            showToast('タスクの日付を更新しました', 'success');
+            await this.loadTasks();
+            this.updateDisplay();
+            this.updateSummary();
+            this.updateMyTasks();
+
+        } catch (error) {
+            console.error('Update task dates error:', error);
+            showToast('日付の更新に失敗しました', 'error');
+        }
+    }
+
+    updateAnytimeTasks(tasks) {
+        // 随時タスク（依頼中のみ）
+        const anytimeTasks = tasks.filter(task =>
+            task.is_anytime &&
+            task.status === '依頼中'
+        );
+
+        const listContainer = document.getElementById('anytime-tasks-list');
+
+        if (anytimeTasks.length === 0) {
+            listContainer.innerHTML = '<p style="margin: 0; color: #856404;">随時タスクはありません</p>';
+            return;
+        }
+
+        listContainer.innerHTML = anytimeTasks.map(task => {
+            const clientName = (task.client_id === 0 || task.client_id === null)
+                ? 'その他業務'
+                : (task.clients?.name || '-');
+            return `
+                <div style="padding: 6px 0; border-bottom: 1px solid #ffc10733; cursor: pointer;"
+                     onclick="taskManager.editTask(${task.id})">
+                    • <strong>${task.task_name || 'Untitled'}</strong> - ${clientName}
+                </div>
+            `;
+        }).join('');
+    }
+
+    updateCompletedTasksSections(tasks) {
+        // 確認待ちタスク
+        const workingTasks = tasks.filter(task => task.status === '作業完了');
+        document.getElementById('working-tasks-count').textContent = workingTasks.length;
+
+        const workingListContainer = document.getElementById('working-tasks-list');
+        if (workingTasks.length === 0) {
+            workingListContainer.innerHTML = '<p style="margin: 0;">確認待ちタスクはありません</p>';
+        } else {
+            workingListContainer.innerHTML = workingTasks.map(task => {
+                const clientName = (task.client_id === 0 || task.client_id === null)
+                    ? 'その他業務'
+                    : (task.clients?.name || '-');
+                return `
+                    <div style="padding: 6px 0; border-bottom: 1px solid #ffc10733; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+                         onclick="taskManager.editTask(${task.id})">
+                        <span>• <strong>${task.task_name || 'Untitled'}</strong> - ${clientName}</span>
+                        <button class="btn btn-sm" style="background: #007bff; color: white; padding: 2px 8px; font-size: 11px;"
+                                onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
+                            復帰
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 確認完了タスク
+        const completedTasks = tasks.filter(task => task.status === '確認完了');
+        document.getElementById('completed-tasks-count').textContent = completedTasks.length;
+
+        const completedListContainer = document.getElementById('completed-tasks-list');
+        if (completedTasks.length === 0) {
+            completedListContainer.innerHTML = '<p style="margin: 0;">確認完了タスクはありません</p>';
+        } else {
+            completedListContainer.innerHTML = completedTasks.map(task => {
+                const clientName = (task.client_id === 0 || task.client_id === null)
+                    ? 'その他業務'
+                    : (task.clients?.name || '-');
+                const dueDate = task.due_date ? this.formatMonthDay(task.due_date) : '-';
+                return `
+                    <div style="padding: 6px 0; border-bottom: 1px solid #28a74533; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+                         onclick="taskManager.editTask(${task.id})">
+                        <span>• <strong>${task.task_name || 'Untitled'}</strong> - ${clientName} (期限: ${dueDate})</span>
+                        <button class="btn btn-sm" style="background: #007bff; color: white; padding: 2px 8px; font-size: 11px;"
+                                onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
+                            復帰
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
     }
 
     updateSummary() {
