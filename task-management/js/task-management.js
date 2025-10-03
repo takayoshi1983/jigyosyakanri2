@@ -2374,8 +2374,8 @@ class TaskManagement {
     }
 
     updateGanttChart(tasks) {
-        // 依頼中タスクのみをフィルタリング（随時タスク除外）
-        const ganttTasks = tasks.filter(task => !task.is_anytime && task.due_date);
+        // 随時タスク除外（tasksは既に依頼中のみ）
+        const ganttTasks = tasks.filter(task => !task.is_anytime && task.work_date && task.estimated_time_hours);
 
         if (ganttTasks.length === 0) {
             document.getElementById('gantt-chart-container').innerHTML = `
@@ -2446,18 +2446,22 @@ class TaskManagement {
 
         // タスク行
         const taskRows = tasks.map((task, taskIndex) => {
-            const startDate = new Date(task.work_date || task.created_at?.split('T')[0] || dates[0]);
-            const dueDate = new Date(task.due_date);
+            const startDate = new Date(task.work_date);
             startDate.setHours(0, 0, 0, 0);
-            dueDate.setHours(0, 0, 0, 0);
 
             const startIndex = dates.findIndex(d => d.getTime() === startDate.getTime());
-            const dueIndex = dates.findIndex(d => d.getTime() === dueDate.getTime());
+            if (startIndex === -1) return '';
 
-            if (startIndex === -1 || dueIndex === -1) return '';
+            // 想定時間から日数を計算（8時間 = 1日）
+            const estimatedDays = Math.ceil(task.estimated_time_hours / 8);
+
+            // 期限日を取得
+            const dueDate = task.due_date ? new Date(task.due_date) : null;
+            if (dueDate) dueDate.setHours(0, 0, 0, 0);
+            const dueIndex = dueDate ? dates.findIndex(d => d.getTime() === dueDate.getTime()) : -1;
 
             const barStart = startIndex * cellWidth;
-            const barWidth = (dueIndex - startIndex + 1) * cellWidth;
+            const barWidth = estimatedDays * cellWidth;
 
             return `
                 <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
@@ -2473,9 +2477,10 @@ class TaskManagement {
 
                             return `<div style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
                         }).join('')}
-                        <div style="position: absolute; left: ${barStart}px; width: ${barWidth}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: pointer; border-right: 4px solid #dc3545; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" onclick="taskManager.editTask(${task.id})" title="${task.task_name}">
+                        <div style="position: absolute; left: ${barStart}px; width: ${barWidth}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" onclick="taskManager.editTask(${task.id})" title="${task.task_name}">
                             ${task.alphabetId}
                         </div>
+                        ${dueIndex >= 0 ? `<div style="position: absolute; left: ${(dueIndex + 1) * cellWidth - 2}px; width: 4px; height: 100%; background: #dc3545; top: 0;"></div>` : ''}
                     </div>
                 </div>
             `;
@@ -2583,7 +2588,7 @@ class TaskManagement {
                         <div style="
                             position: relative;
                             flex: 0 1 calc(20% - 10px);
-                            min-width: 160px;
+                            min-width: 140px;
                             padding: 10px;
                             padding-right: ${badge ? '45px' : '10px'};
                             background: #fff;
