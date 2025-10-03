@@ -2471,17 +2471,38 @@ class TaskManagement {
             return;
         }
 
-        listContainer.innerHTML = anytimeTasks.map(task => {
-            const clientName = (task.client_id === 0 || task.client_id === null)
-                ? 'その他業務'
-                : (task.clients?.name || '-');
-            return `
-                <div style="padding: 6px 0; border-bottom: 1px solid #ffc10733; cursor: pointer;"
-                     onclick="taskManager.editTask(${task.id})">
-                    • <strong>${task.task_name || 'Untitled'}</strong> - ${clientName}
-                </div>
-            `;
-        }).join('');
+        listContainer.innerHTML = `
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                ${anytimeTasks.map(task => {
+                    const clientName = (task.client_id === 0 || task.client_id === null)
+                        ? 'その他業務'
+                        : (task.clients?.name || '-');
+                    return `
+                        <div style="
+                            flex: 0 1 calc(25% - 10px);
+                            min-width: 180px;
+                            padding: 10px;
+                            background: #fff;
+                            border: 1px solid #ffc107;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                        "
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
+                        onclick="taskManager.editTask(${task.id})">
+                            <div style="font-weight: 600; font-size: 13px; color: #856404; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
+                                ${task.task_name || 'Untitled'}
+                            </div>
+                            <div style="font-size: 12px; color: #856404; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientName}">
+                                ${clientName}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
     }
 
     updateCompletedTasksSections(tasks) {
@@ -2493,21 +2514,48 @@ class TaskManagement {
         if (workingTasks.length === 0) {
             workingListContainer.innerHTML = '<p style="margin: 0;">確認待ちタスクはありません</p>';
         } else {
-            workingListContainer.innerHTML = workingTasks.map(task => {
-                const clientName = (task.client_id === 0 || task.client_id === null)
-                    ? 'その他業務'
-                    : (task.clients?.name || '-');
-                return `
-                    <div style="padding: 6px 0; border-bottom: 1px solid #ffc10733; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
-                         onclick="taskManager.editTask(${task.id})">
-                        <span>• <strong>${task.task_name || 'Untitled'}</strong> - ${clientName}</span>
-                        <button class="btn btn-sm" style="background: #007bff; color: white; padding: 2px 8px; font-size: 11px;"
-                                onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
-                            復帰
-                        </button>
-                    </div>
-                `;
-            }).join('');
+            workingListContainer.innerHTML = `
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    ${workingTasks.map(task => {
+                        const clientName = (task.client_id === 0 || task.client_id === null)
+                            ? 'その他業務'
+                            : (task.clients?.name || '-');
+                        return `
+                            <div style="
+                                flex: 0 1 calc(33.333% - 10px);
+                                min-width: 200px;
+                                padding: 10px;
+                                background: #fff;
+                                border: 1px solid #ffc107;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                gap: 8px;
+                            "
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
+                            onclick="taskManager.editTask(${task.id})">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 600; font-size: 13px; color: #856404; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
+                                        ${task.task_name || 'Untitled'}
+                                    </div>
+                                    <div style="font-size: 12px; color: #856404; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientName}">
+                                        ${clientName}
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm" style="background: #007bff; color: white; padding: 4px 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
+                                        onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
+                                    復帰
+                                </button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
         }
 
         // 確認完了タスク
@@ -2518,22 +2566,52 @@ class TaskManagement {
         if (completedTasks.length === 0) {
             completedListContainer.innerHTML = '<p style="margin: 0;">確認完了タスクはありません</p>';
         } else {
-            completedListContainer.innerHTML = completedTasks.map(task => {
-                const clientName = (task.client_id === 0 || task.client_id === null)
-                    ? 'その他業務'
-                    : (task.clients?.name || '-');
-                const dueDate = task.due_date ? this.formatMonthDay(task.due_date) : '-';
-                return `
-                    <div style="padding: 6px 0; border-bottom: 1px solid #28a74533; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
-                         onclick="taskManager.editTask(${task.id})">
-                        <span>• <strong>${task.task_name || 'Untitled'}</strong> - ${clientName} (期限: ${dueDate})</span>
-                        <button class="btn btn-sm" style="background: #007bff; color: white; padding: 2px 8px; font-size: 11px;"
-                                onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
-                            復帰
-                        </button>
-                    </div>
-                `;
-            }).join('');
+            completedListContainer.innerHTML = `
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    ${completedTasks.map(task => {
+                        const clientName = (task.client_id === 0 || task.client_id === null)
+                            ? 'その他業務'
+                            : (task.clients?.name || '-');
+                        const dueDate = task.due_date ? this.formatMonthDay(task.due_date) : '-';
+                        return `
+                            <div style="
+                                flex: 0 1 calc(33.333% - 10px);
+                                min-width: 200px;
+                                padding: 10px;
+                                background: #fff;
+                                border: 1px solid #28a745;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                gap: 8px;
+                            "
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
+                            onclick="taskManager.editTask(${task.id})">
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 600; font-size: 13px; color: #155724; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
+                                        ${task.task_name || 'Untitled'}
+                                    </div>
+                                    <div style="font-size: 12px; color: #155724; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientName}">
+                                        ${clientName}
+                                    </div>
+                                    <div style="font-size: 11px; color: #155724; opacity: 0.6; margin-top: 2px;">
+                                        期限: ${dueDate}
+                                    </div>
+                                </div>
+                                <button class="btn btn-sm" style="background: #007bff; color: white; padding: 4px 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
+                                        onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
+                                    復帰
+                                </button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
         }
     }
 
