@@ -1696,13 +1696,13 @@ class TaskManagement {
 
     // スマート通知システム関連メソッド
     startSmartNotificationSystem() {
-        // 関係者のみ通常の定期チェック（60秒間隔）
+        // 関係者のみ通常の定期チェック（120秒間隔）
         if (this.isRelevantUser()) {
-            this.startAutoRefresh(60000); // 60秒間隔
+            this.startAutoRefresh(120000); // 120秒間隔
         }
     }
 
-    startAutoRefresh(intervalMs = 60000) {
+    startAutoRefresh(intervalMs = 120000) {
         if (this.autoRefreshInterval) {
             clearInterval(this.autoRefreshInterval);
         }
@@ -2721,6 +2721,9 @@ class TaskManagement {
 
             this.closeTaskModal();
             await this.loadTasks(); // データ再読み込み
+            this.updateDisplay(); // 画面更新
+            this.updateSummary(); // サマリー更新
+            this.updateMyTasks(); // 受任タスク一覧更新
 
         } catch (error) {
             console.error('Save task error:', error);
@@ -2751,6 +2754,7 @@ class TaskManagement {
             await this.loadTasks(); // データ再読み込み
             this.updateDisplay(); // 画面更新
             this.updateSummary(); // サマリー更新
+            this.updateMyTasks(); // 受任タスク一覧更新
 
             // モーダルが開いている場合、ステータス表示を更新
             this.updateModalStatusDisplay(taskId, newStatus);
@@ -2795,6 +2799,10 @@ class TaskManagement {
 
             showToast('タスクを削除しました', 'success');
             await this.loadTasks(); // データ再読み込み
+            this.updateDisplay(); // 画面更新
+            this.updateSummary(); // サマリー更新
+            this.updateMyTasks(); // 受任タスク一覧更新
+            this.closeTaskModal(); // モーダルを閉じる
 
         } catch (error) {
             console.error('Delete task error:', error);
