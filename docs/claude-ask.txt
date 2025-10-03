@@ -1,159 +1,18 @@
-claude codeでの開発指図書ですね。承知いたしました。
-現在の仕様書を拝見しました。タスク管理システムが完全に統合されており、クライアント・担当者情報も揃っているため、「受任者別ガントチャート」機能は、まさに既存のリソースを最大限に活用できる、付加価値の高い機能拡張となります。
-
-特に、UI/UXの改善に強い要望があるため、**Google ChartsのGantt Chart**、または**DHTMLX Gantt**といったモダンなライブラリの利用を前提に、高性能で操作性に優れたガントチャートを実装する方針とします。
-
-ここでは、企画書、計画書、そしてClaude Codeへの指図書を順番に作成します。
-
------
-
-# 企画書：受任者別ガントチャート表示機能
-
-## 1\. 機能の目的と必要性
-
-### 目的
-
-タスク管理システムに、時間軸での進捗把握を可能とする「受任者別ガントチャート」機能を追加する。これにより、各担当者（受任者）の業務負荷の可視化、タスクの進捗状況、期限の重複・遅延状況を直感的に把握できるようにする。
-
-### 必要性
-
-1.  **業務負荷の平準化:** 担当者ごとのタスクの山（業務負荷）を視覚的に把握し、適切なタスクの再割り当てやスケジュールの調整を可能にする。
-2.  **進捗管理の効率化:** 月次・個別タスクの開始日と期限日を線で表示することで、リスト表示よりも進捗の遅延リスクを早期に発見できる。
-3.  **モダンなUI/UXの提供:** 「見やすく、操作性の良いモダンな表示」を実現し、既存の高性能ダッシュボードと連携させることで、管理アプリ全体の価値を向上させる。
-
-## 2\. 実現する機能概要
-
-| 機能要素 | 概要 |
-| :--- | :--- |
-| **基本表示** | 選択した担当者（受任者）が担当する全タスクをガントチャート形式で表示。 |
-| **期間の定義** | タスクの作成日を事実上の開始日、`due_date`を期限日とする。 |
-| **進捗表示** | タスクのステータス（依頼中、確認待ち、確認完了）に応じて、バーの色や模様を動的に変更し、進捗状況を視覚的に表現する。 |
-| **ズーム機能** | 日/週/月/年単位での表示切り替えを可能とし、期間に応じた詳細度で確認できるようにする。 |
-| **操作性** | タスクバーのドラッグ＆ドロップによる期限日変更（オプション）、ツールチップによる詳細情報表示。 |
-| **既存機能連携** | フィルタリング機能、担当者選択機能（`staffs`テーブル参照）は既存のものを活用する。 |
-
-## 3\. 技術選定（案）
-
-| 項目 | 選定技術/方針 | 理由 |
-| :--- | :--- | :--- |
-| **フロントエンド** | Vanilla JavaScript + **Chart/Gantt Library** | 既存スタックとの一貫性。高性能な表示と操作性を実現するためライブラリ必須。 |
-| **ライブラリ** | **Google Charts: Gantt Chart** または **Frappe Gantt** | シンプルな実装と高いカスタマイズ性、無料利用可能。既存のChart.jsと併用しやすい。 |
-| **バックエンド** | Supabase REST API | 既存の`tasks`テーブルから受任者IDに基づきデータを取得。 |
-| **データソース** | `tasks`テーブル, `clients`テーブル, `staffs`テーブル | 関連情報を取得し、チャートに表示。 |
-
------
-
-# 計画書：受任者別ガントチャート表示機能の実装
-
-## 1\. 開発ロードマップ（6ステップ）
-
-| \# | ステップ | 概要 | 担当者/想定工数 | 完了予定日 |
-| :--- | :--- | :--- | :--- | :--- |
-| **1** | **データ取得・整形** | `tasks`テーブルから必要なデータ（タスク名、開始日、期限、担当者ID、ステータス、クライアント名）を取得し、ガントチャートライブラリの形式に整形する。 | Claude/3時間 | 10/X |
-| **2** | **基本UI・ライブラリ統合** | `task-management.html`に「ガントチャート」タブを追加。選択したライブラリ（例: Google Charts）を統合し、静的データで基本表示を実装。 | Claude/2時間 | 10/X |
-| **3** | **動的表示・フィルター連携** | 選択された受任者IDに基づき、動的にチャートを再描画。既存の期間フィルターや担当者選択と連携させる。 | Claude/3時間 | 10/X |
-| **4** | **モダン表示・視覚化** | タスクステータスに応じた色分け（例: 依頼中-青、確認待ち-黄、確認完了-灰、遅延-赤）を実装。ツールチップに詳細情報を表示。 | Claude/3時間 | 10/X |
-| **5** | **UX改善（ズーム機能）** | 日/週/月/年表示の切り替えボタンを実装し、チャートのスケールを動的に変更できるようにする。 | Claude/2時間 | 10/X |
-| **6** | **コードレビュー・統合** | 全体のコードレビューと、既存のタスク管理システムとの最終的な統合・デプロイ。 | 開発者/1時間 | 10/X |
-
-## 2\. データベースの変更（変更なし）
-
-既存の`tasks`テーブルを使用するため、スキーマの変更は不要です。
-
-| テーブル | カラム | 用途 |
-| :--- | :--- | :--- |
-| `tasks` | `task_name` | ガントチャートのタスク名 |
-| `tasks` | `created_at` | タスクの開始日として利用 |
-| `tasks` | `due_date` | タスクの期限日 |
-| `tasks` | `assignee_id` | ガントチャートのグループ化（受任者） |
-| `tasks` | `status` | バーの進捗・色分けの判定に使用 |
-| `clients` | `name` | タスク名に付加するクライアント名 |
-| `staffs` | `name` | 受任者名 |
-
-## 3\. UI/UXの具体案
-
-  * **配置:** `task-management.html`の「タスク管理」セクション内に、リスト/カード表示と並列で「ガントチャート」タブとして追加。
-  * **色分け:**
-      * **依頼中:** `#4285F4`（Google Blue系）
-      * **確認待ち:** `#FBC02D`（Google Yellow系）
-      * **確認完了:** `#BDBDBD`（Gray）
-      * **期限超過タスク:** `#DB4437`（Google Red系）
-  * **ツールチップ:** タスクバーにマウスオーバー時、クライアント名、タスク名、期限日、ステータス、依頼者名を表示。
-
------
-
-# Claude Codeへの指図書：受任者別ガントチャート機能の実装
-
-以下の指図に基づき、「受任者別ガントチャート」表示機能を`task-management.html`ページに実装してください。既存の**Vanilla JavaScript**、**Supabase REST API**、そして統一デザインシステムを遵守してください。
-
-## 1\. ライブラリの選定と導入
-
-**Google Charts: Gantt Chart**ライブラリを採用します。
-
-1.  **`task-management.html`の`<head>`内**に、以下のGoogle Chartsローダーを追加してください。
-
-    ```html
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    ```
-
-2.  **`task-management.html`の「タスク管理」セクション内**に、ガントチャートの描画エリアとなる新しいタブとコンテナを追加してください。
-
-      * 新しいタブボタン（例: `id="gantt-view-tab"`）を既存のリスト/カード表示タブと並列に追加し、クリック時にガントチャートコンテナを表示するようにしてください。
-      * ガントチャートを描画するためのコンテナ（例: `id="gantt-chart-container"`）を追加してください。
-
-## 2\. JavaScript (TaskManagementApp.js) への機能追加
-
-### A. データ取得と整形ロジック
-
-`TaskManagementApp`クラス内に以下の新しいメソッドを追加してください。
-
-1.  **`fetchTasksForGantt()`:**
-
-      * 既存の`tasks`テーブルから、現在選択されているフィルター（担当者、期間など）に基づいてタスクデータを取得する。
-      * ガントチャートに必要なカラム（`id`, `client_id`, `task_name`, `created_at`, `due_date`, `status`, `assignee_id`）を**必ず**取得する。
-      * タスクデータに加えて、`clients`テーブルから`name`、`staffs`テーブルから`name`（受任者名）も取得する。
-      * **注意:** `due_date`が`null`や無効な日付のタスクは除外するか、期限をタスク作成日から14日後に設定するなどのフォールバック処理を行うこと。
-
-2.  **`prepareGanttData(tasks)`:**
-
-      * 取得したタスクデータをGoogle ChartsのGantt Chartが要求する`DataTable`の行データ形式（`[TaskID, TaskName, Resource, StartDate, EndDate, Duration, PercentComplete, Dependencies]`）に整形する。
-      * `TaskID`: `task.id`
-      * `TaskName`: `${task.clients.name} - ${task.task_name}`
-      * `Resource`: 担当者名（`task.staffs.name`）
-      * `StartDate`: `new Date(task.created_at)`
-      * `EndDate`: `new Date(task.due_date)`
-      * `PercentComplete`: `status`に基づき計算（例: '依頼中': 0, '作業完了': 50, '確認完了': 100）。
-      * **遅延タスクの処理:** 期限(`due_date`)が過去で`status`が'確認完了'でないタスクは、描画時に特別な色（赤）を適用できるように、データ整形時または描画オプションでフラグを立てる。
-
-### B. ガントチャート描画ロジック
-
-1.  **`initializeGanttChart()`:**
-
-      * Google Chartsをロードし、`google.charts.setOnLoadCallback`内でガントチャートの初期化と描画を行う。
-
-2.  **`drawGanttChart(ganttData)`:**
-
-      * `gantt-chart-container`にチャートを描画するメインメソッド。
-      * `google.visualization.Gantt`インスタンスを作成し、整形された`ganttData`（`DataTable`）を渡す。
-      * **オプション設定:**
-          * `height`, `width`はコンテナに合わせる。
-          * `gantt.trackHeight`で各タスクバーの高さを調整し、情報密度を高める。
-          * `gantt.criticalPathEnabled: false`でクリティカルパスの自動計算を無効化し、表示をシンプルにする。
-          * `tooltip`にクライアント名、タスク名、ステータス、依頼者名を含めるようにカスタマイズを試みる。
-
-### C. 統合とモダンUIの実現
-
-1.  **担当者フィルター連携:** 既存の担当者フィルターの選択が変更された際、`fetchTasksForGantt()`を呼び出し、ガントチャートを再描画するロジックを統合する。
-
-2.  **ズーム機能:**
-
-      * 「日」「週」「月」「年」の表示切り替えボタン（例: `id="gantt-zoom-day"`, `id="gantt-zoom-week"`）をUIに追加する。
-      * 各ボタンのクリックイベントで`drawGanttChart()`を呼び出し、`options`の`gantt.scale`プロパティ（例: `'days'`, `'weeks'`, `'months'`）を変更して再描画する。
-
-3.  **遅延・ステータス色分け:**
-
-      * Google ChartsのGantt Chartは、バーの色をカスタマイズする機能（`gantt.defaultFormat`）またはCSSクラスの適用が限定的です。
-      * このため、**`PercentComplete`の値をステータスに応じて設定し、色分けに利用**するか、または**タスク名に色を示す特別なプレフィックスを付けて視覚的な区別を試みる**など、制約内で最も視覚的なフィードバックが得られる方法を選択してください。
-      * **最良の代替案:** Google Chartsではなく、より自由度の高い**Frappe Gantt**（純粋なJSライブラリ）の採用も検討し、CSSによるカスタム色分けを可能にすること。ただし、ここでは初期指図の安定性のため、**Google Chartsの標準機能で可能な範囲**での色分け（PercentCompleteによる）とします。
-
-**指示:** まずは上記のA, B, CのGoogle Charts統合までをステップバイステップで実装し、動作確認を行ってください。
+task-management.js:5176 TaskManagement initialized for task-management page
+task-management.js:146 Current user (selected staff): Object
+task-management.js:330 Tasks loaded: 25
+task-management.js:265 Recurring tasks loaded: 2
+task-management.js:240 Templates loaded: 6
+task-management.js:215 Master data loaded: Object
+task-management.js:4709 ⚙️ テンプレート編集モーダルのイベントリスナーを設定中...
+task-management.js:4771 ✅ テンプレート編集モーダルのイベントリスナー設定完了
+task-management.js:1332 Filter state restored: Object
+task-management.js:1770 Auto refresh started: 120秒間隔
+task-management.js:187 Task Management System initialized successfully
+task-management.js:2419 Gantt chart rendering error: ReferenceError: Frappe is not defined
+    at TaskManagement.updateGanttChart (task-management.js:2395:30)
+    at TaskManagement.updateCalendarView (task-management.js:2345:14)
+    at TaskManagement.updateDisplay (task-management.js:1577:18)
+    at TaskManagement.switchDisplay (task-management.js:1552:14)
+    at HTMLButtonElement.<anonymous> (task-management.js:364:22)
+updateGanttChart @ task-management.js:2419

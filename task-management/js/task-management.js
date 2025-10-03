@@ -2348,6 +2348,14 @@ class TaskManagement {
     }
 
     updateGanttChart(tasks) {
+        // Frappe Ganttライブラリが読み込まれているかチェック
+        if (typeof Frappe === 'undefined') {
+            console.warn('Frappe Gantt library not loaded yet, retrying...');
+            // 100ms後に再試行
+            setTimeout(() => this.updateGanttChart(tasks), 100);
+            return;
+        }
+
         // 依頼中タスクのみをフィルタリング（随時タスク除外）
         const pendingTasks = tasks.filter(task =>
             task.status === '依頼中' &&
