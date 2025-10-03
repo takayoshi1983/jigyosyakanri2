@@ -1886,7 +1886,7 @@ class TaskManagement {
 
         // 期限の色分け
         const dueDateClass = this.getDueDateClass(task.due_date);
-        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime);
+        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime, task.status);
         const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
         const createdDateText = task.created_at ? this.formatMonthDay(task.created_at) : '-';
 
@@ -2020,7 +2020,7 @@ class TaskManagement {
         return `${month}/${day}`;
     }
 
-    formatDueDateWithWarning(dueDate, isAnytime = false) {
+    formatDueDateWithWarning(dueDate, isAnytime = false, status = null) {
         if (isAnytime) return '【随時】';
         if (!dueDate) return '-';
 
@@ -2029,8 +2029,8 @@ class TaskManagement {
         const diffDays = Math.ceil((due - today) / (1000 * 60 * 60 * 24));
         const formattedDate = this.formatMonthDay(dueDate);
 
-        if (diffDays < 0) {
-            // 期限切れの場合：⚠️アイコン + 赤文字
+        // 期限切れかつステータスが「依頼中」の場合のみ警告表示
+        if (diffDays < 0 && status === '依頼中') {
             return `⚠️${formattedDate}`;
         }
 
@@ -2168,7 +2168,7 @@ class TaskManagement {
             card.classList.add('task-completed-gray');
         }
 
-        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime);
+        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime, task.status);
         const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
         const dueDateClass = this.getDueDateClass(task.due_date);
 
@@ -2878,7 +2878,7 @@ class TaskManagement {
             item.classList.add('task-completed-gray');
         }
 
-        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime);
+        const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime, task.status);
         const dueDateClass = this.getDueDateClass(task.due_date);
 
         const statusConfig = {
@@ -2953,7 +2953,7 @@ class TaskManagement {
                 <div class="task-info" style="display: none;">
                     <span class="client-name" data-client-id="${task.client_id}" onclick="event.stopPropagation(); ${(task.client_id === 0 || task.client_id === null) ? '' : `window.location.href='../../details.html?id=${task.client_id}'`}">${(task.client_id === 0 || task.client_id === null) ? 'その他業務' : (task.clients?.name || '-')}</span>
                     <span class="task-name">${task.task_name || 'Untitled Task'}</span>
-                    <span class="due-date">期限：${this.formatDueDateWithWarning(task.due_date, task.is_anytime)}</span>
+                    <span class="due-date">期限：${this.formatDueDateWithWarning(task.due_date, task.is_anytime, task.status)}</span>
                 </div>
 
                 <!-- 右側：ステータス（上下段をまたがって表示） -->
