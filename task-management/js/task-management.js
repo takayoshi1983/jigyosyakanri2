@@ -2402,12 +2402,10 @@ class TaskManagement {
         try {
             this.gantt = new Gantt('#gantt-chart', ganttData, {
                 view_mode: this.ganttViewMode || 'Week',
-                language: 'ja',
                 bar_height: 30,
                 bar_corner_radius: 3,
                 arrow_curve: 5,
                 padding: 18,
-                view_modes: ['Day', 'Week', 'Month'],
                 on_click: (task) => {
                     // タスククリックで編集モーダル表示
                     this.editTask(task.taskId);

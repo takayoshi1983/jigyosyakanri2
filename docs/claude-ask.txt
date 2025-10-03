@@ -1,18 +1,24 @@
-task-management.js:5176 TaskManagement initialized for task-management page
-task-management.js:146 Current user (selected staff): Object
+task-management.js:5184 TaskManagement initialized for task-management page
+task-management.js:146 Current user (selected staff): {id: 7, name: '吉冨', email: 'takaoyaji14@gmail.com', role: 'admin', created_at: '2025-09-08T07:10:14', …}
 task-management.js:330 Tasks loaded: 25
 task-management.js:265 Recurring tasks loaded: 2
 task-management.js:240 Templates loaded: 6
-task-management.js:215 Master data loaded: Object
-task-management.js:4709 ⚙️ テンプレート編集モーダルのイベントリスナーを設定中...
-task-management.js:4771 ✅ テンプレート編集モーダルのイベントリスナー設定完了
-task-management.js:1332 Filter state restored: Object
+task-management.js:215 Master data loaded: {clients: 171, staffs: 11}
+task-management.js:4717 ⚙️ テンプレート編集モーダルのイベントリスナーを設定中...
+task-management.js:4779 ✅ テンプレート編集モーダルのイベントリスナー設定完了
+task-management.js:1332 Filter state restored: {assigneeFilter: 8, filters: {…}, display: 'list', timestamp: 1759512201731}
 task-management.js:1770 Auto refresh started: 120秒間隔
 task-management.js:187 Task Management System initialized successfully
-task-management.js:2419 Gantt chart rendering error: ReferenceError: Frappe is not defined
-    at TaskManagement.updateGanttChart (task-management.js:2395:30)
+task-management.js:2427 Gantt chart rendering error: TypeError: Cannot read properties of undefined (reading 'name')
+    at S.change_view_mode (frappe-gantt.umd.js:24:7054)
+    at new S (frappe-gantt.umd.js:24:3736)
+    at TaskManagement.updateGanttChart (task-management.js:2403:26)
     at TaskManagement.updateCalendarView (task-management.js:2345:14)
     at TaskManagement.updateDisplay (task-management.js:1577:18)
     at TaskManagement.switchDisplay (task-management.js:1552:14)
     at HTMLButtonElement.<anonymous> (task-management.js:364:22)
-updateGanttChart @ task-management.js:2419
+updateGanttChart @ task-management.js:2427
+updateCalendarView @ task-management.js:2345
+updateDisplay @ task-management.js:1577
+switchDisplay @ task-management.js:1552
+(anonymous) @ task-management.js:364
