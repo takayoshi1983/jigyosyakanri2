@@ -1970,7 +1970,7 @@ class TaskManagement {
         };
 
         const config = statusConfig[task.status] || statusConfig['依頼中'];
-        return `<span class="status-badge ${config.class}" style="cursor: pointer;"
+        return `<span class="status-badge ${config.class}" style="cursor: pointer; font-size: 11px"
                       title="クリックで「${config.next}」に変更"
                       onclick="event.stopPropagation(); taskManager.cycleTaskStatus(${task.id})">${config.text}</span>`;
     }
