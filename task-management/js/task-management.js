@@ -6107,10 +6107,10 @@ class TaskManagement {
      */
     async exportHolidaysCSV() {
         try {
-            // 全休日データを取得
+            // 全休日データを取得（IDを含む）
             const { data: holidays, error } = await supabase
                 .from('holidays')
-                .select('date, name, type')
+                .select('id, date, name, type')
                 .order('date', { ascending: true });
 
             if (error) throw error;
@@ -6120,13 +6120,14 @@ class TaskManagement {
                 return;
             }
 
-            // CSV形式に変換
-            let csvContent = '日付,名称,種類\n';
+            // CSV形式に変換（ID列を追加）
+            let csvContent = 'id,日付,名称,種類\n';
             holidays.forEach(h => {
+                const id = h.id;
                 const date = h.date;
                 const name = h.name || '';
                 const type = h.type || 'custom';
-                csvContent += `${date},${name},${type}\n`;
+                csvContent += `${id},${date},${name},${type}\n`;
             });
 
             // BOM付きUTF-8でダウンロード（Excel対応）
@@ -6165,6 +6166,10 @@ class TaskManagement {
             const text = await file.text();
             const lines = text.split('\n').filter(line => line.trim());
 
+            // ヘッダー行をチェック
+            const header = lines[0];
+            const hasIdColumn = header.toLowerCase().includes('id');
+
             // ヘッダー行をスキップ
             const dataLines = lines.slice(1);
 
@@ -6173,23 +6178,39 @@ class TaskManagement {
                 return;
             }
 
-            const holidays = [];
+            const holidaysToUpsert = [];
+            const csvIds = new Set(); // CSVに含まれるID
             let lineNumber = 2; // ヘッダー行の次から
 
             for (const line of dataLines) {
                 const parts = line.split(',').map(p => p.trim());
 
-                if (parts.length < 3) {
-                    console.warn(`行${lineNumber}: 形式が不正です（スキップ）: ${line}`);
-                    lineNumber++;
-                    continue;
-                }
+                // ID列の有無で処理を分岐
+                let id, date, name, type;
 
-                let [date, name, type] = parts;
+                if (hasIdColumn) {
+                    // ID列がある場合: id,日付,名称,種類
+                    if (parts.length < 4) {
+                        console.warn(`行${lineNumber}: 形式が不正です（スキップ）: ${line}`);
+                        lineNumber++;
+                        continue;
+                    }
+                    [id, date, name, type] = parts;
+                    id = id ? parseInt(id) : null;
+                    if (id) csvIds.add(id); // CSVに含まれるIDを記録
+                } else {
+                    // ID列がない場合（旧形式）: 日付,名称,種類
+                    if (parts.length < 3) {
+                        console.warn(`行${lineNumber}: 形式が不正です（スキップ）: ${line}`);
+                        lineNumber++;
+                        continue;
+                    }
+                    [date, name, type] = parts;
+                    id = null;
+                }
 
                 // 日付形式を正規化（Excel対応: 2025/10/13 -> 2025-10-13）
                 if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(date)) {
-                    // スラッシュ形式をハイフン形式に変換し、ゼロパディング
                     const dateParts = date.split('/');
                     const year = dateParts[0];
                     const month = dateParts[1].padStart(2, '0');
@@ -6197,7 +6218,7 @@ class TaskManagement {
                     date = `${year}-${month}-${day}`;
                 }
 
-                // 日付バリデーション（ハイフン形式のみ受け入れ）
+                // 日付バリデーション
                 if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
                     console.warn(`行${lineNumber}: 日付形式が不正です（スキップ）: ${date}`);
                     lineNumber++;
@@ -6211,33 +6232,68 @@ class TaskManagement {
                     continue;
                 }
 
-                holidays.push({
+                const holiday = {
                     date,
                     name: name || '休日',
                     type,
                     year: new Date(date).getFullYear(),
                     is_working_day: false
-                });
+                };
 
+                // IDがある場合は含める
+                if (id) {
+                    holiday.id = id;
+                }
+
+                holidaysToUpsert.push(holiday);
                 lineNumber++;
             }
 
-            if (holidays.length === 0) {
+            if (holidaysToUpsert.length === 0) {
                 window.showToast('有効なデータがありませんでした', 'error');
                 return;
             }
 
-            // Supabaseに一括挿入（upsert: 既存データは上書き）
-            const { data, error } = await supabase
+            // 既存の全休日データを取得
+            const { data: existingHolidays, error: fetchError } = await supabase
                 .from('holidays')
-                .upsert(holidays, {
-                    onConflict: 'date',
+                .select('id');
+
+            if (fetchError) throw fetchError;
+
+            const existingIds = new Set(existingHolidays.map(h => h.id));
+
+            // 削除対象のIDを特定（既存にあるが、CSVにないID）
+            const idsToDelete = [...existingIds].filter(id => !csvIds.has(id));
+
+            // トランザクション的に処理
+            // 1. データをupsert（IDベース）
+            const { error: upsertError } = await supabase
+                .from('holidays')
+                .upsert(holidaysToUpsert, {
+                    onConflict: 'id',
                     ignoreDuplicates: false
                 });
 
-            if (error) throw error;
+            if (upsertError) throw upsertError;
 
-            window.showToast(`${holidays.length}件の休日データをインポートしました`, 'success');
+            // 2. CSVに含まれていないIDを削除
+            let deletedCount = 0;
+            if (hasIdColumn && idsToDelete.length > 0) {
+                const { error: deleteError } = await supabase
+                    .from('holidays')
+                    .delete()
+                    .in('id', idsToDelete);
+
+                if (deleteError) throw deleteError;
+                deletedCount = idsToDelete.length;
+            }
+
+            const message = deletedCount > 0
+                ? `${holidaysToUpsert.length}件を登録、${deletedCount}件を削除しました`
+                : `${holidaysToUpsert.length}件の休日データをインポートしました`;
+
+            window.showToast(message, 'success');
 
             // インポート結果を表示
             const resultDiv = document.getElementById('csv-import-result');

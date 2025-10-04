@@ -743,9 +743,15 @@
                         <h4 style="margin-top: 0;">💡 CSV形式について</h4>
                         <p style="margin: 5px 0; font-size: 14px;">休日データをCSV形式でインポート・エクスポートできます。</p>
                         <p style="margin: 5px 0; font-size: 13px; color: #555;">
-                            <strong>形式:</strong> <code>日付,名称,種類</code><br>
+                            <strong>形式:</strong> <code>id,日付,名称,種類</code><br>
                             <strong>種類:</strong> <code>national</code>(祝日), <code>company</code>(会社休日), <code>custom</code>(カスタム)<br>
-                            <strong>例:</strong> <code>2025-12-30,年末休業,company</code>
+                            <strong>例:</strong> <code>123,2025-12-30,年末休業,company</code>
+                        </p>
+                        <p style="margin: 10px 0 5px 0; font-size: 12px; color: #856404; background: #fff3cd; padding: 8px; border-radius: 4px; border-left: 3px solid #ffc107;">
+                            <strong>⚠️ 重要:</strong> エクスポートしたCSVを編集してインポートすると、CSVの内容が正として扱われます。<br>
+                            • 日付を変更した場合、古い日付のデータは自動的に削除されます<br>
+                            • CSVから行を削除した場合、その休日も削除されます<br>
+                            • 新しい行を追加した場合（ID列を空にする）、新規休日として登録されます
                         </p>
                     </div>
 
