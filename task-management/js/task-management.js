@@ -2374,19 +2374,16 @@ class TaskManagement {
                         // タスク情報を取得
                         const task = this.tasks.find(t => t.id === taskId);
 
-                        // 随時タスクを確認完了にドロップした場合の警告
+                        // 随時タスクを確認完了にドロップした場合は禁止
                         if (task && task.is_anytime && newStatus === '確認完了') {
-                            if (!confirm('随時タスクは確認完了にできません。\n自動的に「依頼中」に戻し、予定日をクリアします。\nよろしいですか？')) {
-                                // キャンセル時は元の位置に戻す
-                                evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
-                                return;
-                            }
-                            // 依頼中に戻す
-                            await this.updateTaskStatus(taskId, '依頼中');
-                        } else {
-                            // 通常のステータス更新
-                            await this.updateTaskStatus(taskId, newStatus);
+                            // 元の位置に戻す
+                            evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
+                            window.showToast('随時タスクは確認完了にできません', 'warning');
+                            return;
                         }
+
+                        // 通常のステータス更新
+                        await this.updateTaskStatus(taskId, newStatus);
                     } catch (error) {
                         console.error('Failed to update task status:', error);
                         // エラー時は元の位置に戻す
@@ -2395,7 +2392,16 @@ class TaskManagement {
                     }
                 },
                 onMove: (evt) => {
-                    // ドラッグ中の視覚的フィードバック
+                    // 随時タスクを確認完了にドロップしようとしている場合は禁止
+                    const taskId = parseInt(evt.dragged.dataset.taskId);
+                    const task = this.tasks.find(t => t.id === taskId);
+                    const targetStatus = evt.to.parentElement.dataset.status;
+
+                    if (task && task.is_anytime && targetStatus === '確認完了') {
+                        // ドロップを禁止
+                        return false;
+                    }
+
                     return true;
                 }
             });
