@@ -2559,7 +2559,7 @@ class TaskManagement {
             const businessDayBlocks = workPeriod.businessDays.map(businessDay => {
                 const bdIndex = dates.findIndex(d => d.getTime() === businessDay.getTime());
                 if (bdIndex === -1) return '';
-                return `<div style="position: absolute; left: ${bdIndex * cellWidth + 1}px; width: ${cellWidth - 2}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 3px;"></div>`;
+                return `<div style="position: absolute; left: ${bdIndex * cellWidth + 1}px; width: ${cellWidth - 1}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 3px;"></div>`;
             }).join('');
 
             return `
