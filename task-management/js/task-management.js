@@ -6185,9 +6185,19 @@ class TaskManagement {
                     continue;
                 }
 
-                const [date, name, type] = parts;
+                let [date, name, type] = parts;
 
-                // 日付バリデーション
+                // 日付形式を正規化（Excel対応: 2025/10/13 -> 2025-10-13）
+                if (/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(date)) {
+                    // スラッシュ形式をハイフン形式に変換し、ゼロパディング
+                    const dateParts = date.split('/');
+                    const year = dateParts[0];
+                    const month = dateParts[1].padStart(2, '0');
+                    const day = dateParts[2].padStart(2, '0');
+                    date = `${year}-${month}-${day}`;
+                }
+
+                // 日付バリデーション（ハイフン形式のみ受け入れ）
                 if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
                     console.warn(`行${lineNumber}: 日付形式が不正です（スキップ）: ${date}`);
                     lineNumber++;
