@@ -6299,7 +6299,7 @@ class TaskManagement {
             const resultDiv = document.getElementById('csv-import-result');
             const resultText = document.getElementById('csv-import-result-text');
             if (resultDiv && resultText) {
-                resultText.textContent = `${holidays.length}件の休日データを登録しました。`;
+                resultText.textContent = `${holidaysToUpsert.length}件の休日データを登録しました。`;
                 resultDiv.style.display = 'block';
 
                 // 3秒後に非表示

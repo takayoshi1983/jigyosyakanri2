@@ -1,10 +1,40 @@
-Loaded 0 vacation days for staff 7
-task-management.js:2460 📅 updateCalendarView called, tasks: 4
-task-management.js:2461 📅 currentAssigneeFilter: 7
-task-management.js:2469 📅 pendingTasks: 4
-business-day-calculator.js:90 Loaded 0 vacation days for staff 7
-task-management.js:1848 Auto refresh skipped: user is interacting
-task-management.js:6324 CSVインポートエラー: ReferenceError: holidays is not defined
-    at TaskManagement.importHolidaysCSV (task-management.js:6302:45)
-importHolidaysCSV	@	task-management.js:6324
+3. 自己タスク（依頼者=受任者）の扱い 🤔💡
+あなたの提案は完璧です！さらに改善案：
+実装提案：
+新しいフラグ追加:
+ALTER TABLE tasks ADD COLUMN is_self_task BOOLEAN DEFAULT FALSE;
+または、既存データで判定:
+const isSelfTask = task.requester_id === task.assignee_id;
+ワークフロー:
 
+タイプ
+条件
+ステータス遷移
+
+通常タスク ok
+依頼者≠受任者
+依頼中 → 確認待ち → 確認完了 → 依頼中
+
+随時タスク ok
+is_anytime=true, 依頼者≠受任者
+依頼中 → 確認待ち → 依頼中（予定日削除）
+
+自己タスク（通常）
+依頼者=受任者, is_anytime=false
+依頼中 → 確認完了 → 依頼中（確認完了で翌日まで置いていると非表示となり履歴へ移動）
+
+自己タスク（随時）
+依頼者=受任者, is_anytime=true
+依頼中 → 予定未定
+
+
+メリット:
+無駄な「確認待ち」状態を排除
+セルフチェックリストとして機能
+ワークフローが自然
+
+実装の優先順位（推奨）：
+随時タスクのガントチャート表示（影響小、価値大）完了済み
+随時タスクの予定日削除ロジック（既存修正）完了済み
+自己タスクワークフロー（新機能、慎重に）
+個人休暇タブ削除（簡単）
