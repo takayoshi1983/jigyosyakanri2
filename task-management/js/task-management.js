@@ -2438,7 +2438,7 @@ class TaskManagement {
             const bgColor = isSunday ? '#ffe6e6' : isSaturday ? '#e6f2ff' : '#fff';
 
             return `
-                <div style="flex: 0 0 ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0;">
+                <div style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0;">
                     ${day}
                 </div>
             `;
@@ -2499,7 +2499,7 @@ class TaskManagement {
                     <!-- 日付ヘッダー -->
                     <div style="display: flex; border-bottom: 2px solid #dee2e6;">
                         <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa;">ID</div>
-                        <div style="flex: 1; display: flex;">
+                        <div style="flex: 1; position: relative; height: 28px;">
                             ${dateHeaders}
                         </div>
                     </div>
@@ -2538,17 +2538,15 @@ class TaskManagement {
 
     // 全タスクを統一カード形式で表示（5列レイアウト）
     updateAllTasksCards(pendingTasks, allTasks) {
-        // 随時タスク
-        const anytimeTasks = pendingTasks.filter(task => task.is_anytime);
-        // 非随時・依頼中タスク（ガントチャート表示対象）
-        const ganttTasks = pendingTasks.filter(task => !task.is_anytime && task.due_date);
+        // 依頼中タスク（随時含む全て）
+        const allPendingTasks = pendingTasks;
         // 確認待ちタスク
         const workingTasks = allTasks.filter(task => task.status === '作業完了');
         // 確認完了タスク
         const completedTasks = allTasks.filter(task => task.status === '確認完了');
 
-        // 随時タスク表示
-        this.renderTaskCards('anytime-tasks-list', anytimeTasks, '随時タスクはありません', true);
+        // 依頼中タスク表示（随時含む）
+        this.renderTaskCards('anytime-tasks-list', allPendingTasks, '依頼中タスクはありません');
 
         // 確認待ちタスク表示
         this.renderTaskCards('working-tasks-list', workingTasks, '確認待ちタスクはありません', false, true);
@@ -2587,8 +2585,8 @@ class TaskManagement {
                     return `
                         <div style="
                             position: relative;
-                            flex: 0 1 calc(20% - 10px);
-                            min-width: 140px;
+                            flex: 0 0 calc(20% - 10px);
+                            max-width: calc(20% - 10px);
                             padding: 10px;
                             padding-right: ${badge ? '45px' : '10px'};
                             background: #fff;
