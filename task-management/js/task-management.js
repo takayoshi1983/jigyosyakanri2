@@ -5510,10 +5510,19 @@ class TaskManagement {
         const dateInput = document.getElementById('company-holiday-date');
         const nameInput = document.getElementById('company-holiday-name');
 
-        if (!dateInput || !nameInput) return;
+        console.log('🔍 addCompanyHoliday called');
+        console.log('dateInput:', dateInput);
+        console.log('nameInput:', nameInput);
+
+        if (!dateInput || !nameInput) {
+            console.error('❌ 入力要素が見つかりません');
+            return;
+        }
 
         const date = dateInput.value;
         const name = nameInput.value.trim() || '休業日';
+
+        console.log('📅 入力データ:', { date, name });
 
         if (!date) {
             window.showToast('日付を入力してください', 'warning');
@@ -5523,7 +5532,9 @@ class TaskManagement {
         try {
             const year = new Date(date).getFullYear();
 
-            const { error } = await supabase
+            console.log('💾 データベースに挿入中:', { year, date, name, type: 'company' });
+
+            const { data, error } = await supabase
                 .from('holidays')
                 .insert({
                     year: year,
@@ -5531,9 +5542,15 @@ class TaskManagement {
                     name: name,
                     type: 'company',
                     is_working_day: false
-                });
+                })
+                .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Supabaseエラー:', error);
+                throw error;
+            }
+
+            console.log('✅ 挿入成功:', data);
 
             window.showToast('会社休日を追加しました', 'success');
             dateInput.value = '';
@@ -5547,12 +5564,13 @@ class TaskManagement {
 
             // ガントチャートを更新（表示中の場合）
             if (this.currentDisplay === 'gantt') {
+                console.log('📊 ガントチャートを更新中...');
                 this.updateDisplay();
             }
 
         } catch (error) {
             console.error('会社休日の追加エラー:', error);
-            window.showToast('会社休日の追加に失敗しました', 'error');
+            window.showToast('会社休日の追加に失敗しました: ' + error.message, 'error');
         }
     }
 
