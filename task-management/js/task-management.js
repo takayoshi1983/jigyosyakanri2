@@ -2391,7 +2391,7 @@ class TaskManagement {
         if (ganttTasks.length === 0) {
             document.getElementById('gantt-chart-container').innerHTML = `
                 <p style="text-align: center; padding: 30px; color: #6c757d;">
-                    表示するタスクがありません
+                    予定日が決まったタスクがありません
                 </p>
             `;
             return;
