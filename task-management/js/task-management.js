@@ -2715,12 +2715,8 @@ class TaskManagement {
                     deleteBtn.style.display = task.requester_id === this.currentUser.id ? 'inline-block' : 'none';
                 }
 
-                // タスク詳細情報の表示（viewModeの場合のみ）
-                if (viewMode) {
-                    this.showTaskDetailInfo(task);
-                } else {
-                    this.hideTaskDetailInfo();
-                }
+                // タスク詳細情報の表示（既存タスクの場合は常に表示）
+                this.showTaskDetailInfo(task);
             }
             form.dataset.taskId = taskId;
         } else if (!templateMode) {
