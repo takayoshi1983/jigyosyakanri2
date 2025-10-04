@@ -2429,7 +2429,7 @@ class TaskManagement {
         return result;
     }
 
-    updateGanttChart(tasks) {
+    async updateGanttChart(tasks) {
         // 随時タスク除外（tasksは既に依頼中のみ）
         const ganttTasks = tasks.filter(task => !task.is_anytime && task.work_date && task.estimated_time_hours);
 
@@ -2440,6 +2440,11 @@ class TaskManagement {
                 </p>
             `;
             return;
+        }
+
+        // 担当者フィルターが設定されている場合、そのスタッフの個人休暇を読み込む
+        if (this.currentAssigneeFilter !== null) {
+            await this.businessDayCalc.loadStaffVacations(this.currentAssigneeFilter);
         }
 
         // 今日から30日後までの日付を生成
@@ -2489,7 +2494,7 @@ class TaskManagement {
         const dateHeaders = dates.map((date, index) => {
             const day = date.getDate();
             const dayOfWeek = date.getDay();
-            const holidayType = this.businessDayCalc.getHolidayType(date);
+            const holidayType = this.businessDayCalc.getHolidayType(date, this.currentAssigneeFilter);
 
             // 休日タイプに応じた背景色とアイコン
             let bgColor = '#fff';
@@ -2508,6 +2513,9 @@ class TaskManagement {
             } else if (holidayType === 'custom') {
                 bgColor = '#f8d7da';
                 icon = '📌';
+            } else if (holidayType === 'vacation') {
+                bgColor = '#e8d4f8';
+                icon = '🌴';
             }
 
             return `
@@ -2554,7 +2562,7 @@ class TaskManagement {
                     </div>
                     <div style="flex: 1; position: relative;">
                         ${dates.map((date, i) => {
-                            const holidayType = this.businessDayCalc.getHolidayType(date);
+                            const holidayType = this.businessDayCalc.getHolidayType(date, this.currentAssigneeFilter);
 
                             // 休日タイプに応じた背景色
                             let bgColor = 'transparent';
@@ -2566,6 +2574,8 @@ class TaskManagement {
                                 bgColor = '#fff3cd';
                             } else if (holidayType === 'custom') {
                                 bgColor = '#f8d7da';
+                            } else if (holidayType === 'vacation') {
+                                bgColor = '#e8d4f8';
                             }
 
                             return `<div style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;

@@ -138,9 +138,10 @@ export class BusinessDayCalculator {
     /**
      * 休日タイプを取得（表示用）
      * @param {Date} date - 判定する日付
+     * @param {number} staffId - スタッフID（省略可）
      * @returns {string|null} - 休日タイプ or null
      */
-    getHolidayType(date) {
+    getHolidayType(date, staffId = null) {
         const dateStr = this.formatDate(date);
         const dayOfWeek = date.getDay();
 
@@ -149,6 +150,12 @@ export class BusinessDayCalculator {
         if (this.nationalHolidays.has(dateStr)) return 'national';
         if (this.companyHolidays.has(dateStr)) return 'company';
         if (this.customHolidays.has(dateStr)) return 'custom';
+
+        // 個人休暇チェック
+        if (staffId !== null) {
+            const vacations = this.staffVacations.get(staffId);
+            if (vacations?.has(dateStr)) return 'vacation';
+        }
 
         return null;
     }
