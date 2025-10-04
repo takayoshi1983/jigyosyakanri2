@@ -2707,7 +2707,13 @@ class TaskManagement {
                     const dueDate = showDueDate && task.due_date ? this.formatMonthDay(task.due_date) : '';
 
                     return `
-                        <div style="
+                        <div
+                            draggable="true"
+                            data-task-id="${task.id}"
+                            data-task-status="${task.status}"
+                            ondragstart="taskManager.handleCardDragStart(event)"
+                            ondragend="taskManager.handleCardDragEnd(event)"
+                            style="
                             position: relative;
                             flex: 0 0 calc(10% - 10px);
                             padding: 10px;
@@ -2715,13 +2721,13 @@ class TaskManagement {
                             background: #fff;
                             border: 1px solid ${isAnytime ? '#ffc107' : showDueDate ? '#28a745' : '#ffc107'};
                             border-radius: 6px;
-                            cursor: pointer;
+                            cursor: move;
                             transition: all 0.2s;
                             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                         "
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
-                        onclick="taskManager.openTaskInEditMode(${task.id})">
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
+                            ondblclick="taskManager.openTaskInEditMode(${task.id})">
                             ${badge}
                             <div style="font-weight: 600; font-size: 13px; color: #495057; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
                                 ${task.task_name || 'Untitled'}
@@ -5734,6 +5740,95 @@ class TaskManagement {
         } catch (error) {
             console.error('個人休暇の削除エラー:', error);
             window.showToast('個人休暇の削除に失敗しました', 'error');
+        }
+    }
+
+    // ========================================
+    // カード ドラッグ&ドロップ機能（ステータス変更）
+    // ========================================
+
+    handleCardDragStart(event) {
+        const taskId = event.target.dataset.taskId;
+        const currentStatus = event.target.dataset.taskStatus;
+
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('taskId', taskId);
+        event.dataTransfer.setData('currentStatus', currentStatus);
+
+        // ドラッグ中のスタイル
+        event.target.style.opacity = '0.5';
+        event.target.style.transform = 'scale(0.95)';
+    }
+
+    handleCardDragEnd(event) {
+        // ドラッグ終了時にスタイルを戻す
+        event.target.style.opacity = '1';
+        event.target.style.transform = 'scale(1)';
+    }
+
+    handleSectionDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+
+        // セクション全体をハイライト
+        const section = event.currentTarget;
+        section.style.boxShadow = '0 0 0 3px rgba(23, 162, 184, 0.5)';
+        section.style.transform = 'scale(1.02)';
+    }
+
+    handleSectionDragLeave(event) {
+        // ハイライトを解除（子要素への移動を考慮）
+        const section = event.currentTarget;
+        if (!section.contains(event.relatedTarget)) {
+            section.style.boxShadow = '';
+            section.style.transform = 'scale(1)';
+        }
+    }
+
+    async handleSectionDrop(event) {
+        event.preventDefault();
+
+        // ハイライトを解除
+        const section = event.currentTarget;
+        section.style.boxShadow = '';
+        section.style.transform = 'scale(1)';
+
+        const taskId = parseInt(event.dataTransfer.getData('taskId'));
+        const currentStatus = event.dataTransfer.getData('currentStatus');
+        const newStatus = section.dataset.status;
+
+        if (!taskId || !newStatus) return;
+
+        // 同じステータスへのドロップは無視
+        if (currentStatus === newStatus) {
+            window.showToast('既に同じステータスです', 'info');
+            return;
+        }
+
+        try {
+            // ステータスを更新
+            const { error } = await supabase
+                .from('tasks')
+                .update({ status: newStatus })
+                .eq('id', taskId);
+
+            if (error) throw error;
+
+            const statusNames = {
+                '依頼中': '依頼中',
+                '作業完了': '確認待ち',
+                '確認完了': '確認完了'
+            };
+
+            window.showToast(`ステータスを「${statusNames[newStatus]}」に変更しました`, 'success');
+
+            // 表示を更新
+            await this.loadTasks();
+            this.updateDisplay();
+
+        } catch (error) {
+            console.error('ステータス変更エラー:', error);
+            window.showToast('ステータスの変更に失敗しました', 'error');
         }
     }
 

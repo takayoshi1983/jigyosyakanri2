@@ -248,29 +248,44 @@
                         </div>
 
                         <!-- 依頼中タスク一覧（常時表示） -->
-                        <div id="anytime-tasks-section" style="background: #fff9e6; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #ffc107;">
+                        <div id="anytime-tasks-section"
+                            data-status="依頼中"
+                            ondragover="taskManager.handleSectionDragOver(event)"
+                            ondragleave="taskManager.handleSectionDragLeave(event)"
+                            ondrop="taskManager.handleSectionDrop(event)"
+                            style="background: #fff9e6; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #ffc107; transition: all 0.2s;">
                             <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #856404;">📋 依頼中タスク</h4>
-                            <div id="anytime-tasks-list" style="font-size: 13px;">
+                            <div id="anytime-tasks-list" style="font-size: 13px; min-height: 50px;">
                                 <!-- 依頼中タスクがここに表示されます -->
                             </div>
                         </div>
 
                         <!-- 確認待ちタスク（折りたたみ） -->
-                        <div id="working-tasks-section" style="background: #ffe6e6; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #dc3545;">
+                        <div id="working-tasks-section"
+                            data-status="作業完了"
+                            ondragover="taskManager.handleSectionDragOver(event)"
+                            ondragleave="taskManager.handleSectionDragLeave(event)"
+                            ondrop="taskManager.handleSectionDrop(event)"
+                            style="background: #ffe6e6; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #dc3545; transition: all 0.2s;">
                             <h4 id="working-tasks-header" style="margin: 0; font-size: 14px; color: #721c24; cursor: pointer; user-select: none;">
                                 ▼ 確認待ち (<span id="working-tasks-count">0</span>件)
                             </h4>
-                            <div id="working-tasks-list" style="font-size: 13px; color: #721c24; margin-top: 10px; display: none;">
+                            <div id="working-tasks-list" style="font-size: 13px; color: #721c24; margin-top: 10px; display: none; min-height: 50px;">
                                 <!-- 確認待ちタスクがここに表示されます -->
                             </div>
                         </div>
 
                         <!-- 確認完了タスク（折りたたみ） -->
-                        <div id="completed-tasks-section" style="background: #e9ecef; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #6c757d;">
+                        <div id="completed-tasks-section"
+                            data-status="確認完了"
+                            ondragover="taskManager.handleSectionDragOver(event)"
+                            ondragleave="taskManager.handleSectionDragLeave(event)"
+                            ondrop="taskManager.handleSectionDrop(event)"
+                            style="background: #e9ecef; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #6c757d; transition: all 0.2s;">
                             <h4 id="completed-tasks-header" style="margin: 0; font-size: 14px; color: #495057; cursor: pointer; user-select: none;">
                                 ▼ 確認完了 (<span id="completed-tasks-count">0</span>件)
                             </h4>
-                            <div id="completed-tasks-list" style="font-size: 13px; color: #495057; margin-top: 10px; display: none;">
+                            <div id="completed-tasks-list" style="font-size: 13px; color: #495057; margin-top: 10px; display: none; min-height: 50px;">
                                 <!-- 確認完了タスクがここに表示されます -->
                             </div>
                         </div>
