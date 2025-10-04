@@ -5932,26 +5932,20 @@ class TaskManagement {
             return;
         }
 
+        // タスク情報を取得
+        const task = this.tasks.find(t => t.id === taskId);
+
+        console.log('📋 handleSectionDrop - taskId:', taskId, 'is_anytime:', task?.is_anytime, 'newStatus:', newStatus);
+
+        // 随時タスクを確認完了にドロップした場合は禁止
+        if (task && task.is_anytime && newStatus === '確認完了') {
+            window.showToast('随時タスクは確認完了にできません', 'warning');
+            return;
+        }
+
         try {
-            // ステータスを更新
-            const { error } = await supabase
-                .from('tasks')
-                .update({ status: newStatus })
-                .eq('id', taskId);
-
-            if (error) throw error;
-
-            const statusNames = {
-                '依頼中': '依頼中',
-                '作業完了': '確認待ち',
-                '確認完了': '確認完了'
-            };
-
-            window.showToast(`ステータスを「${statusNames[newStatus]}」に変更しました`, 'success');
-
-            // 表示を更新
-            await this.loadTasks();
-            this.updateDisplay();
+            // updateTaskStatusを使用（work_date削除ロジックを含む）
+            await this.updateTaskStatus(taskId, newStatus);
 
         } catch (error) {
             console.error('ステータス変更エラー:', error);
