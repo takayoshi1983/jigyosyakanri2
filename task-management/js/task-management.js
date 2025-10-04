@@ -6005,43 +6005,6 @@ class TaskManagement {
         }
     }
 
-}
-
-// グローバルインスタンス（タスク管理ページでのみ初期化）
-document.addEventListener('DOMContentLoaded', () => {
-    // DOM要素が存在する場合のみTaskManagementを初期化
-    const taskManagementElements = [
-        'task-display-area',
-        'assignee-sidebar',
-        'tasks-table'
-    ];
-
-    const isTaskManagementPage = taskManagementElements.some(id => document.getElementById(id) !== null);
-
-    if (isTaskManagementPage) {
-        window.taskManager = new TaskManagement();
-        console.log('TaskManagement initialized for task-management page');
-    } else {
-        console.log('TaskManagement initialization skipped - not on task-management page');
-    }
-
-    // 設定画面リンクのイベントリスナー（全ページ共通）
-    const settingsLink = document.querySelector('.nav-tab.settings');
-    if (settingsLink) {
-        settingsLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            // supabase-client.jsのSupabaseAPIを使用
-            if (window.SupabaseAPI && window.SupabaseAPI.redirectToSettings) {
-                window.SupabaseAPI.redirectToSettings();
-            } else {
-                // フォールバック：直接import
-                import('../../supabase-client.js').then(module => {
-                    module.SupabaseAPI.redirectToSettings();
-                });
-            }
-        });
-    }
-
     // ========================================
     // CSV エクスポート・インポート機能
     // ========================================
@@ -6202,5 +6165,42 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('CSVインポートエラー:', error);
             window.showToast('CSVインポートに失敗しました', 'error');
         }
+    }
+
+}
+
+// グローバルインスタンス（タスク管理ページでのみ初期化）
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM要素が存在する場合のみTaskManagementを初期化
+    const taskManagementElements = [
+        'task-display-area',
+        'assignee-sidebar',
+        'tasks-table'
+    ];
+
+    const isTaskManagementPage = taskManagementElements.some(id => document.getElementById(id) !== null);
+
+    if (isTaskManagementPage) {
+        window.taskManager = new TaskManagement();
+        console.log('TaskManagement initialized for task-management page');
+    } else {
+        console.log('TaskManagement initialization skipped - not on task-management page');
+    }
+
+    // 設定画面リンクのイベントリスナー（全ページ共通）
+    const settingsLink = document.querySelector('.nav-tab.settings');
+    if (settingsLink) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            // supabase-client.jsのSupabaseAPIを使用
+            if (window.SupabaseAPI && window.SupabaseAPI.redirectToSettings) {
+                window.SupabaseAPI.redirectToSettings();
+            } else {
+                // フォールバック：直接import
+                import('../../supabase-client.js').then(module => {
+                    module.SupabaseAPI.redirectToSettings();
+                });
+            }
+        });
     }
 });
