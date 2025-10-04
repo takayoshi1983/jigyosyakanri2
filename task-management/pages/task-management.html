@@ -710,7 +710,7 @@
                 <!-- タブ切り替え -->
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #dee2e6;">
                     <button id="holiday-tab-company" class="btn btn-sm" style="padding: 8px 16px; border-bottom: 3px solid #007bff; background: transparent; color: #007bff;">会社休日</button>
-                    <button id="holiday-tab-staff" class="btn btn-sm" style="padding: 8px 16px; background: transparent; color: #6c757d;">個人休暇</button>
+                    <button id="holiday-tab-csv" class="btn btn-sm" style="padding: 8px 16px; background: transparent; color: #6c757d;">CSV入出力</button>
                 </div>
 
                 <!-- 会社休日タブ -->
@@ -736,47 +736,43 @@
                     </div>
                 </div>
 
-                <!-- 個人休暇タブ -->
-                <div id="holiday-panel-staff" style="display: none;">
+                <!-- CSV入出力タブ -->
+                <div id="holiday-panel-csv" style="display: none;">
+                    <!-- CSV形式説明 -->
+                    <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+                        <h4 style="margin-top: 0;">💡 CSV形式について</h4>
+                        <p style="margin: 5px 0; font-size: 14px;">休日データをCSV形式でインポート・エクスポートできます。</p>
+                        <p style="margin: 5px 0; font-size: 13px; color: #555;">
+                            <strong>形式:</strong> <code>日付,名称,種類</code><br>
+                            <strong>種類:</strong> <code>national</code>(祝日), <code>company</code>(会社休日), <code>custom</code>(カスタム)<br>
+                            <strong>例:</strong> <code>2025-12-30,年末休業,company</code>
+                        </p>
+                    </div>
+
+                    <!-- エクスポート -->
                     <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <h4 style="margin-top: 0;">個人休暇を追加</h4>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; align-items: flex-end; margin-bottom: 10px;">
-                            <div>
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">スタッフ:</label>
-                                <select id="staff-vacation-staff" class="form-control">
-                                    <option value="">選択してください</option>
-                                    <!-- スタッフリストが動的に追加されます -->
-                                </select>
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">開始日:</label>
-                                <input type="date" id="staff-vacation-start" class="form-control">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">終了日:</label>
-                                <input type="date" id="staff-vacation-end" class="form-control">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">種類:</label>
-                                <select id="staff-vacation-type" class="form-control">
-                                    <option value="personal">私用</option>
-                                    <option value="sick">病欠</option>
-                                    <option value="paid">有給</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 10px; align-items: flex-end;">
-                            <div style="flex: 1;">
-                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">備考（任意）:</label>
-                                <input type="text" id="staff-vacation-notes" class="form-control" placeholder="例: 家族旅行">
-                            </div>
-                            <button id="add-staff-vacation-btn" class="btn" style="background: #28a745; color: white;">追加</button>
+                        <h4 style="margin-top: 0;">📤 エクスポート</h4>
+                        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">登録済みの休日データをCSVファイルとしてダウンロードします。</p>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="export-holidays-csv-btn" class="btn" style="background: #17a2b8; color: white;">全休日データをエクスポート</button>
                         </div>
                     </div>
 
-                    <h4>登録済み個人休暇</h4>
-                    <div id="staff-vacations-list" style="max-height: 300px; overflow-y: auto;">
-                        <!-- 個人休暇リストがここに表示されます -->
+                    <!-- インポート -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0;">📥 インポート</h4>
+                        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">CSVファイルから休日データを一括登録します。</p>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="file" id="import-holidays-csv-file" accept=".csv" class="form-control" style="flex: 1;">
+                            <button id="import-holidays-csv-btn" class="btn" style="background: #28a745; color: white;">インポート</button>
+                        </div>
+                        <p style="font-size: 12px; color: #999; margin-top: 8px;">※既存データとの重複（同じ日付）がある場合、新しいデータで上書きされます。</p>
+                    </div>
+
+                    <!-- インポート結果表示 -->
+                    <div id="csv-import-result" style="display: none; background: #d4edda; border: 1px solid #c3e6cb; padding: 12px; border-radius: 5px; margin-top: 15px;">
+                        <strong style="color: #155724;">✅ インポート成功</strong>
+                        <p id="csv-import-result-text" style="margin: 5px 0 0 0; font-size: 14px; color: #155724;"></p>
                     </div>
                 </div>
             </div>

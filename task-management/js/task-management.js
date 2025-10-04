@@ -426,13 +426,13 @@ class TaskManagement {
 
         // 休日管理：タブ切り替え
         const companyTab = document.getElementById('holiday-tab-company');
-        const staffTab = document.getElementById('holiday-tab-staff');
-        if (companyTab && staffTab) {
+        const csvTab = document.getElementById('holiday-tab-csv');
+        if (companyTab && csvTab) {
             companyTab.addEventListener('click', () => {
                 this.switchHolidayTab('company');
             });
-            staffTab.addEventListener('click', () => {
-                this.switchHolidayTab('staff');
+            csvTab.addEventListener('click', () => {
+                this.switchHolidayTab('csv');
             });
         }
 
@@ -444,11 +444,19 @@ class TaskManagement {
             });
         }
 
-        // 休日管理：個人休暇追加
-        const addStaffVacationBtn = document.getElementById('add-staff-vacation-btn');
-        if (addStaffVacationBtn) {
-            addStaffVacationBtn.addEventListener('click', () => {
-                this.addStaffVacation();
+        // CSV：エクスポートボタン
+        const exportHolidaysCsvBtn = document.getElementById('export-holidays-csv-btn');
+        if (exportHolidaysCsvBtn) {
+            exportHolidaysCsvBtn.addEventListener('click', () => {
+                this.exportHolidaysCSV();
+            });
+        }
+
+        // CSV：インポートボタン
+        const importHolidaysCsvBtn = document.getElementById('import-holidays-csv-btn');
+        if (importHolidaysCsvBtn) {
+            importHolidaysCsvBtn.addEventListener('click', () => {
+                this.importHolidaysCSV();
             });
         }
 
@@ -2363,8 +2371,22 @@ class TaskManagement {
                     console.log(`Moving task ${taskId} to status: ${newStatus}`);
 
                     try {
-                        // ステータス更新
-                        await this.updateTaskStatus(taskId, newStatus);
+                        // タスク情報を取得
+                        const task = this.tasks.find(t => t.id === taskId);
+
+                        // 随時タスクを確認完了にドロップした場合の警告
+                        if (task && task.is_anytime && newStatus === '確認完了') {
+                            if (!confirm('随時タスクは確認完了にできません。\n自動的に「依頼中」に戻し、予定日をクリアします。\nよろしいですか？')) {
+                                // キャンセル時は元の位置に戻す
+                                evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
+                                return;
+                            }
+                            // 依頼中に戻す
+                            await this.updateTaskStatus(taskId, '依頼中');
+                        } else {
+                            // 通常のステータス更新
+                            await this.updateTaskStatus(taskId, newStatus);
+                        }
                     } catch (error) {
                         console.error('Failed to update task status:', error);
                         // エラー時は元の位置に戻す
@@ -2406,8 +2428,8 @@ class TaskManagement {
     }
 
     async updateGanttChart(tasks) {
-        // 随時タスク除外（tasksは既に依頼中のみ）
-        const ganttTasks = tasks.filter(task => !task.is_anytime && task.work_date && task.estimated_time_hours);
+        // 随時タスクでもwork_dateがあれば表示（tasksは既に依頼中のみ）
+        const ganttTasks = tasks.filter(task => task.work_date && task.estimated_time_hours);
 
         if (ganttTasks.length === 0) {
             document.getElementById('gantt-chart-container').innerHTML = `
@@ -3164,12 +3186,21 @@ class TaskManagement {
 
     async updateTaskStatus(taskId, newStatus) {
         try {
+            // タスク情報を取得
+            const task = this.tasks.find(t => t.id === taskId);
+
             const updateData = { status: newStatus };
 
             if (newStatus === '作業完了') {
                 updateData.completed_at = new Date().toISOString();
             } else if (newStatus === '確認完了') {
                 updateData.confirmed_at = new Date().toISOString();
+            }
+
+            // 随時タスクが「確認待ち→依頼中」に戻る場合、work_dateを削除
+            if (task && task.is_anytime && newStatus === '依頼中') {
+                updateData.work_date = null;
+                console.log('随時タスクが依頼中に戻ったため、work_dateを削除しました');
             }
 
             const { error } = await supabase
@@ -5426,26 +5457,26 @@ class TaskManagement {
     // タブ切り替え
     switchHolidayTab(tab) {
         const companyTab = document.getElementById('holiday-tab-company');
-        const staffTab = document.getElementById('holiday-tab-staff');
+        const csvTab = document.getElementById('holiday-tab-csv');
         const companyPanel = document.getElementById('holiday-panel-company');
-        const staffPanel = document.getElementById('holiday-panel-staff');
+        const csvPanel = document.getElementById('holiday-panel-csv');
 
         if (tab === 'company') {
             // 会社休日タブをアクティブに
             companyTab.style.borderBottom = '3px solid #007bff';
             companyTab.style.color = '#007bff';
-            staffTab.style.borderBottom = 'none';
-            staffTab.style.color = '#6c757d';
+            csvTab.style.borderBottom = 'none';
+            csvTab.style.color = '#6c757d';
             companyPanel.style.display = 'block';
-            staffPanel.style.display = 'none';
-        } else {
-            // 個人休暇タブをアクティブに
+            csvPanel.style.display = 'none';
+        } else if (tab === 'csv') {
+            // CSV入出力タブをアクティブに
             companyTab.style.borderBottom = 'none';
             companyTab.style.color = '#6c757d';
-            staffTab.style.borderBottom = '3px solid #007bff';
-            staffTab.style.color = '#007bff';
+            csvTab.style.borderBottom = '3px solid #007bff';
+            csvTab.style.color = '#007bff';
             companyPanel.style.display = 'none';
-            staffPanel.style.display = 'block';
+            csvPanel.style.display = 'block';
         }
     }
 
@@ -6009,5 +6040,167 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
+    }
+
+    // ========================================
+    // CSV エクスポート・インポート機能
+    // ========================================
+
+    /**
+     * 休日データをCSV形式でエクスポート
+     */
+    async exportHolidaysCSV() {
+        try {
+            // 全休日データを取得
+            const { data: holidays, error } = await supabase
+                .from('holidays')
+                .select('date, name, type')
+                .order('date', { ascending: true });
+
+            if (error) throw error;
+
+            if (!holidays || holidays.length === 0) {
+                window.showToast('エクスポートする休日データがありません', 'info');
+                return;
+            }
+
+            // CSV形式に変換
+            let csvContent = '日付,名称,種類\n';
+            holidays.forEach(h => {
+                const date = h.date;
+                const name = h.name || '';
+                const type = h.type || 'custom';
+                csvContent += `${date},${name},${type}\n`;
+            });
+
+            // BOM付きUTF-8でダウンロード（Excel対応）
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `holidays_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            window.showToast(`${holidays.length}件の休日データをエクスポートしました`, 'success');
+
+        } catch (error) {
+            console.error('CSVエクスポートエラー:', error);
+            window.showToast('CSVエクスポートに失敗しました', 'error');
+        }
+    }
+
+    /**
+     * CSVファイルから休日データをインポート
+     */
+    async importHolidaysCSV() {
+        const fileInput = document.getElementById('import-holidays-csv-file');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            window.showToast('CSVファイルを選択してください', 'info');
+            return;
+        }
+
+        try {
+            const text = await file.text();
+            const lines = text.split('\n').filter(line => line.trim());
+
+            // ヘッダー行をスキップ
+            const dataLines = lines.slice(1);
+
+            if (dataLines.length === 0) {
+                window.showToast('インポートするデータがありません', 'info');
+                return;
+            }
+
+            const holidays = [];
+            let lineNumber = 2; // ヘッダー行の次から
+
+            for (const line of dataLines) {
+                const parts = line.split(',').map(p => p.trim());
+
+                if (parts.length < 3) {
+                    console.warn(`行${lineNumber}: 形式が不正です（スキップ）: ${line}`);
+                    lineNumber++;
+                    continue;
+                }
+
+                const [date, name, type] = parts;
+
+                // 日付バリデーション
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+                    console.warn(`行${lineNumber}: 日付形式が不正です（スキップ）: ${date}`);
+                    lineNumber++;
+                    continue;
+                }
+
+                // 種類バリデーション
+                if (!['national', 'company', 'custom'].includes(type)) {
+                    console.warn(`行${lineNumber}: 種類が不正です（スキップ）: ${type}`);
+                    lineNumber++;
+                    continue;
+                }
+
+                holidays.push({
+                    date,
+                    name: name || '休日',
+                    type,
+                    year: new Date(date).getFullYear(),
+                    is_working_day: false
+                });
+
+                lineNumber++;
+            }
+
+            if (holidays.length === 0) {
+                window.showToast('有効なデータがありませんでした', 'error');
+                return;
+            }
+
+            // Supabaseに一括挿入（upsert: 既存データは上書き）
+            const { data, error } = await supabase
+                .from('holidays')
+                .upsert(holidays, {
+                    onConflict: 'date',
+                    ignoreDuplicates: false
+                });
+
+            if (error) throw error;
+
+            window.showToast(`${holidays.length}件の休日データをインポートしました`, 'success');
+
+            // インポート結果を表示
+            const resultDiv = document.getElementById('csv-import-result');
+            const resultText = document.getElementById('csv-import-result-text');
+            if (resultDiv && resultText) {
+                resultText.textContent = `${holidays.length}件の休日データを登録しました。`;
+                resultDiv.style.display = 'block';
+
+                // 3秒後に非表示
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 3000);
+            }
+
+            // 休日データを再読み込み
+            await this.businessDayCalc.loadHolidays();
+            await this.loadCompanyHolidays();
+
+            // ガントチャートを更新
+            if (this.currentDisplay === 'gantt') {
+                this.updateDisplay();
+            }
+
+            // ファイル選択をリセット
+            fileInput.value = '';
+
+        } catch (error) {
+            console.error('CSVインポートエラー:', error);
+            window.showToast('CSVインポートに失敗しました', 'error');
+        }
     }
 });
