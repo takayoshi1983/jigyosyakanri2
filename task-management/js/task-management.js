@@ -1386,6 +1386,26 @@ class TaskManagement {
             this.updateFilterUI();
             // タイトルも更新
             this.updateTaskPanelTitle();
+
+            // 表示形式も復元（ボタンのactive状態とビューの表示を同期）
+            if (savedState.display) {
+                // ボタンのactive状態を更新
+                document.querySelectorAll('.display-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.display === savedState.display) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                // ビューの表示を切り替え
+                document.querySelectorAll('.task-view').forEach(view => {
+                    view.style.display = 'none';
+                });
+                const targetView = document.getElementById(`${savedState.display}-view`);
+                if (targetView) {
+                    targetView.style.display = 'block';
+                }
+            }
         }
     }
 
