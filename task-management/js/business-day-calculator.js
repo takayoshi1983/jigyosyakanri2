@@ -161,25 +161,35 @@ export class BusinessDayCalculator {
     }
 
     /**
-     * 営業日ベースで作業期間を計算（土日祝除外）
+     * 営業日ベースで作業期間を計算（土日祝・個人休暇除外）
      * @param {Date|string} startDate - 開始日
      * @param {number} estimatedHours - 想定時間（時間単位）
+     * @param {number} staffId - スタッフID（個人休暇を考慮する場合）
      * @returns {Object} - { startDate, endDate, businessDays, totalDays }
      */
-    calculateWorkPeriod(startDate, estimatedHours) {
+    calculateWorkPeriod(startDate, estimatedHours, staffId = null) {
         const daysNeeded = Math.ceil(estimatedHours / 8);
         const dates = [];
         let current = new Date(startDate);
         let count = 0;
 
+        // 営業日判定関数（個人休暇も考慮）
+        const isAvailable = (date) => {
+            if (staffId !== null) {
+                return this.isWorkingDay(date, staffId);
+            } else {
+                return this.isBusinessDay(date);
+            }
+        };
+
         // 開始日が営業日でない場合、次の営業日まで進める
-        while (!this.isBusinessDay(current)) {
+        while (!isAvailable(current)) {
             current.setDate(current.getDate() + 1);
         }
 
         // 必要日数分の営業日を収集
         while (count < daysNeeded) {
-            if (this.isBusinessDay(current)) {
+            if (isAvailable(current)) {
                 dates.push(new Date(current));
                 count++;
             }

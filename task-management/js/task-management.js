@@ -2508,20 +2508,20 @@ class TaskManagement {
                 bgColor = '#ffe6e6';
                 icon = '🏖️';
             } else if (holidayType === 'company') {
-                bgColor = '#fff3cd';
+                bgColor = '#f0f0f0';
                 icon = '🏢';
             } else if (holidayType === 'custom') {
-                bgColor = '#f8d7da';
+                bgColor = '#f0f0f0';
                 icon = '📌';
             } else if (holidayType === 'vacation') {
-                bgColor = '#e8d4f8';
+                bgColor = '#f0f0f0';
                 icon = '🌴';
             }
 
             return `
                 <div style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0;">
-                    <div>${day}</div>
-                    ${icon ? `<div style="font-size: 8px; line-height: 1;">${icon}</div>` : ''}
+                    <div style="line-height: 1.2;">${day}</div>
+                    ${icon ? `<div style="font-size: 8px; line-height: 0; margin-top: 2px;">${icon}</div>` : ''}
                 </div>
             `;
         }).join('');
@@ -2534,10 +2534,11 @@ class TaskManagement {
             const startIndex = dates.findIndex(d => d.getTime() === startDate.getTime());
             if (startIndex === -1) return '';
 
-            // 営業日ベースで作業期間を計算（土日祝除外）
+            // 営業日ベースで作業期間を計算（個人休暇も考慮）
             const workPeriod = this.businessDayCalc.calculateWorkPeriod(
                 startDate,
-                task.estimated_time_hours
+                task.estimated_time_hours,
+                task.assignee_id || this.currentAssigneeFilter  // タスクの担当者IDを使用
             );
 
             // 作業終了日のインデックスを取得
@@ -2550,10 +2551,16 @@ class TaskManagement {
             if (dueDate) dueDate.setHours(0, 0, 0, 0);
             const dueIndex = dueDate ? dates.findIndex(d => d.getTime() === dueDate.getTime()) : -1;
 
-            // 青バーの開始位置と幅を計算
-            const barStart = startIndex * cellWidth;
-            // 開始日から終了日までの全日数（カレンダー上の幅）
-            const barWidth = endIndex >= 0 ? (endIndex - startIndex + 1) * cellWidth : cellWidth;
+            // 全期間バー（薄い青）の開始位置と幅を計算
+            const fullBarStart = startIndex * cellWidth;
+            const fullBarWidth = endIndex >= 0 ? (endIndex - startIndex + 1) * cellWidth : cellWidth;
+
+            // 営業日のみの濃い青ブロックを生成
+            const businessDayBlocks = workPeriod.businessDays.map(businessDay => {
+                const bdIndex = dates.findIndex(d => d.getTime() === businessDay.getTime());
+                if (bdIndex === -1) return '';
+                return `<div style="position: absolute; left: ${bdIndex * cellWidth + 1}px; width: ${cellWidth - 2}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 3px;"></div>`;
+            }).join('');
 
             return `
                 <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
@@ -2570,17 +2577,18 @@ class TaskManagement {
                                 bgColor = '#ffe6e6';
                             } else if (holidayType === 'saturday') {
                                 bgColor = '#e6f2ff';
-                            } else if (holidayType === 'company') {
-                                bgColor = '#fff3cd';
-                            } else if (holidayType === 'custom') {
-                                bgColor = '#f8d7da';
-                            } else if (holidayType === 'vacation') {
-                                bgColor = '#e8d4f8';
+                            } else if (holidayType === 'company' || holidayType === 'custom' || holidayType === 'vacation') {
+                                bgColor = '#f0f0f0';
                             }
 
                             return `<div style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
                         }).join('')}
-                        <div style="position: absolute; left: ${barStart}px; width: ${barWidth}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" onclick="taskManager.openTaskInEditMode(${task.id})" title="${task.task_name}">
+                        <!-- 全期間バー（薄い青・下層） -->
+                        <div style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; background: rgba(23, 162, 184, 0.25); border-radius: 4px; border: 1px solid rgba(23, 162, 184, 0.5);"></div>
+                        <!-- 営業日ブロック（濃い青・上層） -->
+                        ${businessDayBlocks}
+                        <!-- タスクIDラベル -->
+                        <div style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto;" onclick="taskManager.openTaskInEditMode(${task.id})" title="${task.task_name}">
                             ${task.alphabetId}
                         </div>
                         ${dueIndex >= 0 ? `<div style="position: absolute; left: ${(dueIndex + 1) * cellWidth - 2}px; width: 4px; height: 100%; background: #dc3545; top: 0;"></div>` : ''}
