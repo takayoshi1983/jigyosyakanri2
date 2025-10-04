@@ -685,6 +685,90 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- 休日管理モーダル -->
+    <div id="holiday-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>休日管理</h2>
+                <span class="close" id="holiday-modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- タブ切り替え -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #dee2e6;">
+                    <button id="holiday-tab-company" class="btn btn-sm" style="padding: 8px 16px; border-bottom: 3px solid #007bff; background: transparent; color: #007bff;">会社休日</button>
+                    <button id="holiday-tab-staff" class="btn btn-sm" style="padding: 8px 16px; background: transparent; color: #6c757d;">個人休暇</button>
+                </div>
+
+                <!-- 会社休日タブ -->
+                <div id="holiday-panel-company">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0;">会社休日を追加</h4>
+                        <div style="display: flex; gap: 10px; align-items: flex-end;">
+                            <div style="flex: 1;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">日付:</label>
+                                <input type="date" id="company-holiday-date" class="form-control">
+                            </div>
+                            <div style="flex: 2;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">名称:</label>
+                                <input type="text" id="company-holiday-name" class="form-control" placeholder="例: 夏季休業">
+                            </div>
+                            <button id="add-company-holiday-btn" class="btn" style="background: #28a745; color: white;">追加</button>
+                        </div>
+                    </div>
+
+                    <h4>登録済み会社休日</h4>
+                    <div id="company-holidays-list" style="max-height: 300px; overflow-y: auto;">
+                        <!-- 会社休日リストがここに表示されます -->
+                    </div>
+                </div>
+
+                <!-- 個人休暇タブ -->
+                <div id="holiday-panel-staff" style="display: none;">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0;">個人休暇を追加</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; align-items: flex-end; margin-bottom: 10px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">スタッフ:</label>
+                                <select id="staff-vacation-staff" class="form-control">
+                                    <option value="">選択してください</option>
+                                    <!-- スタッフリストが動的に追加されます -->
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">開始日:</label>
+                                <input type="date" id="staff-vacation-start" class="form-control">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">終了日:</label>
+                                <input type="date" id="staff-vacation-end" class="form-control">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">種類:</label>
+                                <select id="staff-vacation-type" class="form-control">
+                                    <option value="personal">私用</option>
+                                    <option value="sick">病欠</option>
+                                    <option value="paid">有給</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: flex-end;">
+                            <div style="flex: 1;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">備考（任意）:</label>
+                                <input type="text" id="staff-vacation-notes" class="form-control" placeholder="例: 家族旅行">
+                            </div>
+                            <button id="add-staff-vacation-btn" class="btn" style="background: #28a745; color: white;">追加</button>
+                        </div>
+                    </div>
+
+                    <h4>登録済み個人休暇</h4>
+                    <div id="staff-vacations-list" style="max-height: 300px; overflow-y: auto;">
+                        <!-- 個人休暇リストがここに表示されます -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script type="module" src="../../supabase-client.js"></script>
     <script type="module" src="../../utils.js"></script>
