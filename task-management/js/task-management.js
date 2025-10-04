@@ -2049,21 +2049,32 @@ class TaskManagement {
     createActionButtons(task) {
         let buttons = [];
 
-        // 編集ボタンを最初に配置（常に左端）
-        buttons.push(`<button class="btn btn-sm btn-edit" onclick="taskManager.editTask(${task.id})">編集</button>`);
-
         // ステータスに応じたボタン（委任者は全て操作可能）
-        if (task.status === '依頼中') {
-            if (task.assignee_id === this.currentUser.id || task.requester_id === this.currentUser.id) {
-                buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">確認待ち</button>`);
+        // 随時タスクの場合：依頼中 ⇔ 確認待ち のループ
+        if (task.is_anytime) {
+            if (task.status === '依頼中') {
+                if (task.assignee_id === this.currentUser.id || task.requester_id === this.currentUser.id) {
+                    buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">確認待ち</button>`);
+                }
+            } else if (task.status === '作業完了') {
+                if (task.requester_id === this.currentUser.id) {
+                    buttons.push(`<button class="btn btn-sm btn-cancel-complete" onclick="taskManager.updateTaskStatus(${task.id}, '依頼中')">依頼中に戻す</button>`);
+                }
             }
-        } else if (task.status === '作業完了') {
-            if (task.requester_id === this.currentUser.id) {
-                buttons.push(`<button class="btn btn-sm btn-confirm" onclick="taskManager.updateTaskStatus(${task.id}, '確認完了')">確認完了</button>`);
-            }
-        } else if (task.status === '確認完了') {
-            if (task.requester_id === this.currentUser.id) {
-                buttons.push(`<button class="btn btn-sm btn-cancel-complete" onclick="taskManager.updateTaskStatus(${task.id}, '依頼中')">完了取消</button>`);
+        } else {
+            // 通常タスクの場合：依頼中 → 確認待ち → 確認完了 → 依頼中
+            if (task.status === '依頼中') {
+                if (task.assignee_id === this.currentUser.id || task.requester_id === this.currentUser.id) {
+                    buttons.push(`<button class="btn btn-sm btn-complete" onclick="taskManager.updateTaskStatus(${task.id}, '作業完了')">確認待ち</button>`);
+                }
+            } else if (task.status === '作業完了') {
+                if (task.requester_id === this.currentUser.id) {
+                    buttons.push(`<button class="btn btn-sm btn-confirm" onclick="taskManager.updateTaskStatus(${task.id}, '確認完了')">確認完了</button>`);
+                }
+            } else if (task.status === '確認完了') {
+                if (task.requester_id === this.currentUser.id) {
+                    buttons.push(`<button class="btn btn-sm btn-cancel-complete" onclick="taskManager.updateTaskStatus(${task.id}, '依頼中')">完了取消</button>`);
+                }
             }
         }
 
@@ -2585,8 +2596,7 @@ class TaskManagement {
                     return `
                         <div style="
                             position: relative;
-                            flex: 0 0 calc(20% - 10px);
-                            max-width: calc(20% - 10px);
+                            flex: 0 0 calc(10% - 10px);
                             padding: 10px;
                             padding-right: ${badge ? '45px' : '10px'};
                             background: #fff;
@@ -2598,7 +2608,7 @@ class TaskManagement {
                         "
                         onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
-                        onclick="taskManager.editTask(${task.id})">
+                        onclick="taskManager.openTaskInEditMode(${task.id})">
                             ${badge}
                             <div style="font-weight: 600; font-size: 13px; color: #495057; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
                                 ${task.task_name || 'Untitled'}
@@ -2607,23 +2617,6 @@ class TaskManagement {
                                 ${clientName}
                             </div>
                             ${dueDate ? `<div style="font-size: 11px; color: #6c757d; opacity: 0.7; margin-top: 4px;">期限: ${dueDate}</div>` : ''}
-                            ${showRestoreBtn ? `
-                                <button class="btn btn-sm" style="
-                                    position: absolute;
-                                    bottom: 8px;
-                                    right: 8px;
-                                    background: #007bff;
-                                    color: white;
-                                    padding: 2px 8px;
-                                    font-size: 10px;
-                                    border: none;
-                                    border-radius: 3px;
-                                    cursor: pointer;
-                                "
-                                onclick="event.stopPropagation(); taskManager.updateTaskStatus(${task.id}, '依頼中')">
-                                    復帰
-                                </button>
-                            ` : ''}
                         </div>
                     `;
                 }).join('')}
@@ -3115,6 +3108,10 @@ class TaskManagement {
 
     editTask(taskId) {
         this.openTaskModal(taskId, null, true); // 閲覧モードで開く
+    }
+
+    openTaskInEditMode(taskId) {
+        this.openTaskModal(taskId, null, false); // 直接編集モードで開く
     }
 
     async deleteTask(taskId) {
