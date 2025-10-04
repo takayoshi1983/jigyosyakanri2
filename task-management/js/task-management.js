@@ -353,6 +353,13 @@ class TaskManagement {
         // 保存されたフィルター状態を復元
         this.updateFilterUI();
 
+        // HTMLのactiveボタンから現在の表示形式を取得
+        const activeBtn = document.querySelector('.display-btn.active');
+        if (activeBtn) {
+            this.currentDisplay = activeBtn.dataset.display;
+            console.log('Initial display mode from HTML:', this.currentDisplay);
+        }
+
         // 表示切替（状態保存を避けるため直接実行）
         document.querySelectorAll('.task-view').forEach(view => {
             view.style.display = 'none';
@@ -2386,7 +2393,7 @@ class TaskManagement {
                         if (task && task.is_anytime && newStatus === '確認完了') {
                             // 元の位置に戻す
                             evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
-                            window.showToast('随時タスクは確認完了にできません', 'warning');
+                            window.showToast('随時タスクは「依頼中タスク」に移動してください', 'warning');
                             return;
                         }
 
@@ -2430,11 +2437,16 @@ class TaskManagement {
     }
 
     updateCalendarView(tasks) {
+        console.log('📅 updateCalendarView called, tasks:', tasks.length);
+        console.log('📅 currentAssigneeFilter:', this.currentAssigneeFilter);
+
         // 依頼中タスクにアルファベット識別子を付与
         const pendingTasks = tasks.filter(task => task.status === '依頼中');
         pendingTasks.forEach((task, index) => {
             task.alphabetId = this.getAlphabetId(index);
         });
+
+        console.log('📅 pendingTasks:', pendingTasks.length);
 
         // ガントチャート表示
         this.updateGanttChart(pendingTasks);
@@ -5895,12 +5907,38 @@ class TaskManagement {
 
     handleSectionDragOver(event) {
         event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
 
-        // セクション全体をハイライト
         const section = event.currentTarget;
-        section.style.boxShadow = '0 0 0 3px rgba(23, 162, 184, 0.5)';
-        section.style.transform = 'scale(1.02)';
+        const targetStatus = section.dataset.status;
+        const taskId = parseInt(event.dataTransfer.getData('taskId'));
+        const task = this.tasks.find(t => t.id === taskId);
+
+        // 随時タスクを確認完了にドロップしようとしている場合
+        if (task && task.is_anytime && targetStatus === '確認完了') {
+            event.dataTransfer.dropEffect = 'none';
+
+            // 禁止スタイル（赤色）
+            section.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.7)';
+            section.style.transform = 'scale(1.02)';
+            section.style.background = '#ffe6e6';
+
+            // 警告メッセージを表示（既存のメッセージがなければ追加）
+            let warningMsg = section.querySelector('.drag-warning-message');
+            if (!warningMsg) {
+                warningMsg = document.createElement('div');
+                warningMsg.className = 'drag-warning-message';
+                warningMsg.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(220, 53, 69, 0.95); color: white; padding: 12px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; z-index: 1000; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                warningMsg.textContent = '❌ 随時タスクは「依頼中」に移動してください';
+                section.style.position = 'relative';
+                section.appendChild(warningMsg);
+            }
+        } else {
+            event.dataTransfer.dropEffect = 'move';
+
+            // 通常のハイライト（青色）
+            section.style.boxShadow = '0 0 0 3px rgba(23, 162, 184, 0.5)';
+            section.style.transform = 'scale(1.02)';
+        }
     }
 
     handleSectionDragLeave(event) {
@@ -5909,6 +5947,13 @@ class TaskManagement {
         if (!section.contains(event.relatedTarget)) {
             section.style.boxShadow = '';
             section.style.transform = 'scale(1)';
+            section.style.background = '';
+
+            // 警告メッセージを削除
+            const warningMsg = section.querySelector('.drag-warning-message');
+            if (warningMsg) {
+                warningMsg.remove();
+            }
         }
     }
 
@@ -5919,6 +5964,13 @@ class TaskManagement {
         const section = event.currentTarget;
         section.style.boxShadow = '';
         section.style.transform = 'scale(1)';
+        section.style.background = '';
+
+        // 警告メッセージを削除
+        const warningMsg = section.querySelector('.drag-warning-message');
+        if (warningMsg) {
+            warningMsg.remove();
+        }
 
         const taskId = parseInt(event.dataTransfer.getData('taskId'));
         const currentStatus = event.dataTransfer.getData('currentStatus');
@@ -5939,7 +5991,7 @@ class TaskManagement {
 
         // 随時タスクを確認完了にドロップした場合は禁止
         if (task && task.is_anytime && newStatus === '確認完了') {
-            window.showToast('随時タスクは確認完了にできません', 'warning');
+            window.showToast('随時タスクは「依頼中」に移動してください', 'warning');
             return;
         }
 
