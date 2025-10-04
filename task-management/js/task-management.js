@@ -2413,7 +2413,10 @@ class TaskManagement {
                         targetStatus = kanbanColumn?.dataset.status;
                     }
 
-                    console.log('🔍 onMove - taskId:', taskId, 'is_anytime:', task?.is_anytime, 'targetStatus:', targetStatus);
+                    console.log('🔍 onMove - taskId:', taskId);
+                    console.log('🔍 onMove - task found:', task);
+                    console.log('🔍 onMove - is_anytime:', task?.is_anytime);
+                    console.log('🔍 onMove - targetStatus:', targetStatus);
 
                     if (task && task.is_anytime && targetStatus === '確認完了') {
                         console.log('❌ 随時タスクを確認完了にドロップは禁止');
