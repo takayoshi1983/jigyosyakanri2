@@ -2504,11 +2504,11 @@ class TaskManagement {
                     data-date="${dateStr}"
                     data-can-toggle="${canToggleVacation}"
                     onclick="taskManager.togglePersonalVacation(event)"
-                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0; cursor: ${canToggleVacation ? 'pointer' : 'default'}; transition: all 0.2s;"
+                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0; cursor: ${canToggleVacation ? 'pointer' : 'default'}; transition: all 0.2s; z-index: 10; pointer-events: auto;"
                     onmouseover="if(this.dataset.canToggle === 'true') this.style.background = 'rgba(23, 162, 184, 0.2)';"
                     onmouseout="this.style.background = '${bgColor}';">
-                    <div style="line-height: 1.2;">${day}</div>
-                    ${icon ? `<div style="font-size: 8px; line-height: 0; margin-top: 2px;">${icon}</div>` : ''}
+                    <div style="line-height: 1.2; pointer-events: none;">${day}</div>
+                    ${icon ? `<div style="font-size: 8px; line-height: 0; margin-top: 2px; pointer-events: none;">${icon}</div>` : ''}
                 </div>
             `;
         }).join('');
@@ -5735,20 +5735,34 @@ class TaskManagement {
     // ========================================
 
     async togglePersonalVacation(event) {
+        console.log('🔍 togglePersonalVacation called');
+
         const dateElement = event.currentTarget;
         const canToggle = dateElement.dataset.canToggle === 'true';
+        const date = dateElement.dataset.date;
+
+        console.log('📅 Date:', date);
+        console.log('✅ Can toggle:', canToggle);
+        console.log('👤 Current assignee:', this.currentAssigneeFilter);
 
         if (!canToggle) {
             if (!this.currentAssigneeFilter) {
+                console.log('⚠️ 担当者未選択');
                 window.showToast('担当者を選択してください', 'info');
+            } else {
+                console.log('⚠️ 土日または祝日のためクリック不可');
             }
             return;
         }
 
-        const date = dateElement.dataset.date;
         const staffId = this.currentAssigneeFilter;
 
-        if (!staffId) return;
+        if (!staffId) {
+            console.log('❌ staffId is null');
+            return;
+        }
+
+        console.log('💾 休暇トグル処理開始...');
 
         try {
             // 既存の休暇をチェック
