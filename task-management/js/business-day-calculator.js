@@ -22,6 +22,11 @@ export class BusinessDayCalculator {
      */
     async loadHolidays() {
         try {
+            // 既存データをクリア
+            this.nationalHolidays.clear();
+            this.companyHolidays.clear();
+            this.customHolidays.clear();
+
             const { data: holidays, error } = await supabase
                 .from('holidays')
                 .select('date, type, is_working_day');
@@ -47,7 +52,7 @@ export class BusinessDayCalculator {
             });
 
             this.isLoaded = true;
-            console.log(`Loaded ${holidays?.length || 0} holidays`);
+            console.log(`✅ 休日データ読み込み完了: ${holidays?.length || 0}件 (祝日:${this.nationalHolidays.size}, 会社:${this.companyHolidays.size}, カスタム:${this.customHolidays.size})`);
         } catch (error) {
             console.error('Error loading holidays:', error);
         }
