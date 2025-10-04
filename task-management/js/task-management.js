@@ -2488,7 +2488,7 @@ class TaskManagement {
         const monthHeaders = monthGroups.map(group => {
             const monthName = `${group.month + 1}月`;
             const width = (group.end - group.start + 1) * cellWidth;
-            return `<div style="flex: 0 0 ${width}px; text-align: center; font-weight: 600; color: #495057; background: ${group.month % 2 === 0 ? '#f8f9fa' : '#fff9e6'};">${monthName}</div>`;
+            return `<div style="flex: 0 0 ${width}px; text-align: center; font-weight: 600; color: #495057; background: ${group.month % 2 === 0 ? '#f8f9fa' : '#fff9e6'}; border: ridge 1px #ea950a61; padding: 4px 0;">${monthName}</div>`;
         }).join('');
 
         const dateHeaders = dates.map((date, index) => {
@@ -2581,14 +2581,27 @@ class TaskManagement {
                                 bgColor = '#f0f0f0';
                             }
 
-                            return `<div style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
+                            const dateStr = this.businessDayCalc.formatDate(date);
+                            return `<div
+                                class="gantt-date-cell"
+                                data-date="${dateStr}"
+                                ondragover="taskManager.handleGanttDragOver(event)"
+                                ondrop="taskManager.handleGanttDrop(event)"
+                                style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
                         }).join('')}
                         <!-- 全期間バー（薄い青・下層） -->
                         <div style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; background: rgba(23, 162, 184, 0.25); border-radius: 4px; border: 1px solid rgba(23, 162, 184, 0.5);"></div>
                         <!-- 営業日ブロック（濃い青・上層） -->
                         ${businessDayBlocks}
-                        <!-- タスクIDラベル -->
-                        <div style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: pointer; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto;" onclick="taskManager.openTaskInEditMode(${task.id})" title="${task.task_name}">
+                        <!-- タスクIDラベル（ドラッグ可能） -->
+                        <div
+                            draggable="true"
+                            data-task-id="${task.id}"
+                            data-task-assignee="${task.assignee_id || this.currentAssigneeFilter}"
+                            ondragstart="taskManager.handleGanttDragStart(event)"
+                            ondragend="taskManager.handleGanttDragEnd(event)"
+                            style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: move; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto;"
+                            title="${task.task_name}">
                             ${task.alphabetId}
                         </div>
                         ${dueIndex >= 0 ? `<div style="position: absolute; left: ${(dueIndex + 1) * cellWidth - 2}px; width: 4px; height: 100%; background: #dc3545; top: 0;"></div>` : ''}
@@ -5721,6 +5734,79 @@ class TaskManagement {
         } catch (error) {
             console.error('個人休暇の削除エラー:', error);
             window.showToast('個人休暇の削除に失敗しました', 'error');
+        }
+    }
+
+    // ========================================
+    // ガントチャート ドラッグ&ドロップ機能
+    // ========================================
+
+    handleGanttDragStart(event) {
+        const taskId = event.target.dataset.taskId;
+        const assigneeId = event.target.dataset.taskAssignee;
+
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('taskId', taskId);
+        event.dataTransfer.setData('assigneeId', assigneeId);
+
+        // ドラッグ中のスタイル
+        event.target.style.opacity = '0.5';
+    }
+
+    handleGanttDragEnd(event) {
+        // ドラッグ終了時にスタイルを戻す
+        event.target.style.opacity = '1';
+    }
+
+    handleGanttDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+
+        // ドロップ可能なセルをハイライト
+        event.target.style.background = 'rgba(23, 162, 184, 0.2)';
+    }
+
+    async handleGanttDrop(event) {
+        event.preventDefault();
+
+        // ハイライトを解除
+        event.target.style.background = '';
+
+        const taskId = parseInt(event.dataTransfer.getData('taskId'));
+        const assigneeId = parseInt(event.dataTransfer.getData('assigneeId'));
+        const newDate = event.target.dataset.date;
+
+        if (!taskId || !newDate) return;
+
+        // 営業日判定
+        const date = new Date(newDate);
+        const isAvailable = assigneeId
+            ? this.businessDayCalc.isWorkingDay(date, assigneeId)
+            : this.businessDayCalc.isBusinessDay(date);
+
+        if (!isAvailable) {
+            window.showToast('休日には配置できません', 'warning');
+            return;
+        }
+
+        try {
+            // タスクの開始日を更新
+            const { error } = await supabase
+                .from('tasks')
+                .update({ work_date: newDate })
+                .eq('id', taskId);
+
+            if (error) throw error;
+
+            window.showToast('タスクの日付を変更しました', 'success');
+
+            // 表示を更新
+            await this.loadTasks();
+            this.updateDisplay();
+
+        } catch (error) {
+            console.error('タスク日付変更エラー:', error);
+            window.showToast('日付の変更に失敗しました', 'error');
         }
     }
 
