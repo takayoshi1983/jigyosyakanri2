@@ -2669,7 +2669,7 @@ class TaskManagement {
                             data-task-assignee="${task.assignee_id || this.currentAssigneeFilter}"
                             ondragstart="taskManager.handleGanttDragStart(event)"
                             ondragend="taskManager.handleGanttDragEnd(event)"
-                            style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: move; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto;"
+                            style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; cursor: move; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto;"
                             title="${task.task_name}">
                             ${task.alphabetId}
                         </div>

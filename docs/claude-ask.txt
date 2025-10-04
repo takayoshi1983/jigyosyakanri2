@@ -1,0 +1,10 @@
+Loaded 0 vacation days for staff 7
+task-management.js:2460 📅 updateCalendarView called, tasks: 4
+task-management.js:2461 📅 currentAssigneeFilter: 7
+task-management.js:2469 📅 pendingTasks: 4
+business-day-calculator.js:90 Loaded 0 vacation days for staff 7
+task-management.js:1848 Auto refresh skipped: user is interacting
+task-management.js:6324 CSVインポートエラー: ReferenceError: holidays is not defined
+    at TaskManagement.importHolidaysCSV (task-management.js:6302:45)
+importHolidaysCSV	@	task-management.js:6324
+
