@@ -2497,15 +2497,16 @@ class TaskManagement {
             const dateStr = this.businessDayCalc.formatDate(date);
             const isWeekend = holidayType === 'sunday' || holidayType === 'saturday';
             const isNationalHoliday = holidayType === 'national';
-            const canToggleVacation = !isWeekend && !isNationalHoliday && this.currentAssigneeFilter;
+            // 土日・祝日フラグをデータ属性に保存（担当者チェックはクリック時に行う）
+            const isHoliday = isWeekend || isNationalHoliday;
 
             return `
                 <div
                     data-date="${dateStr}"
-                    data-can-toggle="${canToggleVacation}"
+                    data-is-holiday="${isHoliday}"
                     onclick="taskManager.togglePersonalVacation(event)"
-                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0; cursor: ${canToggleVacation ? 'pointer' : 'default'}; transition: all 0.2s; z-index: 10; pointer-events: auto;"
-                    onmouseover="if(this.dataset.canToggle === 'true') this.style.background = 'rgba(23, 162, 184, 0.2)';"
+                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0; cursor: ${isHoliday ? 'default' : 'pointer'}; transition: all 0.2s; z-index: 10; pointer-events: auto;"
+                    onmouseover="if(this.dataset.isHoliday === 'false') this.style.background = 'rgba(23, 162, 184, 0.2)';"
                     onmouseout="this.style.background = '${bgColor}';">
                     <div style="line-height: 1.2; pointer-events: none;">${day}</div>
                     ${icon ? `<div style="font-size: 8px; line-height: 0; margin-top: 2px; pointer-events: none;">${icon}</div>` : ''}
@@ -5738,31 +5739,28 @@ class TaskManagement {
         console.log('🔍 togglePersonalVacation called');
 
         const dateElement = event.currentTarget;
-        const canToggle = dateElement.dataset.canToggle === 'true';
         const date = dateElement.dataset.date;
+        const isHoliday = dateElement.dataset.isHoliday === 'true';
 
         console.log('📅 Date:', date);
-        console.log('✅ Can toggle:', canToggle);
+        console.log('🗓️ Is holiday:', isHoliday);
         console.log('👤 Current assignee:', this.currentAssigneeFilter);
 
-        if (!canToggle) {
-            if (!this.currentAssigneeFilter) {
-                console.log('⚠️ 担当者未選択');
-                window.showToast('担当者を選択してください', 'info');
-            } else {
-                console.log('⚠️ 土日または祝日のためクリック不可');
-            }
+        // 土日・祝日チェック
+        if (isHoliday) {
+            console.log('⚠️ 土日または祝日のためクリック不可');
+            return;
+        }
+
+        // 担当者選択チェック
+        if (!this.currentAssigneeFilter) {
+            console.log('⚠️ 担当者未選択');
+            window.showToast('担当者を選択してください', 'info');
             return;
         }
 
         const staffId = this.currentAssigneeFilter;
-
-        if (!staffId) {
-            console.log('❌ staffId is null');
-            return;
-        }
-
-        console.log('💾 休暇トグル処理開始...');
+        console.log('💾 休暇トグル処理開始... staffId:', staffId);
 
         try {
             // 既存の休暇をチェック
