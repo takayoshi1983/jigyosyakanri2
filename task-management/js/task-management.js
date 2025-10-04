@@ -2361,7 +2361,13 @@ class TaskManagement {
                     });
 
                     const taskId = parseInt(evt.item.dataset.taskId);
-                    const newStatus = evt.to.parentElement.dataset.status;
+
+                    // ドロップ先のステータスを取得（複数の方法で試す）
+                    let newStatus = evt.to.dataset.status || evt.to.parentElement?.dataset.status;
+                    if (!newStatus) {
+                        const kanbanColumn = evt.to.closest('[data-status]');
+                        newStatus = kanbanColumn?.dataset.status;
+                    }
 
                     // 元の位置と同じ場合は何もしない
                     if (evt.from === evt.to) {
@@ -2373,6 +2379,8 @@ class TaskManagement {
                     try {
                         // タスク情報を取得
                         const task = this.tasks.find(t => t.id === taskId);
+
+                        console.log('📋 Task info:', { id: taskId, is_anytime: task?.is_anytime, newStatus, work_date: task?.work_date });
 
                         // 随時タスクを確認完了にドロップした場合は禁止
                         if (task && task.is_anytime && newStatus === '確認完了') {
@@ -2395,10 +2403,20 @@ class TaskManagement {
                     // 随時タスクを確認完了にドロップしようとしている場合は禁止
                     const taskId = parseInt(evt.dragged.dataset.taskId);
                     const task = this.tasks.find(t => t.id === taskId);
-                    const targetStatus = evt.to.parentElement.dataset.status;
+
+                    // ドロップ先のステータスを取得（複数の方法で試す）
+                    let targetStatus = evt.to.dataset.status || evt.to.parentElement?.dataset.status;
+
+                    // .kanban-tasksクラスの親要素から取得
+                    if (!targetStatus) {
+                        const kanbanColumn = evt.to.closest('[data-status]');
+                        targetStatus = kanbanColumn?.dataset.status;
+                    }
+
+                    console.log('🔍 onMove - taskId:', taskId, 'is_anytime:', task?.is_anytime, 'targetStatus:', targetStatus);
 
                     if (task && task.is_anytime && targetStatus === '確認完了') {
-                        // ドロップを禁止
+                        console.log('❌ 随時タスクを確認完了にドロップは禁止');
                         return false;
                     }
 
