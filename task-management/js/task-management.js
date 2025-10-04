@@ -408,31 +408,7 @@ class TaskManagement {
             this.saveFilterState();
         });
 
-        // ガントチャート：週表示/月表示切替ボタン
-        const weekBtn = document.getElementById('gantt-view-week');
-        const monthBtn = document.getElementById('gantt-view-month');
-
-        if (weekBtn && monthBtn) {
-            weekBtn.addEventListener('click', () => {
-                this.ganttViewMode = 'Week';
-                weekBtn.style.background = '#007bff';
-                monthBtn.style.background = '#6c757d';
-                if (this.gantt) {
-                    this.gantt.change_view_mode('Week');
-                }
-            });
-
-            monthBtn.addEventListener('click', () => {
-                this.ganttViewMode = 'Month';
-                monthBtn.style.background = '#007bff';
-                weekBtn.style.background = '#6c757d';
-                if (this.gantt) {
-                    this.gantt.change_view_mode('Month');
-                }
-            });
-        }
-
-        // ガントチャート：休みの追加ボタン
+        // ガントチャート：休日管理ボタン
         const addHolidayBtn = document.getElementById('gantt-add-holiday-btn');
         if (addHolidayBtn) {
             addHolidayBtn.addEventListener('click', () => {
@@ -2447,11 +2423,11 @@ class TaskManagement {
             await this.businessDayCalc.loadStaffVacations(this.currentAssigneeFilter);
         }
 
-        // 今日から30日後までの日付を生成
+        // 今日から60日後までの日付を生成
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const endDate = new Date(today);
-        endDate.setDate(today.getDate() + 30);
+        endDate.setDate(today.getDate() + 60);
 
         const dates = [];
         for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
@@ -2518,8 +2494,19 @@ class TaskManagement {
                 icon = '🌴';
             }
 
+            const dateStr = this.businessDayCalc.formatDate(date);
+            const isWeekend = holidayType === 'sunday' || holidayType === 'saturday';
+            const isNationalHoliday = holidayType === 'national';
+            const canToggleVacation = !isWeekend && !isNationalHoliday && this.currentAssigneeFilter;
+
             return `
-                <div style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0;">
+                <div
+                    data-date="${dateStr}"
+                    data-can-toggle="${canToggleVacation}"
+                    onclick="taskManager.togglePersonalVacation(event)"
+                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0; cursor: ${canToggleVacation ? 'pointer' : 'default'}; transition: all 0.2s;"
+                    onmouseover="if(this.dataset.canToggle === 'true') this.style.background = 'rgba(23, 162, 184, 0.2)';"
+                    onmouseout="this.style.background = '${bgColor}';">
                     <div style="line-height: 1.2;">${day}</div>
                     ${icon ? `<div style="font-size: 8px; line-height: 0; margin-top: 2px;">${icon}</div>` : ''}
                 </div>
@@ -5740,6 +5727,76 @@ class TaskManagement {
         } catch (error) {
             console.error('個人休暇の削除エラー:', error);
             window.showToast('個人休暇の削除に失敗しました', 'error');
+        }
+    }
+
+    // ========================================
+    // 個人休暇トグル機能
+    // ========================================
+
+    async togglePersonalVacation(event) {
+        const dateElement = event.currentTarget;
+        const canToggle = dateElement.dataset.canToggle === 'true';
+
+        if (!canToggle) {
+            if (!this.currentAssigneeFilter) {
+                window.showToast('担当者を選択してください', 'info');
+            }
+            return;
+        }
+
+        const date = dateElement.dataset.date;
+        const staffId = this.currentAssigneeFilter;
+
+        if (!staffId) return;
+
+        try {
+            // 既存の休暇をチェック
+            const { data: existingVacations, error: fetchError } = await supabase
+                .from('staff_vacations')
+                .select('id')
+                .eq('staff_id', staffId)
+                .lte('start_date', date)
+                .gte('end_date', date);
+
+            if (fetchError) throw fetchError;
+
+            if (existingVacations && existingVacations.length > 0) {
+                // 休暇を削除（出勤に戻す）
+                const { error: deleteError } = await supabase
+                    .from('staff_vacations')
+                    .delete()
+                    .eq('id', existingVacations[0].id);
+
+                if (deleteError) throw deleteError;
+
+                window.showToast('休暇を解除しました', 'success');
+            } else {
+                // 休暇を追加
+                const { error: insertError } = await supabase
+                    .from('staff_vacations')
+                    .insert({
+                        staff_id: staffId,
+                        start_date: date,
+                        end_date: date,
+                        vacation_type: 'personal',
+                        notes: null
+                    });
+
+                if (insertError) throw insertError;
+
+                window.showToast('休暇を設定しました', 'success');
+            }
+
+            // BusinessDayCalculatorの休暇データを更新
+            await this.businessDayCalc.loadStaffVacations(staffId);
+
+            // ガントチャートを更新
+            this.updateDisplay();
+
+        } catch (error) {
+            console.error('休暇トグルエラー:', error);
+            window.showToast('休暇の設定に失敗しました', 'error');
         }
     }
 
