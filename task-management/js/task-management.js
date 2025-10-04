@@ -1992,13 +1992,13 @@ class TaskManagement {
             tr.classList.add('task-completed');
         }
 
-        // 行クリックでモーダル表示
+        // 行クリックで直接編集モード表示
         tr.addEventListener('click', (e) => {
             // ステータスバッジやリンククリック時は無視
             if (e.target.closest('.status-badge') || e.target.closest('a')) {
                 return;
             }
-            this.editTask(task.id);
+            this.openTaskInEditMode(task.id);
         });
 
         return tr;
@@ -2298,9 +2298,9 @@ class TaskManagement {
             </div>
         `;
 
-        // クリックで詳細表示
+        // クリックで直接編集モード表示
         card.addEventListener('click', () => {
-            this.editTask(task.id);
+            this.openTaskInEditMode(task.id);
         });
 
         return card;
@@ -2488,7 +2488,7 @@ class TaskManagement {
 
                             return `<div style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
                         }).join('')}
-                        <div style="position: absolute; left: ${barStart}px; width: ${barWidth}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" onclick="taskManager.editTask(${task.id})" title="${task.task_name}">
+                        <div style="position: absolute; left: ${barStart}px; width: ${barWidth}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);" onclick="taskManager.openTaskInEditMode(${task.id})" title="${task.task_name}">
                             ${task.alphabetId}
                         </div>
                         ${dueIndex >= 0 ? `<div style="position: absolute; left: ${(dueIndex + 1) * cellWidth - 2}px; width: 4px; height: 100%; background: #dc3545; top: 0;"></div>` : ''}
@@ -3301,13 +3301,13 @@ class TaskManagement {
             </div>
         `;
 
-        // 行クリックイベント（詳細表示・編集）
+        // 行クリックイベント（直接編集モード表示）
         item.addEventListener('click', (e) => {
             // リンクやステータスクリック時は無視
             if (e.target.closest('a') || e.target.closest('.my-task-status')) {
                 return;
             }
-            this.editTask(task.id);
+            this.openTaskInEditMode(task.id);
         });
 
         return item;
