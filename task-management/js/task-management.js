@@ -3095,14 +3095,26 @@ class TaskManagement {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
 
-        // ステータスサイクル：依頼中 → 作業完了 → 確認完了 → 依頼中
-        const statusCycle = {
-            '依頼中': '作業完了',
-            '作業完了': '確認完了',
-            '確認完了': '依頼中'
-        };
+        // 随時タスクの場合：依頼中 ⇔ 確認待ち のループ
+        // 通常タスクの場合：依頼中 → 確認待ち → 確認完了 → 依頼中
+        let nextStatus;
+        if (task.is_anytime) {
+            // 随時タスク：依頼中 ⇔ 作業完了（確認待ち）
+            const statusCycle = {
+                '依頼中': '作業完了',
+                '作業完了': '依頼中'
+            };
+            nextStatus = statusCycle[task.status] || '作業完了';
+        } else {
+            // 通常タスク：依頼中 → 作業完了 → 確認完了 → 依頼中
+            const statusCycle = {
+                '依頼中': '作業完了',
+                '作業完了': '確認完了',
+                '確認完了': '依頼中'
+            };
+            nextStatus = statusCycle[task.status] || '作業完了';
+        }
 
-        const nextStatus = statusCycle[task.status] || '作業完了';
         await this.updateTaskStatus(taskId, nextStatus);
     }
 
@@ -3248,10 +3260,8 @@ class TaskManagement {
                 `<a href="${task.reference_url}" target="_blank" title="${task.reference_url}" onclick="event.stopPropagation()" style="font-size: 0.8rem;">🔗</a>`
             ) : '-';
 
-        // ステータス（完了済みの場合はクリック不可）
-        const clickableStatus = isCompleted ?
-            this.createStaticStatus(task) :
-            this.createCompactClickableStatus(task);
+        // ステータス（常にクリック可能、ループ動作）
+        const clickableStatus = this.createCompactClickableStatus(task);
 
         // 委任者/受任者の表示（ラベル付き）
         const isAssigned = task.assignee_id === this.currentUser.id;
@@ -3346,13 +3356,25 @@ class TaskManagement {
     }
 
     createCompactClickableStatus(task) {
-        const statusConfig = {
-            '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '作業完了' },
-            '作業完了': { class: 'my-task-status-working', text: '✅ 確認待ち', next: '確認完了' },
-            '確認完了': { class: 'my-task-status-completed', text: '☑️ 確認完了', next: '依頼中' }
-        };
+        // 随時タスクと通常タスクで異なるステータス遷移を表示
+        let statusConfig, config;
 
-        const config = statusConfig[task.status] || statusConfig['依頼中'];
+        if (task.is_anytime) {
+            // 随時タスク：依頼中 ⇔ 確認待ち
+            statusConfig = {
+                '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '確認待ち' },
+                '作業完了': { class: 'my-task-status-working', text: '✅ 確認待ち', next: '依頼中' }
+            };
+        } else {
+            // 通常タスク：依頼中 → 確認待ち → 確認完了 → 依頼中
+            statusConfig = {
+                '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '確認待ち' },
+                '作業完了': { class: 'my-task-status-working', text: '✅ 確認待ち', next: '確認完了' },
+                '確認完了': { class: 'my-task-status-completed', text: '☑️ 確認完了', next: '依頼中' }
+            };
+        }
+
+        config = statusConfig[task.status] || statusConfig['依頼中'];
         return `<span class="my-task-status ${config.class}" style="cursor: pointer; padding: 4px 8px; border-radius: 12px; font-size: 13px; font-weight: 500; min-width: 70px; text-align: center; border: 1px solid #d2b866;"
                       title="クリックで「${config.next}」に変更"
                       onclick="event.stopPropagation(); taskManager.cycleTaskStatus(${task.id})">${config.text}</span>`;
