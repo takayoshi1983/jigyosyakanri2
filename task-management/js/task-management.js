@@ -3248,6 +3248,7 @@ class TaskManagement {
         const dueDateClass = this.getDueDateClass(task.due_date);
 
         const statusConfig = {
+            '予定未定': { class: 'compact-status-unscheduled', text: '予定未定' },
             '依頼中': { class: 'compact-status-pending', text: '依頼中' },
             '作業完了': { class: 'compact-status-working', text: '確認待ち' },
             '確認完了': { class: 'compact-status-completed', text: '確認完了' }
@@ -3376,17 +3377,19 @@ class TaskManagement {
         let statusConfig, config;
 
         if (task.is_anytime) {
-            // 随時タスク：依頼中 ⇔ 確認待ち
+            // 随時タスク：予定未定 ⇔ 確認待ち
             statusConfig = {
+                '予定未定': { class: 'my-task-status-unscheduled', text: '📌 予定未定', next: '確認待ち' },
                 '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '確認待ち' },
-                '作業完了': { class: 'my-task-status-working', text: '✅ 確認待ち', next: '依頼中' }
+                '作業完了': { class: 'my-task-status-working', text: '✅ 確認待ち', next: '予定未定' }
             };
         } else {
-            // 通常タスク：依頼中 → 確認待ち → 確認完了 → 依頼中
+            // 通常タスク：予定未定 → 依頼中 → 確認待ち → 確認完了 → 予定未定
             statusConfig = {
+                '予定未定': { class: 'my-task-status-unscheduled', text: '📌 予定未定', next: '依頼中' },
                 '依頼中': { class: 'my-task-status-pending', text: '📝 依頼中', next: '確認待ち' },
                 '作業完了': { class: 'my-task-status-working', text: '✅ 確認待ち', next: '確認完了' },
-                '確認完了': { class: 'my-task-status-completed', text: '☑️ 確認完了', next: '依頼中' }
+                '確認完了': { class: 'my-task-status-completed', text: '☑️ 確認完了', next: '予定未定' }
             };
         }
 
