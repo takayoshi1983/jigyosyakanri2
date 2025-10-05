@@ -2237,6 +2237,8 @@ class TaskManagement {
                 task_name: '（ここにタスクをドロップ）',
                 alphabetId: '',
                 work_date: null,
+                assignee_id: null,
+                client_id: null,
                 estimated_time_hours: null,
                 is_placeholder: true
             });
@@ -2356,8 +2358,10 @@ class TaskManagement {
             if (isAllAssignees && task.assignee_id !== currentAssigneeId) {
                 currentAssigneeId = task.assignee_id;
                 const assigneeName = task.assignee_id
-                    ? (this.masterData?.staff?.find(s => s.id === task.assignee_id)?.name || '-')
+                    ? (this.masterData?.staff?.find(s => s.id === task.assignee_id)?.name || `未取得(ID:${task.assignee_id})`)
                     : '未割当';
+
+                console.log('👤 担当者名行追加:', { assignee_id: task.assignee_id, assigneeName, hasStaff: !!this.masterData?.staff });
 
                 // 担当者名行を追加（境界線付き）
                 taskRows.push(`
@@ -2377,9 +2381,13 @@ class TaskManagement {
 
             // 事業者名を取得（10文字超は省略）
             const clientName = task.client_id
-                ? (this.masterData?.clients?.find(c => c.id === task.client_id)?.name || '-')
+                ? (this.masterData?.clients?.find(c => c.id === task.client_id)?.name || `ID:${task.client_id}`)
                 : '-';
             const displayClientName = clientName.length > 10 ? clientName.substring(0, 10) + '...' : clientName;
+
+            if (isAllAssignees && taskIndex < 3) {
+                console.log('📊 事業者名取得:', { client_id: task.client_id, clientName, hasClients: !!this.masterData?.clients, clientsCount: this.masterData?.clients?.length });
+            }
 
             // プレースホルダー行の場合は空行を表示
             if (task.is_placeholder) {
@@ -2495,7 +2503,7 @@ class TaskManagement {
                                 style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
                         }).join('')}
                         <!-- 全期間バー（薄い青・下層） -->
-                        <div style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; background: rgba(23, 162, 184, 0.25); border-radius: 4px; border: 1px solid rgba(23, 162, 184, 0.5);"></div>
+                        <div style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 20px; top: 5px; background: rgba(23, 162, 184, 0.25); border-radius: 4px; border: 1px solid rgba(23, 162, 184, 0.5);"></div>
                         <!-- 営業日ブロック（濃い青・上層） -->
                         ${businessDayBlocks}
                         <!-- タスクバー（リサイズ可能） -->
@@ -2507,7 +2515,7 @@ class TaskManagement {
                             data-cell-width="${cellWidth}"
                             onmouseenter="taskManager.highlightTaskCard(${task.id}, true)"
                             onmouseleave="taskManager.highlightTaskCard(${task.id}, false)"
-                            style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold; font-size: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease; user-select: none;"
+                            style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold; font-size: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease; user-select: none;"
                             title="${task.task_name}">
 
                             <!-- 左ハンドル（開始日調整） -->
