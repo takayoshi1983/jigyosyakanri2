@@ -2434,19 +2434,49 @@ class TaskManagement {
                         <div style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; background: rgba(23, 162, 184, 0.25); border-radius: 4px; border: 1px solid rgba(23, 162, 184, 0.5);"></div>
                         <!-- 営業日ブロック（濃い青・上層） -->
                         ${businessDayBlocks}
-                        <!-- タスクIDラベル（ドラッグ可能） -->
+                        <!-- タスクバー（リサイズ可能） -->
                         <div
                             class="gantt-task-bar"
-                            draggable="true"
                             data-task-id="${task.id}"
                             data-task-assignee="${task.assignee_id || this.currentAssigneeFilter}"
-                            ondragstart="taskManager.handleGanttDragStart(event)"
-                            ondragend="taskManager.handleGanttDragEnd(event)"
+                            data-start-date="${task.work_date}"
+                            data-cell-width="${cellWidth}"
                             onmouseenter="taskManager.highlightTaskCard(${task.id}, true)"
                             onmouseleave="taskManager.highlightTaskCard(${task.id}, false)"
-                            style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; cursor: move; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease;"
+                            style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold; font-size: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease; user-select: none;"
                             title="${task.task_name}">
-                            ${task.alphabetId}
+
+                            <!-- 左ハンドル（開始日調整） -->
+                            <div
+                                class="gantt-resize-handle gantt-resize-left"
+                                data-task-id="${task.id}"
+                                data-handle="left"
+                                onmousedown="taskManager.startResize(event, ${task.id}, 'left')"
+                                style="width: 10px; height: 100%; background: rgba(255,255,255,0.3); cursor: ew-resize; border-radius: 4px 0 0 4px; transition: background 0.2s; flex-shrink: 0;"
+                                onmouseenter="this.style.background='rgba(255,193,7,0.6)'"
+                                onmouseleave="this.style.background='rgba(255,255,255,0.3)'">
+                            </div>
+
+                            <!-- 中央エリア（タスク移動） -->
+                            <div
+                                class="gantt-task-center"
+                                draggable="true"
+                                ondragstart="taskManager.handleGanttDragStart(event)"
+                                ondragend="taskManager.handleGanttDragEnd(event)"
+                                style="flex: 1; display: flex; align-items: center; justify-content: center; cursor: move; height: 100%;">
+                                ${task.alphabetId}
+                            </div>
+
+                            <!-- 右ハンドル（終了日調整） -->
+                            <div
+                                class="gantt-resize-handle gantt-resize-right"
+                                data-task-id="${task.id}"
+                                data-handle="right"
+                                onmousedown="taskManager.startResize(event, ${task.id}, 'right')"
+                                style="width: 10px; height: 100%; background: rgba(255,255,255,0.3); cursor: ew-resize; border-radius: 0 4px 4px 0; transition: background 0.2s; flex-shrink: 0;"
+                                onmouseenter="this.style.background='rgba(255,193,7,0.6)'"
+                                onmouseleave="this.style.background='rgba(255,255,255,0.3)'">
+                            </div>
                         </div>
                         ${dueIndex >= 0 ? `<div style="position: absolute; left: ${(dueIndex + 1) * cellWidth - 2}px; width: 4px; height: 100%; background: #dc3545; top: 0;"></div>` : ''}
                     </div>
@@ -6215,6 +6245,172 @@ class TaskManagement {
             bar.style.filter = 'none';
             bar.style.zIndex = 'auto';
         }
+    }
+
+    // ========================================
+    // タスクバーのリサイズ機能
+    // ========================================
+
+    /**
+     * タスクバーのリサイズ開始
+     * @param {MouseEvent} e - マウスイベント
+     * @param {number} taskId - タスクID
+     * @param {string} handle - 'left' or 'right'
+     */
+    startResize(e, taskId, handle) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const bar = document.querySelector(`.gantt-task-bar[data-task-id="${taskId}"]`);
+        if (!bar) return;
+
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // リサイズ状態を保存
+        this.resizeState = {
+            taskId,
+            handle,
+            task,
+            bar,
+            cellWidth: parseFloat(bar.dataset.cellWidth),
+            startX: e.clientX,
+            originalLeft: bar.offsetLeft,
+            originalWidth: bar.offsetWidth,
+            startDate: new Date(task.work_date),
+            // end_dateがあれば使用、なければestimated_time_hoursから計算
+            endDate: task.end_date ? new Date(task.end_date) : null
+        };
+
+        // ドラッグ中の視覚効果
+        bar.style.opacity = '0.7';
+        bar.style.cursor = 'ew-resize';
+        document.body.style.cursor = 'ew-resize';
+        document.body.style.userSelect = 'none';
+
+        // イベントリスナー追加
+        document.addEventListener('mousemove', this.handleResize);
+        document.addEventListener('mouseup', this.endResize);
+    }
+
+    /**
+     * リサイズ中の処理
+     */
+    handleResize = (e) => {
+        if (!this.resizeState) return;
+
+        const { bar, cellWidth, startX, originalLeft, originalWidth, handle } = this.resizeState;
+        const deltaX = e.clientX - startX;
+        const deltaCells = Math.round(deltaX / cellWidth);
+
+        if (handle === 'left') {
+            // 左端をドラッグ：開始日を変更
+            const newLeft = originalLeft + (deltaCells * cellWidth);
+            const newWidth = originalWidth - (deltaCells * cellWidth);
+
+            // 最小幅1セル分を確保
+            if (newWidth >= cellWidth) {
+                bar.style.left = `${newLeft}px`;
+                bar.style.width = `${newWidth}px`;
+
+                // 開始日を更新（表示のみ）
+                this.resizeState.newStartDelta = deltaCells;
+            }
+        } else {
+            // 右端をドラッグ：終了日を変更
+            const newWidth = originalWidth + (deltaCells * cellWidth);
+
+            // 最小幅1セル分を確保
+            if (newWidth >= cellWidth) {
+                bar.style.width = `${newWidth}px`;
+
+                // 終了日を更新（表示のみ）
+                this.resizeState.newEndDelta = deltaCells;
+            }
+        }
+    }
+
+    /**
+     * リサイズ終了
+     */
+    endResize = async (e) => {
+        if (!this.resizeState) return;
+
+        const { taskId, task, bar, handle, startDate, newStartDelta = 0, newEndDelta = 0 } = this.resizeState;
+
+        // 視覚効果をリセット
+        bar.style.opacity = '1';
+        bar.style.cursor = '';
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+
+        // イベントリスナー削除
+        document.removeEventListener('mousemove', this.handleResize);
+        document.removeEventListener('mouseup', this.endResize);
+
+        // 変更があった場合のみDB更新
+        if (newStartDelta !== 0 || newEndDelta !== 0) {
+            try {
+                const updateData = {};
+
+                if (handle === 'left' && newStartDelta !== 0) {
+                    // 開始日を変更
+                    const newStartDate = new Date(startDate);
+                    newStartDate.setDate(newStartDate.getDate() + newStartDelta);
+                    updateData.work_date = this.businessDayCalc.formatDate(newStartDate);
+                } else if (handle === 'right' && newEndDelta !== 0) {
+                    // 終了日を変更
+                    const currentEndDate = this.resizeState.endDate || this.calculateEndDate(task);
+                    const newEndDate = new Date(currentEndDate);
+                    newEndDate.setDate(newEndDate.getDate() + newEndDelta);
+                    updateData.end_date = this.businessDayCalc.formatDate(newEndDate);
+                }
+
+                // DB更新
+                const { error } = await supabaseClient
+                    .from('tasks')
+                    .update(updateData)
+                    .eq('id', taskId);
+
+                if (error) throw error;
+
+                console.log(`✅ タスク${taskId}の期間を更新:`, updateData);
+                window.showToast('期間を調整しました', 'success');
+
+                // タスクを再読み込みして表示を更新
+                await this.loadTasks();
+                this.updateDisplay();
+
+            } catch (error) {
+                console.error('期間調整エラー:', error);
+                window.showToast('期間の調整に失敗しました', 'error');
+
+                // エラー時は表示を元に戻す
+                await this.loadTasks();
+                this.updateDisplay();
+            }
+        }
+
+        // リサイズ状態をクリア
+        this.resizeState = null;
+    }
+
+    /**
+     * estimated_time_hoursから終了日を計算（end_dateがない場合のフォールバック）
+     */
+    calculateEndDate(task) {
+        if (!task.work_date || !task.estimated_time_hours) {
+            return new Date(task.work_date);
+        }
+
+        const startDate = new Date(task.work_date);
+        const workPeriod = this.businessDayCalc.calculateWorkPeriod(
+            startDate,
+            task.estimated_time_hours,
+            task.assignee_id
+        );
+
+        return new Date(workPeriod.endDate);
     }
 
 }
