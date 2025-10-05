@@ -2264,15 +2264,6 @@ class TaskManagement {
         const rowHeight = 30;
         const cellWidth = 30;
 
-        console.log('📊 renderCustomGanttChart - masterData status:', {
-            hasMasterData: !!this.masterData,
-            masterDataKeys: this.masterData ? Object.keys(this.masterData) : [],
-            hasStaff: !!this.masterData?.staff,
-            staffCount: this.masterData?.staff?.length,
-            hasClients: !!this.masterData?.clients,
-            clientsCount: this.masterData?.clients?.length,
-            actualMasterData: this.masterData
-        });
 
         // 月ごとにグループ化
         const monthGroups = [];
@@ -2368,10 +2359,8 @@ class TaskManagement {
             if (isAllAssignees && task.assignee_id !== currentAssigneeId) {
                 currentAssigneeId = task.assignee_id;
                 const assigneeName = task.assignee_id
-                    ? (this.masterData?.staff?.find(s => s.id === task.assignee_id)?.name || `未取得(ID:${task.assignee_id})`)
+                    ? (this.staffs?.find(s => s.id === task.assignee_id)?.name || `未取得(ID:${task.assignee_id})`)
                     : '未割当';
-
-                console.log('👤 担当者名行追加:', { assignee_id: task.assignee_id, assigneeName, hasStaff: !!this.masterData?.staff });
 
                 // 担当者名行を追加（境界線付き）
                 taskRows.push(`
@@ -2391,13 +2380,9 @@ class TaskManagement {
 
             // 事業者名を取得（10文字超は省略）
             const clientName = task.client_id
-                ? (this.masterData?.clients?.find(c => c.id === task.client_id)?.name || `ID:${task.client_id}`)
+                ? (this.clients?.find(c => c.id === task.client_id)?.name || `ID:${task.client_id}`)
                 : '-';
             const displayClientName = clientName.length > 10 ? clientName.substring(0, 10) + '...' : clientName;
-
-            if (isAllAssignees && taskIndex < 3) {
-                console.log('📊 事業者名取得:', { client_id: task.client_id, clientName, hasClients: !!this.masterData?.clients, clientsCount: this.masterData?.clients?.length });
-            }
 
             // プレースホルダー行の場合は空行を表示
             if (task.is_placeholder) {

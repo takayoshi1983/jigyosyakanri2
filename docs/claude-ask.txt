@@ -1,14 +1,33 @@
-task-management.js:6379 ✅ タスク73の期間を更新: {end_date: '2025-10-19'}
+task-management.js:6556 TaskManagement initialized for task-management page
+task-management.js:154 Current user (selected staff): Object
+task-management.js:249 Templates loaded: 6
+business-day-calculator.js:55 ✅ 休日データ読み込み完了: 40件 (祝日:40, 会社:0, カスタム:0)
+task-management.js:274 Recurring tasks loaded: 0
 task-management.js:339 Tasks loaded: 32
-task-management.js:2181 📅 updateCalendarView called, tasks: 7
-task-management.js:2182 📅 currentAssigneeFilter: 7
-task-management.js:2198 📅 pendingTasks: 7
-business-day-calculator.js:90 Loaded 0 vacation days for staff 7
-task-management.js:6379 ✅ タスク73の期間を更新: {end_date: '2025-10-20'}
-task-management.js:339 Tasks loaded: 32
-task-management.js:2181 📅 updateCalendarView called, tasks: 7
-task-management.js:2182 📅 currentAssigneeFilter: 7
-task-management.js:2198 📅 pendingTasks: 7
-business-day-calculator.js:90 Loaded 0 vacation days for staff 7
-task-management.js:339 Tasks loaded: 32
-task-management.js:1857 Tasks refreshed at: 18:11:23
+task-management.js:224 Master data loaded: Object
+task-management.js:360 Initial display mode from HTML: list
+task-management.js:4975 ⚙️ テンプレート編集モーダルのイベントリスナーを設定中...
+task-management.js:5037 ✅ テンプレート編集モーダルのイベントリスナー設定完了
+task-management.js:1374 Filter state restored: Object
+task-management.js:2181 📅 updateCalendarView called, tasks: 31
+task-management.js:2182 📅 currentAssigneeFilter: null
+task-management.js:2198 📅 pendingTasks: 24
+task-management.js:2267 📊 renderCustomGanttChart - masterData status: Object
+task-management.js:2374 👤 担当者名行追加: Object
+task-management.js:2399 📊 事業者名取得: Object
+task-management.js:2374 👤 担当者名行追加: Object
+task-management.js:2399 📊 事業者名取得: Object
+task-management.js:2399 📊 事業者名取得: Object
+task-management.js:2374 👤 担当者名行追加: Object
+task-management.js:2181 📅 updateCalendarView called, tasks: 31
+task-management.js:2182 📅 currentAssigneeFilter: null
+task-management.js:2198 📅 pendingTasks: 24
+task-management.js:2267 📊 renderCustomGanttChart - masterData status: Object
+task-management.js:2374 👤 担当者名行追加: Object
+task-management.js:2399 📊 事業者名取得: Object
+task-management.js:2374 👤 担当者名行追加: Object
+task-management.js:2399 📊 事業者名取得: Object
+task-management.js:2399 📊 事業者名取得: ObjectclientName: "-"client_id: nullclientsCount: undefinedhasClients: false[[Prototype]]: Object
+task-management.js:2374 👤 担当者名行追加: ObjectassigneeName: "未取得(ID:8)"assignee_id: 8hasStaff: false[[Prototype]]: Object
+task-management.js:1829 Auto refresh started: 120秒間隔
+task-management.js:196 Task Management System initialized successfully
