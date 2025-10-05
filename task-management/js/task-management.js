@@ -2436,12 +2436,15 @@ class TaskManagement {
                         ${businessDayBlocks}
                         <!-- タスクIDラベル（ドラッグ可能） -->
                         <div
+                            class="gantt-task-bar"
                             draggable="true"
                             data-task-id="${task.id}"
                             data-task-assignee="${task.assignee_id || this.currentAssigneeFilter}"
                             ondragstart="taskManager.handleGanttDragStart(event)"
                             ondragend="taskManager.handleGanttDragEnd(event)"
-                            style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; cursor: move; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto;"
+                            onmouseenter="taskManager.highlightTaskCard(${task.id}, true)"
+                            onmouseleave="taskManager.highlightTaskCard(${task.id}, false)"
+                            style="position: absolute; left: ${fullBarStart}px; width: ${fullBarWidth}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px; cursor: move; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease;"
                             title="${task.task_name}">
                             ${task.alphabetId}
                         </div>
@@ -2556,11 +2559,15 @@ class TaskManagement {
 
                     return `
                         <div
+                            class="calendar-task-card"
                             draggable="true"
                             data-task-id="${task.id}"
                             data-task-status="${task.status}"
                             ondragstart="taskManager.handleCardDragStart(event)"
                             ondragend="taskManager.handleCardDragEnd(event)"
+                            onmouseenter="taskManager.highlightGanttBar(${task.id}, true); this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,123,255,0.3), 0 4px 8px rgba(0,123,255,0.2)';"
+                            onmouseleave="taskManager.highlightGanttBar(${task.id}, false); this.style.transform='${cardTransform}'; this.style.boxShadow='${cardShadow}';"
+                            ondblclick="taskManager.openTaskInEditMode(${task.id})"
                             style="
                             position: relative;
                             flex: 0 0 calc(10% - 10px);
@@ -2573,10 +2580,7 @@ class TaskManagement {
                             transition: all 0.3s ease;
                             box-shadow: ${cardShadow};
                             transform: ${cardTransform};
-                        "
-                            onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,123,255,0.3), 0 4px 8px rgba(0,123,255,0.2)';"
-                            onmouseout="this.style.transform='${cardTransform}'; this.style.boxShadow='${cardShadow}';"
-                            ondblclick="taskManager.openTaskInEditMode(${task.id})">
+                        ">
                             ${badge}
                             <div style="font-weight: 600; font-size: 13px; color: #495057; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
                                 ${task.task_name || 'Untitled'}
@@ -6154,6 +6158,62 @@ class TaskManagement {
         } catch (error) {
             console.error('CSVインポートエラー:', error);
             window.showToast('CSVインポートに失敗しました', 'error');
+        }
+    }
+
+    // ========================================
+    // ガントチャートとカードの連動機能
+    // ========================================
+
+    /**
+     * タスクカードをハイライト（ガントチャートのバーからトリガー）
+     * @param {number} taskId - タスクID
+     * @param {boolean} highlight - ハイライトのON/OFF
+     */
+    highlightTaskCard(taskId, highlight) {
+        const card = document.querySelector(`.calendar-task-card[data-task-id="${taskId}"]`);
+        if (!card) return;
+
+        if (highlight) {
+            // ハイライト ON: 強い影 + スケールアップ
+            card.style.transform = 'translateY(-5px) scale(1.02)';
+            card.style.boxShadow = '0 12px 24px rgba(255,193,7,0.4), 0 6px 12px rgba(255,193,7,0.3)';
+            card.style.borderColor = '#ffc107';
+            card.style.borderWidth = '3px';
+            card.style.zIndex = '100';
+        } else {
+            // ハイライト OFF: 元に戻す
+            const hasWorkDate = card.dataset.taskStatus !== '予定未定' && card.querySelector('[title]');
+            const originalTransform = hasWorkDate ? 'translateY(-3px)' : 'translateY(0)';
+            const originalShadow = hasWorkDate ? '0 4px 8px rgba(0,123,255,0.25), 0 2px 4px rgba(0,123,255,0.15)' : '0 1px 3px rgba(0,0,0,0.1)';
+
+            card.style.transform = originalTransform;
+            card.style.boxShadow = originalShadow;
+            card.style.borderColor = hasWorkDate ? '#007bff' : '#ffc107';
+            card.style.borderWidth = hasWorkDate ? '2px' : '1px';
+            card.style.zIndex = 'auto';
+        }
+    }
+
+    /**
+     * ガントチャートのタスクバーをハイライト（カードからトリガー）
+     * @param {number} taskId - タスクID
+     * @param {boolean} highlight - ハイライトのON/OFF
+     */
+    highlightGanttBar(taskId, highlight) {
+        const bar = document.querySelector(`.gantt-task-bar[data-task-id="${taskId}"]`);
+        if (!bar) return;
+
+        if (highlight) {
+            // ハイライト ON: スケールアップ + 黄色の光
+            bar.style.transform = 'scale(1.15)';
+            bar.style.filter = 'drop-shadow(0 0 8px rgba(255,193,7,0.8)) brightness(1.2)';
+            bar.style.zIndex = '1000';
+        } else {
+            // ハイライト OFF: 元に戻す
+            bar.style.transform = 'scale(1)';
+            bar.style.filter = 'none';
+            bar.style.zIndex = 'auto';
         }
     }
 
