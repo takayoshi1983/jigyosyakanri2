@@ -2388,7 +2388,7 @@ class TaskManagement {
             if (task.is_placeholder) {
                 taskRows.push(`
                     <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
-                        <div style="flex: 0 0 ${isAllAssignees ? '36px' : '40px'}; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #adb5bd; background: #f8f9fa; border-right: 2px solid #dee2e6;">
+                        <div style="flex: 0 0 ${isAllAssignees ? '36px' : '36px'}; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #adb5bd; background: #f8f9fa; border-right: 2px solid #dee2e6;">
                             -
                         </div>
                         <div style="flex: 1; position: relative;">
