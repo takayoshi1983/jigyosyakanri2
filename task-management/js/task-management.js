@@ -2743,15 +2743,14 @@ class TaskManagement {
 
     // 全タスクを統一カード形式で表示（5列レイアウト）
     updateAllTasksCards(pendingTasks, allTasks) {
-        // 依頼中タスク（予定未定含む全て）
-        const allPendingTasks = allTasks.filter(task => task.status === '依頼中' || task.status === '予定未定');
+        // pendingTasksは既にalphabetIdが付与されているので、そのまま使用
         // 確認待ちタスク
         const workingTasks = allTasks.filter(task => task.status === '作業完了');
         // 確認完了タスク
         const completedTasks = allTasks.filter(task => task.status === '確認完了');
 
-        // 依頼中タスク表示（予定未定含む）
-        this.renderTaskCards('anytime-tasks-list', allPendingTasks, '依頼中タスクはありません');
+        // 依頼中タスク表示（予定未定含む、alphabetId付き）
+        this.renderTaskCards('anytime-tasks-list', pendingTasks, '依頼中タスクはありません');
 
         // 確認待ちタスク表示
         this.renderTaskCards('working-tasks-list', workingTasks, '確認待ちタスクはありません', false, true);
