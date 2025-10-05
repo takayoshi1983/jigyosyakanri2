@@ -2266,10 +2266,12 @@ class TaskManagement {
 
         console.log('📊 renderCustomGanttChart - masterData status:', {
             hasMasterData: !!this.masterData,
+            masterDataKeys: this.masterData ? Object.keys(this.masterData) : [],
             hasStaff: !!this.masterData?.staff,
             staffCount: this.masterData?.staff?.length,
             hasClients: !!this.masterData?.clients,
-            clientsCount: this.masterData?.clients?.length
+            clientsCount: this.masterData?.clients?.length,
+            actualMasterData: this.masterData
         });
 
         // 月ごとにグループ化
