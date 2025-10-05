@@ -6086,21 +6086,26 @@ class TaskManagement {
 
         try {
             // タスクの開始日を更新
-            // end_dateがある場合は、期間を維持するために再計算が必要
             const task = this.tasks.find(t => t.id === taskId);
             const updateData = { work_date: newDate };
 
-            // end_dateがある場合は、開始日からの期間を維持
+            // end_dateがある場合の処理
             if (task && task.end_date) {
-                const oldStart = new Date(task.work_date);
-                const oldEnd = new Date(task.end_date);
-                const periodDays = Math.round((oldEnd - oldStart) / (1000 * 60 * 60 * 24));
+                // 元のwork_dateが存在する場合のみ期間を維持
+                if (task.work_date) {
+                    const oldStart = new Date(task.work_date);
+                    const oldEnd = new Date(task.end_date);
+                    const periodDays = Math.round((oldEnd - oldStart) / (1000 * 60 * 60 * 24));
 
-                const newStart = new Date(newDate);
-                const newEnd = new Date(newStart);
-                newEnd.setDate(newEnd.getDate() + periodDays);
+                    const newStart = new Date(newDate);
+                    const newEnd = new Date(newStart);
+                    newEnd.setDate(newEnd.getDate() + periodDays);
 
-                updateData.end_date = this.businessDayCalc.formatDate(newEnd);
+                    updateData.end_date = this.businessDayCalc.formatDate(newEnd);
+                } else {
+                    // 元のwork_dateがnullの場合はend_dateもクリア（estimated_time_hoursから自動計算）
+                    updateData.end_date = null;
+                }
             }
 
             const { error } = await supabase
