@@ -1626,8 +1626,8 @@ class TaskManagement {
 
         const filteredTasks = this.getFilteredTasks();
 
-        // タスク数カウント更新（依頼中のタスクのみ）
-        const pendingTasks = filteredTasks.filter(task => task.status === '依頼中');
+        // タスク数カウント更新（依頼中・予定未定のタスク）
+        const pendingTasks = filteredTasks.filter(task => task.status === '依頼中' || task.status === '予定未定');
         document.getElementById('total-task-count').textContent = `${pendingTasks.length}件`;
 
         // マイタスクパネルの更新
@@ -2500,7 +2500,11 @@ class TaskManagement {
 
     async updateGanttChart(tasks) {
         // 随時タスクでもwork_dateがあれば表示（tasksは既に依頼中のみ）
-        const ganttTasks = tasks.filter(task => task.work_date && task.estimated_time_hours);
+        // estimated_time_hoursが未設定の場合はデフォルト3時間として扱う
+        const ganttTasks = tasks.filter(task => task.work_date).map(task => ({
+            ...task,
+            estimated_time_hours: task.estimated_time_hours || 3
+        }));
 
         // 担当者フィルターが設定されている場合、そのスタッフの個人休暇を読み込む
         if (this.currentAssigneeFilter !== null) {
