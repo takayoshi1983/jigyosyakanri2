@@ -2502,18 +2502,23 @@ class TaskManagement {
         // 随時タスクでもwork_dateがあれば表示（tasksは既に依頼中のみ）
         const ganttTasks = tasks.filter(task => task.work_date && task.estimated_time_hours);
 
-        if (ganttTasks.length === 0) {
-            document.getElementById('gantt-chart-container').innerHTML = `
-                <p style="text-align: center; padding: 30px; color: #6c757d;">
-                    予定日が決まったタスクがありません
-                </p>
-            `;
-            return;
-        }
-
         // 担当者フィルターが設定されている場合、そのスタッフの個人休暇を読み込む
         if (this.currentAssigneeFilter !== null) {
             await this.businessDayCalc.loadStaffVacations(this.currentAssigneeFilter);
+        }
+
+        // タスクが5つ未満の場合、空行を追加して最低5行表示
+        const minRows = 5;
+        const displayTasks = [...ganttTasks];
+        while (displayTasks.length < minRows) {
+            displayTasks.push({
+                id: `placeholder-${displayTasks.length}`,
+                task_name: '（ここにタスクをドロップ）',
+                alphabetId: '',
+                work_date: null,
+                estimated_time_hours: null,
+                is_placeholder: true
+            });
         }
 
         // 今日から60日後までの日付を生成
@@ -2529,7 +2534,7 @@ class TaskManagement {
 
         // カスタムガントチャートHTML生成
         const container = document.getElementById('gantt-chart-container');
-        container.innerHTML = this.renderCustomGanttChart(ganttTasks, dates);
+        container.innerHTML = this.renderCustomGanttChart(displayTasks, dates);
     }
 
     renderCustomGanttChart(tasks, dates) {
@@ -2609,6 +2614,40 @@ class TaskManagement {
 
         // タスク行
         const taskRows = tasks.map((task, taskIndex) => {
+            // プレースホルダー行の場合は空行を表示
+            if (task.is_placeholder) {
+                return `
+                    <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
+                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #adb5bd; background: #f8f9fa; border-right: 2px solid #dee2e6;">
+                            -
+                        </div>
+                        <div style="flex: 1; position: relative;">
+                            ${dates.map((date, i) => {
+                                const holidayType = this.businessDayCalc.getHolidayType(date, this.currentAssigneeFilter);
+                                let bgColor = 'transparent';
+                                if (holidayType === 'sunday' || holidayType === 'national') {
+                                    bgColor = '#ffe6e6';
+                                } else if (holidayType === 'saturday') {
+                                    bgColor = '#e6f2ff';
+                                } else if (holidayType === 'company' || holidayType === 'custom' || holidayType === 'vacation') {
+                                    bgColor = '#f0f0f0';
+                                }
+                                const dateStr = this.businessDayCalc.formatDate(date);
+                                return `<div
+                                    class="gantt-date-cell"
+                                    data-date="${dateStr}"
+                                    ondragover="taskManager.handleGanttDragOver(event)"
+                                    ondrop="taskManager.handleGanttDrop(event)"
+                                    style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
+                            }).join('')}
+                            <div style="position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; color: #adb5bd; font-size: 11px; pointer-events: none;">
+                                ${task.task_name}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             const startDate = new Date(task.work_date);
             startDate.setHours(0, 0, 0, 0);
 
