@@ -2206,7 +2206,7 @@ class TaskManagement {
 
         // 各列にタスクカードを追加
         Object.entries(tasksByStatus).forEach(([status, statusTasks]) => {
-            const containerId = status === '依頼中' ? 'tasks-pending' :
+            const containerId = (status === '依頼中' || status === '予定未定') ? 'tasks-pending' :
                                status === '作業完了' ? 'tasks-working' : 'tasks-completed';
 
             const container = document.getElementById(containerId);
@@ -2460,10 +2460,18 @@ class TaskManagement {
         console.log('📅 updateCalendarView called, tasks:', tasks.length);
         console.log('📅 currentAssigneeFilter:', this.currentAssigneeFilter);
 
-        // 依頼中タスクにアルファベット識別子を付与
-        const pendingTasks = tasks.filter(task => task.status === '依頼中');
-        pendingTasks.forEach((task, index) => {
-            task.alphabetId = this.getAlphabetId(index);
+        // 依頼中タスク・予定未定タスクに識別子を付与
+        const pendingTasks = tasks.filter(task => task.status === '依頼中' || task.status === '予定未定');
+        let alphabetIndex = 0;
+        pendingTasks.forEach((task) => {
+            if (task.status === '予定未定' && !task.work_date) {
+                // 予定日なしの予定未定タスクには「未」マーク
+                task.alphabetId = '未';
+            } else {
+                // 依頼中タスク、または予定日ありの予定未定タスクにはアルファベット
+                task.alphabetId = this.getAlphabetId(alphabetIndex);
+                alphabetIndex++;
+            }
         });
 
         console.log('📅 pendingTasks:', pendingTasks.length);
@@ -2731,14 +2739,14 @@ class TaskManagement {
 
     // 全タスクを統一カード形式で表示（5列レイアウト）
     updateAllTasksCards(pendingTasks, allTasks) {
-        // 依頼中タスク（随時含む全て）
-        const allPendingTasks = pendingTasks;
+        // 依頼中タスク（予定未定含む全て）
+        const allPendingTasks = allTasks.filter(task => task.status === '依頼中' || task.status === '予定未定');
         // 確認待ちタスク
         const workingTasks = allTasks.filter(task => task.status === '作業完了');
         // 確認完了タスク
         const completedTasks = allTasks.filter(task => task.status === '確認完了');
 
-        // 依頼中タスク表示（随時含む）
+        // 依頼中タスク表示（予定未定含む）
         this.renderTaskCards('anytime-tasks-list', allPendingTasks, '依頼中タスクはありません');
 
         // 確認待ちタスク表示
@@ -2769,6 +2777,8 @@ class TaskManagement {
                     // バッジ（右上）
                     const badge = isAnytime
                         ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">随</div>`
+                        : task.alphabetId === '未'
+                        ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">未</div>`
                         : task.alphabetId
                         ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #007bff; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${task.alphabetId}</div>`
                         : '';
@@ -2815,7 +2825,7 @@ class TaskManagement {
 
     updateSummary() {
         const totalTasks = this.tasks.length;
-        const pendingTasks = this.tasks.filter(task => task.status === '依頼中').length;
+        const pendingTasks = this.tasks.filter(task => task.status === '依頼中' || task.status === '予定未定').length;
         const workingTasks = this.tasks.filter(task => task.status === '作業完了').length;
         const completedTasks = this.tasks.filter(task => task.status === '確認完了').length;
 
@@ -3209,6 +3219,20 @@ class TaskManagement {
 
             if (isEdit) {
                 // 更新
+                const task = this.tasks.find(t => t.id === parseInt(taskId));
+
+                // 予定未定タスクに予定日を入力した場合、自動的に「依頼中」に変更
+                if (task && task.status === '予定未定' && taskData.work_date) {
+                    taskData.status = '依頼中';
+                    console.log('予定未定タスクに予定日を入力したため、ステータスを「依頼中」に変更しました');
+                }
+
+                // 依頼中タスクの予定日を削除した場合、自動的に「予定未定」に変更
+                if (task && task.status === '依頼中' && task.is_anytime && !taskData.work_date && task.work_date) {
+                    taskData.status = '予定未定';
+                    console.log('依頼中タスクの予定日を削除したため、ステータスを「予定未定」に変更しました');
+                }
+
                 const { error } = await supabase
                     .from('tasks')
                     .update(taskData)
@@ -3219,7 +3243,13 @@ class TaskManagement {
             } else {
                 // 新規作成
                 taskData.requester_id = this.currentUser.id;
-                taskData.status = '依頼中';
+
+                // 随時タスクの場合、予定日の有無でステータスを決定
+                if (isAnytime) {
+                    taskData.status = taskData.work_date ? '依頼中' : '予定未定';
+                } else {
+                    taskData.status = '依頼中';
+                }
 
                 const { error } = await supabase
                     .from('tasks')
@@ -3256,10 +3286,40 @@ class TaskManagement {
                 updateData.confirmed_at = new Date().toISOString();
             }
 
-            // 随時タスクが「確認待ち→依頼中」に戻る場合、work_dateを削除
+            // 随時タスク＆自己タスク（依頼者=受任者）の特別ワークフロー
+            if (task && task.is_anytime && task.requester_id === task.assignee_id && newStatus === '作業完了') {
+                // 自己タスクが「確認待ち」に移動しようとした場合
+                if (task.work_date) {
+                    // ① 予定日あり → 予定未定（予定日削除）
+                    updateData.status = '予定未定';
+                    updateData.work_date = null;
+                    showToast('作業完了しました。予定日を削除し「予定未定」に変更しました', 'success');
+                } else {
+                    // ② 予定日なし → 予定未定（何もしない）
+                    updateData.status = '予定未定';
+                    showToast('予定日を削除し、ステータスを「予定未定」に変更します', 'info');
+                }
+
+                const { error } = await supabase
+                    .from('tasks')
+                    .update(updateData)
+                    .eq('id', taskId);
+
+                if (error) throw error;
+
+                await this.loadTasks();
+                this.updateDisplay();
+                this.updateSummary();
+                this.updateMyTasks();
+                this.updateModalStatusDisplay(taskId, updateData.status);
+                return; // 早期リターン
+            }
+
+            // 随時タスクが「確認待ち→依頼中」に戻る場合、work_dateを削除して「予定未定」に変更
             if (task && task.is_anytime && newStatus === '依頼中') {
                 updateData.work_date = null;
-                console.log('随時タスクが依頼中に戻ったため、work_dateを削除しました');
+                updateData.status = '予定未定';
+                console.log('随時タスクが依頼中に戻ったため、work_dateを削除し、ステータスを「予定未定」に変更しました');
             }
 
             const { error } = await supabase
