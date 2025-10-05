@@ -477,6 +477,12 @@
     min-width: 70px;
 }
 
+.status-unscheduled {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #28a745;
+}
+
 .status-pending {
     background: #fff3cd;
     color: #856404;
@@ -496,6 +502,16 @@
 }
 
 /* コンパクトステータス表示 */
+.compact-status-unscheduled {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #28a745;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
 .compact-status-pending {
     background: #fff3cd;
     color: #856404;
@@ -527,6 +543,16 @@
 }
 
 /* マイタスクステータス表示 */
+.my-task-status-unscheduled {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #28a745;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
 .my-task-status-pending {
     background: #fff3cd;
     color: #856404;
@@ -1026,6 +1052,11 @@
 }
 
 /* マイタスク専用ステータススタイル */
+.my-task-status-unscheduled {
+    background: #d4edda;
+    color: #155724;
+}
+
 .my-task-status-pending {
     background: #fff3cd;
     color: #856404;

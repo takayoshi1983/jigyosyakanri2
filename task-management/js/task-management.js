@@ -2080,6 +2080,7 @@ class TaskManagement {
 
     createClickableStatusBadge(task) {
         const statusConfig = {
+            '予定未定': { class: 'status-unscheduled', text: '📌 予定未定', next: '作業完了' },
             '依頼中': { class: 'status-pending', text: '📝 依頼中', next: '作業完了' },
             '作業完了': { class: 'status-working', text: '✅ 確認待ち', next: '確認完了' },
             '確認完了': { class: 'status-completed', text: '☑️ 確認完了', next: '依頼中' }
@@ -2179,12 +2180,13 @@ class TaskManagement {
 
     updateCardView(tasks) {
         // カンバンボードの各列をクリア
-        ['tasks-pending', 'tasks-working', 'tasks-completed'].forEach(id => {
+        ['tasks-unscheduled', 'tasks-pending', 'tasks-working', 'tasks-completed'].forEach(id => {
             document.getElementById(id).innerHTML = '';
         });
 
         // ステータス別に分類
         const tasksByStatus = {
+            '予定未定': [],
             '依頼中': [],
             '作業完了': [],
             '確認完了': []
@@ -2199,6 +2201,7 @@ class TaskManagement {
 
         // カンバン列のヘッダーにタスク数を表示
         const statusLabels = {
+            '予定未定': '📌 予定未定',
             '依頼中': '📝 依頼中',
             '作業完了': '✅ 確認待ち',
             '確認完了': '☑️ 確認完了'
@@ -2206,7 +2209,8 @@ class TaskManagement {
 
         // 各列にタスクカードを追加
         Object.entries(tasksByStatus).forEach(([status, statusTasks]) => {
-            const containerId = (status === '依頼中' || status === '予定未定') ? 'tasks-pending' :
+            const containerId = status === '予定未定' ? 'tasks-unscheduled' :
+                               status === '依頼中' ? 'tasks-pending' :
                                status === '作業完了' ? 'tasks-working' : 'tasks-completed';
 
             const container = document.getElementById(containerId);
