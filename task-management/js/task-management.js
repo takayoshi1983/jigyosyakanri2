@@ -5922,6 +5922,9 @@ class TaskManagement {
             return;
         }
 
+        // ドラッグ中フラグを設定（リサイズを無効化）
+        this.isDragging = true;
+
         const taskId = event.target.dataset.taskId;
         const assigneeId = event.target.dataset.taskAssignee;
 
@@ -5936,6 +5939,9 @@ class TaskManagement {
     handleGanttDragEnd(event) {
         // ドラッグ終了時にスタイルを戻す
         event.target.style.opacity = '1';
+
+        // ドラッグ中フラグをクリア
+        this.isDragging = false;
     }
 
     handleGanttDragOver(event) {
@@ -6285,6 +6291,11 @@ class TaskManagement {
      * @param {string} handle - 'left' or 'right'
      */
     startResize(e, taskId, handle) {
+        // ドラッグ中はリサイズを無効化
+        if (this.isDragging) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -6324,7 +6335,8 @@ class TaskManagement {
      * リサイズ中の処理
      */
     handleResize = (e) => {
-        if (!this.resizeState) return;
+        // ドラッグ中またはリサイズ状態がない場合は何もしない
+        if (this.isDragging || !this.resizeState) return;
 
         const { bar, cellWidth, startX, originalLeft, originalWidth, handle } = this.resizeState;
         const deltaX = e.clientX - startX;
