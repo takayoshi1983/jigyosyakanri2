@@ -2548,6 +2548,12 @@ class TaskManagement {
 
                     const dueDate = showDueDate && task.due_date ? this.formatMonthDay(task.due_date) : '';
 
+                    // ガントチャートに表示されているタスク（work_date設定済み）は立体感を強調
+                    const hasWorkDate = task.work_date && !isAnytime;
+                    const cardShadow = hasWorkDate ? '0 4px 8px rgba(0,123,255,0.25), 0 2px 4px rgba(0,123,255,0.15)' : '0 1px 3px rgba(0,0,0,0.1)';
+                    const cardTransform = hasWorkDate ? 'translateY(-3px)' : 'translateY(0)';
+                    const cardBorder = hasWorkDate ? '2px solid #007bff' : `1px solid ${isAnytime ? '#ffc107' : showDueDate ? '#28a745' : '#ffc107'}`;
+
                     return `
                         <div
                             draggable="true"
@@ -2560,15 +2566,16 @@ class TaskManagement {
                             flex: 0 0 calc(10% - 10px);
                             padding: 10px;
                             padding-right: ${badge ? '45px' : '10px'};
-                            background: #fff;
-                            border: 1px solid ${isAnytime ? '#ffc107' : showDueDate ? '#28a745' : '#ffc107'};
+                            background: ${hasWorkDate ? 'linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%)' : '#fff'};
+                            border: ${cardBorder};
                             border-radius: 6px;
                             cursor: move;
-                            transition: all 0.2s;
-                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            transition: all 0.3s ease;
+                            box-shadow: ${cardShadow};
+                            transform: ${cardTransform};
                         "
-                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';"
-                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)';"
+                            onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,123,255,0.3), 0 4px 8px rgba(0,123,255,0.2)';"
+                            onmouseout="this.style.transform='${cardTransform}'; this.style.boxShadow='${cardShadow}';"
                             ondblclick="taskManager.openTaskInEditMode(${task.id})">
                             ${badge}
                             <div style="font-weight: 600; font-size: 13px; color: #495057; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
