@@ -5985,9 +5985,27 @@ class TaskManagement {
 
         try {
             // タスクの開始日を更新
+            // end_dateがある場合は、期間を維持するために再計算が必要
+            const task = this.tasks.find(t => t.id === taskId);
+            const updateData = { work_date: newDate };
+
+            // end_dateがある場合は、開始日からの期間を維持
+            if (task && task.end_date) {
+                const oldStart = new Date(task.work_date);
+                const oldEnd = new Date(task.end_date);
+                const periodDays = Math.round((oldEnd - oldStart) / (1000 * 60 * 60 * 24));
+
+                const newStart = new Date(newDate);
+                const newEnd = new Date(newStart);
+                newEnd.setDate(newEnd.getDate() + periodDays);
+
+                updateData.end_date = this.businessDayCalc.formatDate(newEnd);
+                console.log('📅 期間維持:', { oldStart: task.work_date, oldEnd: task.end_date, newStart: newDate, newEnd: updateData.end_date, periodDays });
+            }
+
             const { error } = await supabase
                 .from('tasks')
-                .update({ work_date: newDate })
+                .update(updateData)
                 .eq('id', taskId);
 
             if (error) throw error;
