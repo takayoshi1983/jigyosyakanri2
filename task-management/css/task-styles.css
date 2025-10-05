@@ -1,5 +1,10 @@
 /* タスク管理専用スタイル */
 
+/* ガントチャート リサイズハンドル hover効果（パフォーマンス最適化） */
+.gantt-resize-handle:hover {
+    background: rgba(255,193,7,0.6) !important;
+}
+
 /* 簡易表示トグルスイッチ */
 .toggle-switch input:checked + .toggle-slider {
     background-color: #28a745;

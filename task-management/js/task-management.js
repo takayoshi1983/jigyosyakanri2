@@ -2258,6 +2258,9 @@ class TaskManagement {
         // カスタムガントチャートHTML生成
         const container = document.getElementById('gantt-chart-container');
         container.innerHTML = this.renderCustomGanttChart(displayTasks, dates);
+
+        // イベント委譲: 日付ヘッダーのホバー効果（1つのリスナーで全ての日付を処理）
+        this.setupGanttEventDelegation(container);
     }
 
     renderCustomGanttChart(tasks, dates) {
@@ -2324,12 +2327,12 @@ class TaskManagement {
 
             return `
                 <div
+                    class="gantt-date-header"
                     data-date="${dateStr}"
                     data-is-holiday="${isHoliday}"
+                    data-bg-color="${bgColor}"
                     onclick="taskManager.togglePersonalVacation(event)"
-                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0; cursor: ${isHoliday ? 'default' : 'pointer'}; transition: all 0.2s; z-index: 10; pointer-events: auto;"
-                    onmouseover="if(this.dataset.isHoliday === 'false') this.style.background = 'rgba(23, 162, 184, 0.2)';"
-                    onmouseout="this.style.background = '${bgColor}';">
+                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0; cursor: ${isHoliday ? 'default' : 'pointer'}; transition: all 0.2s; z-index: 10; pointer-events: auto;">
                     <div style="line-height: 1.2; pointer-events: none;">${day}</div>
                     ${icon ? `<div style="font-size: 8px; line-height: 0; margin-top: 2px; pointer-events: none;">${icon}</div>` : ''}
                 </div>
@@ -2496,8 +2499,6 @@ class TaskManagement {
                             return `<div
                                 class="gantt-date-cell"
                                 data-date="${dateStr}"
-                                ondragover="taskManager.handleGanttDragOver(event)"
-                                ondrop="taskManager.handleGanttDrop(event)"
                                 style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
                         }).join('')}
                         <!-- 全期間バー（薄い青・下層） -->
@@ -2607,6 +2608,67 @@ class TaskManagement {
         } catch (error) {
             console.error('Update task dates error:', error);
             showToast('日付の更新に失敗しました', 'error');
+        }
+    }
+
+    /**
+     * ガントチャートのイベント委譲設定（パフォーマンス最適化）
+     */
+    setupGanttEventDelegation(container) {
+        // 既存のリスナーを削除（重複防止）
+        if (this.ganttMouseoverHandler) {
+            container.removeEventListener('mouseover', this.ganttMouseoverHandler);
+            container.removeEventListener('mouseout', this.ganttMouseoutHandler);
+        }
+
+        // 日付ヘッダーのホバー効果（1つのリスナーで全ての日付を処理）
+        this.ganttMouseoverHandler = (e) => {
+            const dateHeader = e.target.closest('.gantt-date-header');
+            if (dateHeader && dateHeader.dataset.isHoliday === 'false') {
+                dateHeader.style.background = 'rgba(23, 162, 184, 0.2)';
+            }
+        };
+
+        this.ganttMouseoutHandler = (e) => {
+            const dateHeader = e.target.closest('.gantt-date-header');
+            if (dateHeader && dateHeader.dataset.isHoliday === 'false') {
+                dateHeader.style.background = dateHeader.dataset.bgColor;
+            }
+        };
+
+        container.addEventListener('mouseover', this.ganttMouseoverHandler);
+        container.addEventListener('mouseout', this.ganttMouseoutHandler);
+
+        // D&Dイベント委譲（dragover/drop）
+        if (!this.ganttDragoverHandler) {
+            this.ganttDragoverHandler = (e) => {
+                const cell = e.target.closest('.gantt-date-cell');
+                if (cell) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    cell.style.background = 'rgba(23, 162, 184, 0.2)';
+                }
+            };
+
+            this.ganttDragleaveHandler = (e) => {
+                const cell = e.target.closest('.gantt-date-cell');
+                if (cell && !cell.contains(e.relatedTarget)) {
+                    cell.style.background = '';
+                }
+            };
+
+            this.ganttDropHandler = (e) => {
+                const cell = e.target.closest('.gantt-date-cell');
+                if (cell) {
+                    e.preventDefault();
+                    cell.style.background = '';
+                    this.handleGanttDrop(e);
+                }
+            };
+
+            container.addEventListener('dragover', this.ganttDragoverHandler);
+            container.addEventListener('dragleave', this.ganttDragleaveHandler);
+            container.addEventListener('drop', this.ganttDropHandler);
         }
     }
 
@@ -5999,23 +6061,15 @@ class TaskManagement {
         this.isDragging = false;
     }
 
-    handleGanttDragOver(event) {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-
-        // ドロップ可能なセルをハイライト
-        event.target.style.background = 'rgba(23, 162, 184, 0.2)';
-    }
-
     async handleGanttDrop(event) {
         event.preventDefault();
 
-        // ハイライトを解除
-        event.target.style.background = '';
-
         const taskId = parseInt(event.dataTransfer.getData('taskId'));
         const assigneeId = parseInt(event.dataTransfer.getData('assigneeId'));
-        const newDate = event.target.dataset.date;
+
+        // イベント委譲対応: cellを取得してdata-dateを読み取る
+        const cell = event.target.closest('.gantt-date-cell');
+        const newDate = cell?.dataset.date;
 
         if (!taskId || !newDate) {
             return;
