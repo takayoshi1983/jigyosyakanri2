@@ -241,7 +241,12 @@
                             ondragleave="taskManager.handleSectionDragLeave(event)"
                             ondrop="taskManager.handleSectionDrop(event)"
                             style="background: #fff9e6; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #ffc107; transition: all 0.2s;">
-                            <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #856404;">📋 依頼中タスク</h4>
+                            <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #856404;">
+                                📋 依頼中タスク
+                                <span style="font-size: 11px; color: #6c757d; font-weight: normal; margin-left: 8px;">
+                                    （ドラッグアンドドロップでステータスの変更、ダブルクリックで編集画面に移動できます）
+                                </span>
+                            </h4>
                             <div id="anytime-tasks-list" style="font-size: 13px; min-height: 50px;">
                                 <!-- 依頼中タスク・予定未定タスクがここに表示されます -->
                             </div>
