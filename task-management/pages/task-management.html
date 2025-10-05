@@ -135,7 +135,6 @@
                     <label>表示形式:</label>
                     <div class="display-toggle" style="display: flex; gap: 5px;">
                         <button id="display-list" class="display-btn active" data-display="list">📋 リスト</button>
-                        <button id="display-card" class="display-btn" data-display="card">📊 カード</button>
                         <button id="display-calendar" class="display-btn" data-display="calendar">📅 カレンダー</button>
                     </div>
                 </div>
@@ -216,34 +215,12 @@
                         </div>
                     </div>
 
-                    <!-- カード表示 -->
-                    <div id="card-view" class="task-view" style="display: none;">
-                        <div id="kanban-board" class="kanban-container">
-                            <div class="kanban-column" data-status="予定未定" style=" border-left: solid #28a745;">
-                                <h3>📌 予定未定</h3>
-                                <div class="kanban-tasks" id="tasks-unscheduled"></div>
-                            </div>
-                            <div class="kanban-column" data-status="依頼中" style=" border-left: solid #ffd100;">
-                                <h3>📝 依頼中</h3>
-                                <div class="kanban-tasks" id="tasks-pending"></div>
-                            </div>
-                            <div class="kanban-column" data-status="作業完了" style=" border-left: solid #5299ff;">
-                                <h3>✅ 確認待ち</h3>
-                                <div class="kanban-tasks" id="tasks-working"></div>
-                            </div>
-                            <div class="kanban-column" data-status="確認完了" style =" border-left: solid #00c92e;">
-                                <h3>☑️ 確認完了</h3>
-                                <div class="kanban-tasks" id="tasks-completed"></div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- ガントチャート表示 -->
                     <div id="calendar-view" class="task-view" style="display: none;">
                         <!-- ビュー切替ボタン -->
                         <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
                             <button id="gantt-add-holiday-btn" class="btn btn-sm" style="background: #28a745; color: white;">休日管理</button>
-                            <span style="color: #6c757d; font-size: 12px;">※ガントチャートの日付をクリックして個人休暇を設定できます</span>
+                            <span style="color: #6c757d; font-size: 12px;">※個人休暇は日付をクリックして設定できます</span>
                         </div>
 
                         <!-- ガントチャート本体 -->
