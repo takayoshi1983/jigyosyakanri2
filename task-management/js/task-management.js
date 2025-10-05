@@ -5956,6 +5956,7 @@ class TaskManagement {
 
     async handleGanttDrop(event) {
         event.preventDefault();
+        console.log('🎯 Drop:', event.target.dataset.date, 'taskId from dataTransfer:', event.dataTransfer.getData('taskId'));
 
         // ハイライトを解除
         event.target.style.background = '';
@@ -5964,7 +5965,12 @@ class TaskManagement {
         const assigneeId = parseInt(event.dataTransfer.getData('assigneeId'));
         const newDate = event.target.dataset.date;
 
-        if (!taskId || !newDate) return;
+        console.log('📦 Drop data:', { taskId, assigneeId, newDate });
+
+        if (!taskId || !newDate) {
+            console.log('⚠️ Drop cancelled: missing taskId or newDate');
+            return;
+        }
 
         // 営業日判定
         const date = new Date(newDate);
@@ -6378,9 +6384,12 @@ class TaskManagement {
      * リサイズ終了
      */
     endResize = async (e) => {
+        console.log('📏 End Resize:', this.resizeState ? `taskId: ${this.resizeState.taskId}` : 'no resize state');
+
         if (!this.resizeState) return;
 
         const { taskId, task, bar, handle, startDate, newStartDelta = 0, newEndDelta = 0 } = this.resizeState;
+        console.log('📏 Resize deltas:', { newStartDelta, newEndDelta, handle });
 
         // 視覚効果をリセット
         bar.style.opacity = '1';
