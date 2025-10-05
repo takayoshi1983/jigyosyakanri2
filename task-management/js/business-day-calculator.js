@@ -279,6 +279,32 @@ export class BusinessDayCalculator {
     }
 
     /**
+     * 期間内の営業日一覧を取得（個人休暇も考慮）
+     * @param {Date} startDate - 開始日
+     * @param {Date} endDate - 終了日
+     * @param {number|null} staffId - スタッフID（nullの場合は全体の営業日のみ）
+     * @returns {Date[]} - 営業日の配列
+     */
+    getBusinessDaysInRange(startDate, endDate, staffId = null) {
+        const businessDays = [];
+        let current = new Date(startDate);
+        const end = new Date(endDate);
+
+        const isWorkingDay = staffId !== null
+            ? (date) => this.isWorkingDay(date, staffId)
+            : (date) => this.isBusinessDay(date);
+
+        while (current <= end) {
+            if (isWorkingDay(current)) {
+                businessDays.push(new Date(current));
+            }
+            current.setDate(current.getDate() + 1);
+        }
+
+        return businessDays;
+    }
+
+    /**
      * 日付をYYYY-MM-DD形式の文字列に変換
      * @param {Date} date - 日付オブジェクト
      * @returns {string} - YYYY-MM-DD形式の文字列

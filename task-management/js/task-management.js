@@ -2377,28 +2377,29 @@ class TaskManagement {
 
             // 作業終了日を決定（end_dateがあればそれを使用、なければestimated_time_hoursから計算）
             let endDate;
-            let workPeriod;
+            let businessDays;
 
             if (task.end_date) {
                 // end_dateが設定されている場合はそれを使用
                 endDate = new Date(task.end_date);
                 endDate.setHours(0, 0, 0, 0);
 
-                // 営業日計算（表示用）
-                workPeriod = this.businessDayCalc.calculateWorkPeriod(
+                // startDateからendDateまでの実際の営業日を取得
+                businessDays = this.businessDayCalc.getBusinessDaysInRange(
                     startDate,
-                    task.estimated_time_hours,
+                    endDate,
                     task.assignee_id || this.currentAssigneeFilter
                 );
             } else {
                 // end_dateがない場合はestimated_time_hoursから計算
-                workPeriod = this.businessDayCalc.calculateWorkPeriod(
+                const workPeriod = this.businessDayCalc.calculateWorkPeriod(
                     startDate,
                     task.estimated_time_hours,
                     task.assignee_id || this.currentAssigneeFilter
                 );
                 endDate = new Date(workPeriod.endDate);
                 endDate.setHours(0, 0, 0, 0);
+                businessDays = workPeriod.businessDays;
             }
 
             const endIndex = dates.findIndex(d => d.getTime() === endDate.getTime());
@@ -2413,7 +2414,7 @@ class TaskManagement {
             const fullBarWidth = endIndex >= 0 ? (endIndex - startIndex + 1) * cellWidth : cellWidth;
 
             // 営業日のみの濃い青ブロックを生成
-            const businessDayBlocks = workPeriod.businessDays.map(businessDay => {
+            const businessDayBlocks = businessDays.map(businessDay => {
                 const bdIndex = dates.findIndex(d => d.getTime() === businessDay.getTime());
                 if (bdIndex === -1) return '';
                 return `<div style="position: absolute; left: ${bdIndex * cellWidth + 1}px; width: ${cellWidth - 1}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 3px;"></div>`;
