@@ -2228,6 +2228,12 @@ class TaskManagement {
             await this.businessDayCalc.loadStaffVacations(this.currentAssigneeFilter);
         }
 
+        // 担当者が変わった場合はキャッシュをクリア（安全策）
+        if (this.cachedAssigneeFilter !== this.currentAssigneeFilter) {
+            this.holidayTypeCache = null;
+            this.cachedAssigneeFilter = this.currentAssigneeFilter;
+        }
+
         // タスクが5つ未満の場合、空行を追加して最低5行表示
         const minRows = 5;
         const displayTasks = [...ganttTasks];
@@ -2267,6 +2273,34 @@ class TaskManagement {
         const rowHeight = 30;
         const cellWidth = 30;
 
+        // 休日情報をキャッシュ（60日分を1回だけ計算）
+        if (!this.holidayTypeCache) {
+            this.holidayTypeCache = dates.map(date => {
+                const holidayType = this.businessDayCalc.getHolidayType(date, this.currentAssigneeFilter);
+
+                // 背景色も事前計算
+                let bgColor = '#fff';
+                if (holidayType === 'sunday') {
+                    bgColor = '#ffe6e6';
+                } else if (holidayType === 'saturday') {
+                    bgColor = '#e6f2ff';
+                } else if (holidayType === 'national') {
+                    bgColor = '#ffe6e6';
+                } else if (holidayType === 'company' || holidayType === 'custom' || holidayType === 'vacation') {
+                    bgColor = '#f0f0f0';
+                }
+
+                // アイコンも事前計算
+                let icon = '';
+                if (holidayType === 'national') icon = '🏖️';
+                else if (holidayType === 'company') icon = '🏢';
+                else if (holidayType === 'custom') icon = '📌';
+                else if (holidayType === 'vacation') icon = '🌴';
+
+                return { holidayType, bgColor, icon };
+            });
+        }
+
 
         // 月ごとにグループ化
         const monthGroups = [];
@@ -2294,35 +2328,14 @@ class TaskManagement {
 
         const dateHeaders = dates.map((date, index) => {
             const day = date.getDate();
-            const dayOfWeek = date.getDay();
-            const holidayType = this.businessDayCalc.getHolidayType(date, this.currentAssigneeFilter);
 
-            // 休日タイプに応じた背景色とアイコン
-            let bgColor = '#fff';
-            let icon = '';
-
-            if (holidayType === 'sunday') {
-                bgColor = '#ffe6e6';
-            } else if (holidayType === 'saturday') {
-                bgColor = '#e6f2ff';
-            } else if (holidayType === 'national') {
-                bgColor = '#ffe6e6';
-                icon = '🏖️';
-            } else if (holidayType === 'company') {
-                bgColor = '#f0f0f0';
-                icon = '🏢';
-            } else if (holidayType === 'custom') {
-                bgColor = '#f0f0f0';
-                icon = '📌';
-            } else if (holidayType === 'vacation') {
-                bgColor = '#f0f0f0';
-                icon = '🌴';
-            }
+            // キャッシュから取得（高速化）
+            const cached = this.holidayTypeCache[index];
+            const { holidayType, bgColor, icon } = cached;
 
             const dateStr = this.businessDayCalc.formatDate(date);
             const isWeekend = holidayType === 'sunday' || holidayType === 'saturday';
             const isNationalHoliday = holidayType === 'national';
-            // 土日・祝日フラグをデータ属性に保存（担当者チェックはクリック時に行う）
             const isHoliday = isWeekend || isNationalHoliday;
 
             return `
@@ -2399,15 +2412,9 @@ class TaskManagement {
                         </div>
                         <div style="flex: 1; position: relative;">
                             ${dates.map((date, i) => {
-                                const holidayType = this.businessDayCalc.getHolidayType(date, this.currentAssigneeFilter);
-                                let bgColor = 'transparent';
-                                if (holidayType === 'sunday' || holidayType === 'national') {
-                                    bgColor = '#ffe6e6';
-                                } else if (holidayType === 'saturday') {
-                                    bgColor = '#e6f2ff';
-                                } else if (holidayType === 'company' || holidayType === 'custom' || holidayType === 'vacation') {
-                                    bgColor = '#f0f0f0';
-                                }
+                                // キャッシュから取得（高速化）
+                                const cached = this.holidayTypeCache[i];
+                                const bgColor = cached.bgColor === '#fff' ? 'transparent' : cached.bgColor;
                                 const dateStr = this.businessDayCalc.formatDate(date);
                                 return `<div
                                     class="gantt-date-cell"
@@ -2483,18 +2490,9 @@ class TaskManagement {
                     </div>
                     <div style="flex: 1; position: relative;">
                         ${dates.map((date, i) => {
-                            const holidayType = this.businessDayCalc.getHolidayType(date, this.currentAssigneeFilter);
-
-                            // 休日タイプに応じた背景色
-                            let bgColor = 'transparent';
-                            if (holidayType === 'sunday' || holidayType === 'national') {
-                                bgColor = '#ffe6e6';
-                            } else if (holidayType === 'saturday') {
-                                bgColor = '#e6f2ff';
-                            } else if (holidayType === 'company' || holidayType === 'custom' || holidayType === 'vacation') {
-                                bgColor = '#f0f0f0';
-                            }
-
+                            // キャッシュから取得（高速化）
+                            const cached = this.holidayTypeCache[i];
+                            const bgColor = cached.bgColor === '#fff' ? 'transparent' : cached.bgColor;
                             const dateStr = this.businessDayCalc.formatDate(date);
                             return `<div
                                 class="gantt-date-cell"
