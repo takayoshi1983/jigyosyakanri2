@@ -2264,6 +2264,14 @@ class TaskManagement {
         const rowHeight = 30;
         const cellWidth = 30;
 
+        console.log('📊 renderCustomGanttChart - masterData status:', {
+            hasMasterData: !!this.masterData,
+            hasStaff: !!this.masterData?.staff,
+            staffCount: this.masterData?.staff?.length,
+            hasClients: !!this.masterData?.clients,
+            clientsCount: this.masterData?.clients?.length
+        });
+
         // 月ごとにグループ化
         const monthGroups = [];
         let currentMonth = null;
@@ -2366,7 +2374,7 @@ class TaskManagement {
                 // 担当者名行を追加（境界線付き）
                 taskRows.push(`
                     <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; border-top: 3px solid #007bff; position: relative;">
-                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; background: #007bff; border-right: 2px solid #dee2e6; font-size: 10px; padding: 2px; line-height: 1.2;">
+                        <div style="flex: 0 0 36px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; background: #007bff; border-right: 2px solid #dee2e6; font-size: 10px; padding: 2px; line-height: 1.2;">
                             ${assigneeName}
                         </div>
                         <div style="flex: 1; position: relative; background: #f0f8ff;">
@@ -2393,7 +2401,7 @@ class TaskManagement {
             if (task.is_placeholder) {
                 taskRows.push(`
                     <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
-                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #adb5bd; background: #f8f9fa; border-right: 2px solid #dee2e6;">
+                        <div style="flex: 0 0 ${isAllAssignees ? '36px' : '40px'}; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #adb5bd; background: #f8f9fa; border-right: 2px solid #dee2e6;">
                             -
                         </div>
                         <div style="flex: 1; position: relative;">
@@ -2477,7 +2485,7 @@ class TaskManagement {
 
             taskRows.push(`
                 <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
-                    <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #007bff; background: #f8f9fa; border-right: 2px solid #dee2e6; font-size: ${isAllAssignees ? '8px' : '14px'}; padding: 2px; line-height: 1.1;">
+                    <div style="flex: 0 0 ${isAllAssignees ? '36px' : '40px'}; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #007bff; background: #f8f9fa; border-right: 2px solid #dee2e6; font-size: ${isAllAssignees ? '8px' : '14px'}; padding: 2px; line-height: 1.1;">
                         ${isAllAssignees ? displayClientName : task.alphabetId}
                     </div>
                     <div style="flex: 1; position: relative;">
@@ -2562,17 +2570,17 @@ class TaskManagement {
 
         return `
             <div style="overflow-x: auto; background: white; border-radius: 8px;">
-                <div style="min-width: ${40 + dates.length * cellWidth}px;">
+                <div style="min-width: ${(isAllAssignees ? 36 : 40) + dates.length * cellWidth}px;">
                     <!-- 月ヘッダー -->
                     <div style="display: flex; border-bottom: 2px solid #dee2e6;">
-                        <div style="flex: 0 0 40px;"></div>
+                        <div style="flex: 0 0 ${isAllAssignees ? '36px' : '40px'};"></div>
                         <div style="flex: 1; display: flex;">
                             ${monthHeaders}
                         </div>
                     </div>
                     <!-- 日付ヘッダー -->
                     <div style="display: flex; border-bottom: 2px solid #dee2e6;">
-                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa; font-size: ${isAllAssignees ? '8px' : '12px'}; line-height: 1.2;">
+                        <div style="flex: 0 0 ${isAllAssignees ? '36px' : '40px'}; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa; font-size: ${isAllAssignees ? '8px' : '12px'}; line-height: 1.2;">
                             ${isAllAssignees ? '事業者' : 'ID'}
                         </div>
                         <div style="flex: 1; position: relative; height: 28px;">
