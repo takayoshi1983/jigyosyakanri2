@@ -2470,7 +2470,7 @@ class TaskManagement {
                                 data-handle="left"
                                 draggable="false"
                                 onmousedown="taskManager.startResize(event, ${task.id}, 'left')"
-                                style="width: 10px; height: 100%; background: rgba(255,255,255,0.3); cursor: ew-resize; border-radius: 4px 0 0 4px; transition: background 0.2s; flex-shrink: 0;"
+                                style="width: 5px; height: 100%; background: rgba(255,255,255,0.3); cursor: ew-resize; border-radius: 4px 0 0 4px; transition: background 0.2s; flex-shrink: 0;"
                                 onmouseenter="this.style.background='rgba(255,193,7,0.6)'"
                                 onmouseleave="this.style.background='rgba(255,255,255,0.3)'">
                             </div>
@@ -2494,7 +2494,7 @@ class TaskManagement {
                                 data-handle="right"
                                 draggable="false"
                                 onmousedown="taskManager.startResize(event, ${task.id}, 'right')"
-                                style="width: 10px; height: 100%; background: rgba(255,255,255,0.3); cursor: ew-resize; border-radius: 0 4px 4px 0; transition: background 0.2s; flex-shrink: 0;"
+                                style="width: 5px; height: 100%; background: rgba(255,255,255,0.3); cursor: ew-resize; border-radius: 0 4px 4px 0; transition: background 0.2s; flex-shrink: 0;"
                                 onmouseenter="this.style.background='rgba(255,193,7,0.6)'"
                                 onmouseleave="this.style.background='rgba(255,255,255,0.3)'">
                             </div>
