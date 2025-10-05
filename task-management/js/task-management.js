@@ -353,10 +353,10 @@ class TaskManagement {
         // 保存されたフィルター状態を復元
         this.updateFilterUI();
 
-        // HTMLのactiveボタンから現在の表示形式を取得
-        const activeBtn = document.querySelector('.display-btn.active');
-        if (activeBtn) {
-            this.currentDisplay = activeBtn.dataset.display;
+        // チェックされたラジオボタンから現在の表示形式を取得
+        const checkedRadio = document.querySelector('input[name="display-mode"]:checked');
+        if (checkedRadio) {
+            this.currentDisplay = checkedRadio.value;
             console.log('Initial display mode from HTML:', this.currentDisplay);
         }
 
@@ -371,12 +371,10 @@ class TaskManagement {
     }
 
     setupEventListeners() {
-        // 表示形式切替ボタン
-        document.querySelectorAll('.display-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.display-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.currentDisplay = e.target.dataset.display;
+        // 表示形式切替ラジオボタン
+        document.querySelectorAll('input[name="display-mode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.currentDisplay = e.target.value;
                 this.switchDisplay(this.currentDisplay);
             });
         });
@@ -1387,15 +1385,13 @@ class TaskManagement {
             // タイトルも更新
             this.updateTaskPanelTitle();
 
-            // 表示形式も復元（ボタンのactive状態とビューの表示を同期）
+            // 表示形式も復元（ラジオボタンの選択状態とビューの表示を同期）
             if (savedState.display) {
-                // ボタンのactive状態を更新
-                document.querySelectorAll('.display-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.dataset.display === savedState.display) {
-                        btn.classList.add('active');
-                    }
-                });
+                // ラジオボタンの選択状態を更新
+                const targetRadio = document.querySelector(`input[name="display-mode"][value="${savedState.display}"]`);
+                if (targetRadio) {
+                    targetRadio.checked = true;
+                }
 
                 // ビューの表示を切り替え
                 document.querySelectorAll('.task-view').forEach(view => {
@@ -1481,10 +1477,11 @@ class TaskManagement {
             this.filterSearchableSelect.setValue(this.currentFilters.client);
         }
 
-        // 表示形式ボタン
-        document.querySelectorAll('.display-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.display === this.currentDisplay);
-        });
+        // 表示形式ラジオボタン
+        const currentRadio = document.querySelector(`input[name="display-mode"][value="${this.currentDisplay}"]`);
+        if (currentRadio) {
+            currentRadio.checked = true;
+        }
     }
 
     renderAssigneeSidebar() {
@@ -3204,8 +3201,8 @@ class TaskManagement {
         // 総タスク数（完了済みは除く）
         const totalMyTasks = assignedTasks.length + requestedTasks.length;
 
-        // カウント更新（受任タスクは「依頼中」のみをカウント）
-        const pendingAssignedTasks = assignedTasks.filter(task => task.status === '依頼中');
+        // カウント更新（受任タスクは「依頼中」と「予定未定」をカウント）
+        const pendingAssignedTasks = assignedTasks.filter(task => task.status === '依頼中' || task.status === '予定未定');
         document.getElementById('assigned-count').textContent = pendingAssignedTasks.length;
         document.getElementById('requested-count').textContent = requestedTasks.length;
         document.getElementById('completed-count').textContent = completedTasks.length;
