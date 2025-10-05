@@ -5916,6 +5916,8 @@ class TaskManagement {
     // ========================================
 
     handleGanttDragStart(event) {
+        console.log('🎯 Drag Start:', event.target.className, event.target.dataset);
+
         // リサイズ中の場合はドラッグをキャンセル
         if (this.resizeState) {
             event.preventDefault();
@@ -6291,8 +6293,11 @@ class TaskManagement {
      * @param {string} handle - 'left' or 'right'
      */
     startResize(e, taskId, handle) {
+        console.log('📏 Resize Start:', handle, 'taskId:', taskId, 'isDragging:', this.isDragging);
+
         // ドラッグ中はリサイズを無効化
         if (this.isDragging) {
+            console.log('⚠️ Resize blocked: dragging in progress');
             return;
         }
 
