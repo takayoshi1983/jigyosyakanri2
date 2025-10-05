@@ -2347,20 +2347,43 @@ class TaskManagement {
             });
         }
 
-        // タスク行
-        const taskRows = sortedTasks.map((task, taskIndex) => {
-            // 担当者グループの境界チェック（全担当者表示時のみ）
-            const isGroupBoundary = isAllAssignees && taskIndex > 0 &&
-                sortedTasks[taskIndex - 1].assignee_id !== task.assignee_id;
+        // タスク行（全担当者表示時は担当者名行も追加）
+        const taskRows = [];
+        let currentAssigneeId = null;
 
-            // 担当者名を取得
-            const assigneeName = task.assignee_id
-                ? (this.masterData?.staff?.find(s => s.id === task.assignee_id)?.name || '-')
-                : '未割当';
+        sortedTasks.forEach((task, taskIndex) => {
+            // 担当者が変わった場合、担当者名行を追加（全担当者表示時のみ）
+            if (isAllAssignees && task.assignee_id !== currentAssigneeId) {
+                currentAssigneeId = task.assignee_id;
+                const assigneeName = task.assignee_id
+                    ? (this.masterData?.staff?.find(s => s.id === task.assignee_id)?.name || '-')
+                    : '未割当';
+
+                // 担当者名行を追加（境界線付き）
+                taskRows.push(`
+                    <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; border-top: 3px solid #007bff; position: relative;">
+                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; background: #007bff; border-right: 2px solid #dee2e6; font-size: 10px; padding: 2px; line-height: 1.2;">
+                            ${assigneeName}
+                        </div>
+                        <div style="flex: 1; position: relative; background: #f0f8ff;">
+                            ${dates.map((date, i) => {
+                                const dateStr = this.businessDayCalc.formatDate(date);
+                                return `<div data-date="${dateStr}" style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; border-left: 1px solid #e0e0e0;"></div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `);
+            }
+
+            // 事業者名を取得（10文字超は省略）
+            const clientName = task.client_id
+                ? (this.masterData?.clients?.find(c => c.id === task.client_id)?.name || '-')
+                : '-';
+            const displayClientName = clientName.length > 10 ? clientName.substring(0, 10) + '...' : clientName;
 
             // プレースホルダー行の場合は空行を表示
             if (task.is_placeholder) {
-                return `
+                taskRows.push(`
                     <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
                         <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #adb5bd; background: #f8f9fa; border-right: 2px solid #dee2e6;">
                             -
@@ -2389,14 +2412,15 @@ class TaskManagement {
                             </div>
                         </div>
                     </div>
-                `;
+                `);
+                return;
             }
 
             const startDate = new Date(task.work_date);
             startDate.setHours(0, 0, 0, 0);
 
             const startIndex = dates.findIndex(d => d.getTime() === startDate.getTime());
-            if (startIndex === -1) return '';
+            if (startIndex === -1) return;
 
             // 作業終了日を決定（end_dateがあればそれを使用、なければestimated_time_hoursから計算）
             let endDate;
@@ -2443,10 +2467,10 @@ class TaskManagement {
                 return `<div style="position: absolute; left: ${bdIndex * cellWidth + 1}px; width: ${cellWidth - 1}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 3px;"></div>`;
             }).join('');
 
-            return `
-                <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative; ${isGroupBoundary ? 'border-top: 3px solid #007bff;' : ''}">
-                    <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #007bff; background: #f8f9fa; border-right: 2px solid #dee2e6; font-size: ${isAllAssignees ? '9px' : '14px'}; padding: 2px;">
-                        ${isAllAssignees ? assigneeName : task.alphabetId}
+            taskRows.push(`
+                <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
+                    <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #007bff; background: #f8f9fa; border-right: 2px solid #dee2e6; font-size: ${isAllAssignees ? '8px' : '14px'}; padding: 2px; line-height: 1.1;">
+                        ${isAllAssignees ? displayClientName : task.alphabetId}
                     </div>
                     <div style="flex: 1; position: relative;">
                         ${dates.map((date, i) => {
@@ -2525,8 +2549,8 @@ class TaskManagement {
                         ${dueIndex >= 0 ? `<div style="position: absolute; left: ${(dueIndex + 1) * cellWidth - 2}px; width: 4px; height: 100%; background: #dc3545; top: 0;"></div>` : ''}
                     </div>
                 </div>
-            `;
-        }).join('');
+            `);
+        });
 
         return `
             <div style="overflow-x: auto; background: white; border-radius: 8px;">
@@ -2540,15 +2564,15 @@ class TaskManagement {
                     </div>
                     <!-- 日付ヘッダー -->
                     <div style="display: flex; border-bottom: 2px solid #dee2e6;">
-                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa; font-size: ${isAllAssignees ? '9px' : '12px'};">
-                            ${isAllAssignees ? '担当者' : 'ID'}
+                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa; font-size: ${isAllAssignees ? '8px' : '12px'}; line-height: 1.2;">
+                            ${isAllAssignees ? '事業者' : 'ID'}
                         </div>
                         <div style="flex: 1; position: relative; height: 28px;">
                             ${dateHeaders}
                         </div>
                     </div>
                     <!-- タスク行 -->
-                    ${taskRows}
+                    ${taskRows.join('')}
                 </div>
             </div>
         `;
