@@ -2333,8 +2333,31 @@ class TaskManagement {
             `;
         }).join('');
 
+        // 全担当者表示時は担当者でソート
+        const isAllAssignees = !this.currentAssigneeFilter;
+        let sortedTasks = [...tasks];
+
+        if (isAllAssignees) {
+            sortedTasks.sort((a, b) => {
+                // assignee_idで昇順ソート（nullは最後）
+                if (a.assignee_id === null && b.assignee_id === null) return 0;
+                if (a.assignee_id === null) return 1;
+                if (b.assignee_id === null) return -1;
+                return a.assignee_id - b.assignee_id;
+            });
+        }
+
         // タスク行
-        const taskRows = tasks.map((task, taskIndex) => {
+        const taskRows = sortedTasks.map((task, taskIndex) => {
+            // 担当者グループの境界チェック（全担当者表示時のみ）
+            const isGroupBoundary = isAllAssignees && taskIndex > 0 &&
+                sortedTasks[taskIndex - 1].assignee_id !== task.assignee_id;
+
+            // 担当者名を取得
+            const assigneeName = task.assignee_id
+                ? (this.masterData?.staff?.find(s => s.id === task.assignee_id)?.name || '-')
+                : '未割当';
+
             // プレースホルダー行の場合は空行を表示
             if (task.is_placeholder) {
                 return `
@@ -2421,9 +2444,9 @@ class TaskManagement {
             }).join('');
 
             return `
-                <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
-                    <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #007bff; background: #f8f9fa; border-right: 2px solid #dee2e6;">
-                        ${task.alphabetId}
+                <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative; ${isGroupBoundary ? 'border-top: 3px solid #007bff;' : ''}">
+                    <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #007bff; background: #f8f9fa; border-right: 2px solid #dee2e6; font-size: ${isAllAssignees ? '9px' : '14px'}; padding: 2px;">
+                        ${isAllAssignees ? assigneeName : task.alphabetId}
                     </div>
                     <div style="flex: 1; position: relative;">
                         ${dates.map((date, i) => {
@@ -2517,7 +2540,9 @@ class TaskManagement {
                     </div>
                     <!-- 日付ヘッダー -->
                     <div style="display: flex; border-bottom: 2px solid #dee2e6;">
-                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa;">ID</div>
+                        <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa; font-size: ${isAllAssignees ? '9px' : '12px'};">
+                            ${isAllAssignees ? '担当者' : 'ID'}
+                        </div>
                         <div style="flex: 1; position: relative; height: 28px;">
                             ${dateHeaders}
                         </div>
@@ -5916,8 +5941,6 @@ class TaskManagement {
     // ========================================
 
     handleGanttDragStart(event) {
-        console.log('🎯 Drag Start:', event.target.className, event.target.dataset);
-
         // リサイズ中の場合はドラッグをキャンセル
         if (this.resizeState) {
             event.preventDefault();
@@ -5956,7 +5979,6 @@ class TaskManagement {
 
     async handleGanttDrop(event) {
         event.preventDefault();
-        console.log('🎯 Drop:', event.target.dataset.date, 'taskId from dataTransfer:', event.dataTransfer.getData('taskId'));
 
         // ハイライトを解除
         event.target.style.background = '';
@@ -5965,10 +5987,7 @@ class TaskManagement {
         const assigneeId = parseInt(event.dataTransfer.getData('assigneeId'));
         const newDate = event.target.dataset.date;
 
-        console.log('📦 Drop data:', { taskId, assigneeId, newDate });
-
         if (!taskId || !newDate) {
-            console.log('⚠️ Drop cancelled: missing taskId or newDate');
             return;
         }
 
@@ -6000,7 +6019,6 @@ class TaskManagement {
                 newEnd.setDate(newEnd.getDate() + periodDays);
 
                 updateData.end_date = this.businessDayCalc.formatDate(newEnd);
-                console.log('📅 期間維持:', { oldStart: task.work_date, oldEnd: task.end_date, newStart: newDate, newEnd: updateData.end_date, periodDays });
             }
 
             const { error } = await supabase
@@ -6317,11 +6335,8 @@ class TaskManagement {
      * @param {string} handle - 'left' or 'right'
      */
     startResize(e, taskId, handle) {
-        console.log('📏 Resize Start:', handle, 'taskId:', taskId, 'isDragging:', this.isDragging);
-
         // ドラッグ中はリサイズを無効化
         if (this.isDragging) {
-            console.log('⚠️ Resize blocked: dragging in progress');
             return;
         }
 
@@ -6402,12 +6417,9 @@ class TaskManagement {
      * リサイズ終了
      */
     endResize = async (e) => {
-        console.log('📏 End Resize:', this.resizeState ? `taskId: ${this.resizeState.taskId}` : 'no resize state');
-
         if (!this.resizeState) return;
 
         const { taskId, task, bar, handle, startDate, newStartDelta = 0, newEndDelta = 0 } = this.resizeState;
-        console.log('📏 Resize deltas:', { newStartDelta, newEndDelta, handle });
 
         // 視覚効果をリセット
         bar.style.opacity = '1';
