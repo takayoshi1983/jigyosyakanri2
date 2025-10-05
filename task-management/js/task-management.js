@@ -2460,6 +2460,8 @@ class TaskManagement {
                             <!-- 中央エリア（タスク移動） -->
                             <div
                                 class="gantt-task-center"
+                                data-task-id="${task.id}"
+                                data-task-assignee="${task.assignee_id}"
                                 draggable="true"
                                 ondragstart="taskManager.handleGanttDragStart(event)"
                                 ondragend="taskManager.handleGanttDragEnd(event)"
@@ -6367,7 +6369,7 @@ class TaskManagement {
                 }
 
                 // DB更新
-                const { error } = await supabaseClient
+                const { error } = await supabase
                     .from('tasks')
                     .update(updateData)
                     .eq('id', taskId);
