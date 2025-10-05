@@ -2375,16 +2375,32 @@ class TaskManagement {
             const startIndex = dates.findIndex(d => d.getTime() === startDate.getTime());
             if (startIndex === -1) return '';
 
-            // 営業日ベースで作業期間を計算（個人休暇も考慮）
-            const workPeriod = this.businessDayCalc.calculateWorkPeriod(
-                startDate,
-                task.estimated_time_hours,
-                task.assignee_id || this.currentAssigneeFilter  // タスクの担当者IDを使用
-            );
+            // 作業終了日を決定（end_dateがあればそれを使用、なければestimated_time_hoursから計算）
+            let endDate;
+            let workPeriod;
 
-            // 作業終了日のインデックスを取得
-            const endDate = new Date(workPeriod.endDate);
-            endDate.setHours(0, 0, 0, 0);
+            if (task.end_date) {
+                // end_dateが設定されている場合はそれを使用
+                endDate = new Date(task.end_date);
+                endDate.setHours(0, 0, 0, 0);
+
+                // 営業日計算（表示用）
+                workPeriod = this.businessDayCalc.calculateWorkPeriod(
+                    startDate,
+                    task.estimated_time_hours,
+                    task.assignee_id || this.currentAssigneeFilter
+                );
+            } else {
+                // end_dateがない場合はestimated_time_hoursから計算
+                workPeriod = this.businessDayCalc.calculateWorkPeriod(
+                    startDate,
+                    task.estimated_time_hours,
+                    task.assignee_id || this.currentAssigneeFilter
+                );
+                endDate = new Date(workPeriod.endDate);
+                endDate.setHours(0, 0, 0, 0);
+            }
+
             const endIndex = dates.findIndex(d => d.getTime() === endDate.getTime());
 
             // 期限日を取得
