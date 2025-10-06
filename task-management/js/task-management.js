@@ -6531,6 +6531,15 @@ class TaskManagement {
             // 右端をドラッグ：終了日を変更
             const newWidth = originalWidth + (deltaCells * cellWidth);
 
+            console.log('🔧 リサイズ中:', {
+                deltaX,
+                deltaCells,
+                originalWidth,
+                newWidth,
+                cellWidth,
+                willResize: newWidth >= cellWidth
+            });
+
             // 最小幅1セル分を確保
             if (newWidth >= cellWidth) {
                 bar.style.width = `${newWidth}px`;
@@ -6611,10 +6620,16 @@ class TaskManagement {
                 if (error) throw error;
 
                 console.log(`✅ タスク${taskId}の期間を更新:`, updateData);
-                window.showToast('期間を調整しました', 'success');
 
-                // タスクを再読み込みして表示を更新
+                // トーストは表示しない（リサイズ中に大量に出るため）
+                // window.showToast('期間を調整しました', 'success');
+
+                // タスクを再読み込みして表示を更新（軽量化のため最小限の更新）
                 await this.loadTasks();
+
+                // 休日キャッシュをクリア
+                this.holidayTypeCache = null;
+
                 this.updateDisplay();
 
             } catch (error) {
