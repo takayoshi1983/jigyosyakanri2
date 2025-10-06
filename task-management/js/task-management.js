@@ -1621,6 +1621,9 @@ class TaskManagement {
             return;
         }
 
+        // 通常モードの場合、テーブルヘッダーを「予定日」に戻す
+        this.updateTableHeader('work_date', '予定日');
+
         const filteredTasks = this.getFilteredTasks();
 
         // タスク数カウント更新（依頼中・予定未定のタスク）
@@ -1998,7 +2001,12 @@ class TaskManagement {
         // 期限の色分け
         const dueDateClass = this.getDueDateClass(task.due_date);
         const dueDateText = this.formatDueDateWithWarning(task.due_date, task.is_anytime, task.status);
-        const workDateText = task.work_date ? this.formatMonthDay(task.work_date) : '-';
+
+        // 履歴モードの場合は「完了日」を表示、通常モードは「予定日」を表示
+        const workDateText = this.historyMode
+            ? (task.confirmed_at ? this.formatMonthDay(task.confirmed_at) : '-')
+            : (task.work_date ? this.formatMonthDay(task.work_date) : '-');
+
         const createdDateText = task.created_at ? this.formatMonthDay(task.created_at) : '-';
 
         // ステータスバッジ（クリック可能）
@@ -3485,9 +3493,9 @@ class TaskManagement {
                     <div class="task-meta" style="display: flex; align-items: center; gap: 0.8em; font-size: clamp(9px, 0.7em, 11px); color: ${textColor}; white-space: nowrap; width: 100%; min-width: 0;">
                         <span style="flex: 0 0 auto; white-space: nowrap; color: ${textColor};" title="${this.getPriorityText(task.priority)}">${priorityStars}</span>
                         <span style="flex: 0 0 auto; text-align: center; white-space: nowrap;">${urlIcon}</span>
-                        <span style="flex: 0 0 auto; font-size: clamp(10px, 0.75em, 13px); white-space: nowrap; min-width: 4em; max-width: 8em; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
-                        <span style="flex: 0 0 auto; font-size: clamp(10px, 0.75em, 13px); color: ${linkColor}; white-space: nowrap; min-width: 4em;" title="${task.due_date || ''}">${dueDateDisplay}</span>
-                        <span style="flex: 0 0 auto; font-size: clamp(10px, 0.75em, 13px); white-space: nowrap; min-width: 4em;" title="${task.work_date || ''}">${workDateDisplay}</span>
+                        <span style="flex: 0 0 auto; font-size: clamp(13px, 0.75em, 13px); white-space: nowrap; min-width: 4em; max-width: 8em; overflow: hidden; text-overflow: ellipsis;">${personDisplay}</span>
+                        <span style="flex: 0 0 auto; font-size: clamp(13px, 0.75em, 13px); color: ${linkColor}; white-space: nowrap; min-width: 4em;" title="${task.due_date || ''}">${dueDateDisplay}</span>
+                        <span style="flex: 0 0 auto; font-size: clamp(13px, 0.75em, 13px); white-space: nowrap; min-width: 4em;" title="${task.work_date || ''}">${workDateDisplay}</span>
                     </div>
                 </div>
 
@@ -3756,6 +3764,12 @@ class TaskManagement {
             historyToggle.textContent = '📅 履歴モード終了';
             historyToggle.style.background = 'linear-gradient(135deg, #ff6b6b, #ff8e8e)';
 
+            // リスト表示に切り替え
+            this.currentDisplay = 'list';
+            const listRadio = document.getElementById('display-list');
+            if (listRadio) listRadio.checked = true;
+            this.switchDisplay('list');
+
             // 履歴データを読み込み
             this.loadHistoryData();
         } else {
@@ -3847,9 +3861,20 @@ class TaskManagement {
         }
     }
 
+    // テーブルヘッダーを動的に更新
+    updateTableHeader(dataSortValue, headerText) {
+        const header = document.querySelector(`th[data-sort="${dataSortValue}"]`);
+        if (header) {
+            header.textContent = headerText;
+        }
+    }
+
     // 履歴表示を更新
     updateHistoryDisplay() {
         if (!this.historyMode) return;
+
+        // テーブルヘッダーを「完了日」に変更
+        this.updateTableHeader('work_date', '完了日');
 
         let filtered = [...this.allTasks];
 
