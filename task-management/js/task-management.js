@@ -3279,6 +3279,12 @@ class TaskManagement {
 
             showToast(`タスクを「${newStatus}」に更新しました`, 'success');
             await this.loadTasks(); // データ再読み込み
+
+            // 履歴モードの場合は履歴データも再読み込み
+            if (this.historyMode) {
+                await this.loadHistoryData();
+            }
+
             this.updateDisplay(); // 画面更新
             this.updateSummary(); // サマリー更新
             this.updateMyTasks(); // 受任タスク一覧更新
