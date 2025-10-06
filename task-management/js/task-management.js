@@ -6529,24 +6529,19 @@ class TaskManagement {
             }
         } else {
             // 右端をドラッグ：終了日を変更
-            const newWidth = originalWidth + (deltaCells * cellWidth);
+            let adjustedDeltaCells = deltaCells;
+            let newWidth = originalWidth + (deltaCells * cellWidth);
 
-            console.log('🔧 リサイズ中:', {
-                deltaX,
-                deltaCells,
-                originalWidth,
-                newWidth,
-                cellWidth,
-                willResize: newWidth >= cellWidth
-            });
-
-            // 最小幅1セル分を確保
-            if (newWidth >= cellWidth) {
-                bar.style.width = `${newWidth}px`;
-
-                // 終了日を更新（表示のみ）
-                this.resizeState.newEndDelta = deltaCells;
+            // 最小幅1セル分を確保（30px未満にならないよう調整）
+            if (newWidth < cellWidth) {
+                // 幅が30px未満になる場合、最小1セル（30px）になるようdeltaCellsを調整
+                adjustedDeltaCells = Math.ceil((cellWidth - originalWidth) / cellWidth);
+                newWidth = originalWidth + (adjustedDeltaCells * cellWidth);
             }
+
+            bar.style.width = `${newWidth}px`;
+            // 終了日を更新（表示のみ）
+            this.resizeState.newEndDelta = adjustedDeltaCells;
         }
     }
 
