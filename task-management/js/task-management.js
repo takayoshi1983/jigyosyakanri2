@@ -6532,11 +6532,13 @@ class TaskManagement {
             let adjustedDeltaCells = deltaCells;
             let newWidth = originalWidth + (deltaCells * cellWidth);
 
-            // 最小幅1セル分を確保（30px未満にならないよう調整）
-            if (newWidth < cellWidth) {
-                // 幅が30px未満になる場合、最小1セル（30px）になるようdeltaCellsを調整
-                adjustedDeltaCells = Math.ceil((cellWidth - originalWidth) / cellWidth);
-                newWidth = originalWidth + (adjustedDeltaCells * cellWidth);
+            // 最小幅を考慮（バーの幅は fullBarWidth - 1 なので、最小29pxを許容）
+            const minWidth = cellWidth - 1; // 29px
+
+            if (newWidth < minWidth) {
+                // 幅が29px未満になる場合、最小1セル（29px）になるようdeltaCellsを調整
+                adjustedDeltaCells = Math.round((minWidth - originalWidth) / cellWidth);
+                newWidth = Math.max(minWidth, originalWidth + (adjustedDeltaCells * cellWidth));
             }
 
             bar.style.width = `${newWidth}px`;
