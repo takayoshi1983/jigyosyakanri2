@@ -2737,10 +2737,11 @@ class TaskManagement {
                             draggable="true"
                             data-task-id="${task.id}"
                             data-task-status="${task.status}"
+                            data-has-work-date="${hasWorkDate}"
                             ondragstart="taskManager.handleCardDragStart(event)"
                             ondragend="taskManager.handleCardDragEnd(event)"
                             onmouseenter="taskManager.highlightGanttBar(${task.id}, true); this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,123,255,0.3), 0 4px 8px rgba(0,123,255,0.2)';"
-                            onmouseleave="taskManager.highlightGanttBar(${task.id}, false); this.style.transform='${cardTransform}'; this.style.boxShadow='${cardShadow}';"
+                            onmouseleave="taskManager.highlightGanttBar(${task.id}, false); this.style.transform='${cardTransform}'; this.style.boxShadow='${cardShadow}'; this.style.borderColor='${hasWorkDate ? '#007bff' : '#ffc107'}'; this.style.borderWidth='${hasWorkDate ? '2px' : '1px'}';"
                             ondblclick="taskManager.openTaskInEditMode(${task.id})"
                             style="
                             position: relative;
@@ -6416,8 +6417,8 @@ class TaskManagement {
             card.style.borderWidth = '3px';
             card.style.zIndex = '100';
         } else {
-            // ハイライト OFF: 元に戻す
-            const hasWorkDate = card.dataset.taskStatus !== '予定未定' && card.querySelector('[title]');
+            // ハイライト OFF: 元に戻す（data-has-work-date属性を使用して正確に判定）
+            const hasWorkDate = card.dataset.hasWorkDate === 'true';
             const originalTransform = hasWorkDate ? 'translateY(-3px)' : 'translateY(0)';
             const originalShadow = hasWorkDate ? '0 4px 8px rgba(0,123,255,0.25), 0 2px 4px rgba(0,123,255,0.15)' : '0 1px 3px rgba(0,0,0,0.1)';
 
