@@ -6574,7 +6574,26 @@ class TaskManagement {
                     const currentEndDate = this.resizeState.endDate || this.calculateEndDate(task);
                     const newEndDate = new Date(currentEndDate);
                     newEndDate.setDate(newEndDate.getDate() + newEndDelta);
-                    updateData.end_date = this.businessDayCalc.formatDate(newEndDate);
+
+                    // 終了日が開始日より前にならないようにチェック（最小1日間を確保）
+                    const workDate = new Date(task.work_date);
+                    workDate.setHours(0, 0, 0, 0);
+                    newEndDate.setHours(0, 0, 0, 0);
+
+                    console.log('🔧 期間リサイズ:', {
+                        workDate: this.businessDayCalc.formatDate(workDate),
+                        currentEndDate: this.businessDayCalc.formatDate(currentEndDate),
+                        newEndDelta,
+                        newEndDate: this.businessDayCalc.formatDate(newEndDate)
+                    });
+
+                    if (newEndDate < workDate) {
+                        // 終了日が開始日より前の場合、開始日と同じにする（1日間のタスク）
+                        console.log('⚠️ 終了日が開始日より前のため、1日間に調整');
+                        updateData.end_date = this.businessDayCalc.formatDate(workDate);
+                    } else {
+                        updateData.end_date = this.businessDayCalc.formatDate(newEndDate);
+                    }
                 }
 
                 // DB更新
