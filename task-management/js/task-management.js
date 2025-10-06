@@ -3256,6 +3256,12 @@ class TaskManagement {
                 if (error) throw error;
 
                 await this.loadTasks();
+
+                // 履歴モードの場合は履歴データも再読み込み
+                if (this.historyMode) {
+                    await this.loadHistoryData();
+                }
+
                 this.updateDisplay();
                 this.updateSummary();
                 this.updateMyTasks();
