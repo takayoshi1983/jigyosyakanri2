@@ -2384,7 +2384,7 @@ class TaskManagement {
                         <div style="flex: 0 0 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; background: #007bff; border-right: 2px solid #dee2e6; font-size: 10px; padding: 2px; line-height: 1.2;">
                             ${assigneeName}
                         </div>
-                        <div style="flex: 1; position: relative; background: #f0f8ff;">
+                        <div style="flex: 1; position: relative; background: #4977af7d;">
                             ${dates.map((date, i) => {
                                 const dateStr = this.businessDayCalc.formatDate(date);
                                 return `<div data-date="${dateStr}" style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; border-left: 1px solid #e0e0e0;"></div>`;
@@ -2569,7 +2569,7 @@ class TaskManagement {
                     </div>
                     <!-- 日付ヘッダー -->
                     <div style="display: flex; border-bottom: 2px solid #dee2e6;">
-                        <div style="flex: 0 0 ${isAllAssignees ? '60px' : '72px'}; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa; font-size: ${isAllAssignees ? '9px' : '10px'}; line-height: 1.2;">
+                        <div style="flex: 0 0 ${isAllAssignees ? '60px' : '72px'}; display: flex; align-items: center; justify-content: center; font-weight: 600; background: #f8f9fa; border-right: 2px solid #dee2e6; font-size: ${isAllAssignees ? '9px' : '10px'}; padding: 2px; line-height: 1.1;">
                             事業者
                         </div>
                         <div style="flex: 1; position: relative; height: 28px;">
