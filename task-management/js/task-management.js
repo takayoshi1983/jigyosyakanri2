@@ -5894,6 +5894,9 @@ class TaskManagement {
             // BusinessDayCalculatorの休暇データを更新
             await this.businessDayCalc.loadStaffVacations(staffId);
 
+            // 休日キャッシュをクリア（重要：これがないと画面が更新されない）
+            this.holidayTypeCache = null;
+
             // ガントチャートを更新
             this.updateDisplay();
 
