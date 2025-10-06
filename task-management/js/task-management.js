@@ -6584,13 +6584,19 @@ class TaskManagement {
                         workDate: this.businessDayCalc.formatDate(workDate),
                         currentEndDate: this.businessDayCalc.formatDate(currentEndDate),
                         newEndDelta,
-                        newEndDate: this.businessDayCalc.formatDate(newEndDate)
+                        newEndDate: this.businessDayCalc.formatDate(newEndDate),
+                        originalWidth: this.resizeState.originalWidth,
+                        cellWidth: this.resizeState.cellWidth
                     });
 
                     if (newEndDate < workDate) {
                         // 終了日が開始日より前の場合、開始日と同じにする（1日間のタスク）
                         console.log('⚠️ 終了日が開始日より前のため、1日間に調整');
                         updateData.end_date = this.businessDayCalc.formatDate(workDate);
+                    } else if (newEndDate.getTime() === workDate.getTime()) {
+                        // 終了日と開始日が同じ（1日間）の場合、end_dateをnullにして estimated_time_hours から計算させる
+                        console.log('ℹ️ 1日間のタスクのため、end_dateをnullに設定');
+                        updateData.end_date = null;
                     } else {
                         updateData.end_date = this.businessDayCalc.formatDate(newEndDate);
                     }
