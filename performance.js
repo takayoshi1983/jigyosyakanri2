@@ -10,6 +10,11 @@ class PerformancePage {
         this.performanceData = null;
         this.currentSort = null;
         this.sortDirection = 'desc'; // デフォルトは降順（パフォーマンスが良い順）
+
+        // 🚀 パフォーマンス最適化: インデックス構造
+        this.clientsByStaff = new Map(); // staff_id -> clients[]
+        this.tasksByMonth = new Map(); // month -> tasks[]
+        this.tasksByClient = new Map(); // client_id -> tasks[]
     }
 
     async initialize() {
@@ -61,8 +66,50 @@ class PerformancePage {
         this.clients = clientsResult || [];
         this.staffs = staffsResult || [];
         this.monthlyTasks = tasksResult || [];
-        
+
+        // 🚀 パフォーマンス最適化: インデックス構築
+        this.buildIndexes();
+
         console.log(`Loaded: ${this.clients.length} clients, ${this.staffs.length} staffs, ${this.monthlyTasks.length} tasks`);
+    }
+
+    /**
+     * 🚀 パフォーマンス最適化: インデックス構築
+     * filter()の繰り返しを避けるため、Map構造でインデックス化
+     */
+    buildIndexes() {
+        // 1. 担当者ごとのクライアントをグルーピング
+        this.clientsByStaff.clear();
+        for (const client of this.clients) {
+            if (!this.clientsByStaff.has(client.staff_id)) {
+                this.clientsByStaff.set(client.staff_id, []);
+            }
+            this.clientsByStaff.get(client.staff_id).push(client);
+        }
+
+        // 2. 月ごとのタスクをグルーピング
+        this.tasksByMonth.clear();
+        for (const task of this.monthlyTasks) {
+            if (!this.tasksByMonth.has(task.month)) {
+                this.tasksByMonth.set(task.month, []);
+            }
+            this.tasksByMonth.get(task.month).push(task);
+        }
+
+        // 3. クライアントごとのタスクをグルーピング
+        this.tasksByClient.clear();
+        for (const task of this.monthlyTasks) {
+            if (!this.tasksByClient.has(task.client_id)) {
+                this.tasksByClient.set(task.client_id, []);
+            }
+            this.tasksByClient.get(task.client_id).push(task);
+        }
+
+        console.log('✅ Indexes built:', {
+            staffs: this.clientsByStaff.size,
+            months: this.tasksByMonth.size,
+            clients: this.tasksByClient.size
+        });
     }
 
     setupPageVisibilityListener() {
@@ -249,12 +296,14 @@ class PerformancePage {
         
         // 各担当者について分析
         for (const staff of this.staffs) {
-            const staffClients = this.clients.filter(client => client.staff_id === staff.id);
+            // 🚀 最適化: Mapから直接取得（filter不要）
+            const staffClients = this.clientsByStaff.get(staff.id) || [];
             const staffClientIds = staffClients.map(c => c.id);
-            
-            // 期間内の月次タスクを取得
+
+            // 🚀 最適化: 期間内の月次タスクを取得（Set使用で高速化）
+            const staffClientIdSet = new Set(staffClientIds);
             const periodTasks = this.monthlyTasks.filter(task => {
-                if (!staffClientIds.includes(task.client_id)) return false;
+                if (!staffClientIdSet.has(task.client_id)) return false;
                 return task.month >= period.start && task.month <= period.end;
             });
 
@@ -314,16 +363,16 @@ class PerformancePage {
         const endDate = new Date(period.end + '-01');
         let completedMonths = 0;
         
-        // 担当者のクライアントIDを取得
-        const clientIds = staffClients.map(client => client.id);
-        
+        // 🚀 最適化: Set使用で高速検索
+        const clientIdSet = new Set(staffClients.map(client => client.id));
+
         // 各月について、担当者の各クライアントのタスクが100%完了している延べ月数をカウント
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-            
-            // この月の担当者のクライアントのタスクレコードを取得
-            const monthTasks = periodTasks.filter(task => 
-                task.month === monthKey && clientIds.includes(task.client_id)
+
+            // 🚀 最適化: この月の担当者のクライアントのタスクレコードを取得
+            const monthTasks = periodTasks.filter(task =>
+                task.month === monthKey && clientIdSet.has(task.client_id)
             );
             
             // 各クライアント（月次タスクレコード）について100%完了かチェック
@@ -349,16 +398,16 @@ class PerformancePage {
         const endDate = new Date(period.end + '-01');
         let delayedMonths = 0;
         
-        // 担当者のクライアントIDを取得
-        const clientIds = staffClients.map(client => client.id);
-        
+        // 🚀 最適化: Set使用で高速検索
+        const clientIdSet = new Set(staffClients.map(client => client.id));
+
         // 各月について、担当者の各クライアントで遅延・停滞している延べ月数をカウント
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-            
-            // この月の担当者のクライアントのタスクレコードを取得
-            const monthTasks = periodTasks.filter(task => 
-                task.month === monthKey && clientIds.includes(task.client_id)
+
+            // 🚀 最適化: この月の担当者のクライアントのタスクレコードを取得
+            const monthTasks = periodTasks.filter(task =>
+                task.month === monthKey && clientIdSet.has(task.client_id)
             );
             
             // 各クライアント（月次タスクレコード）について遅延・停滞かチェック
