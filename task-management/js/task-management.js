@@ -91,6 +91,10 @@ class TaskManagement {
         // 休日自動生成ツール
         this.holidayGenerator = new HolidayGenerator();
 
+        // 🚀 パフォーマンス最適化: 日付キャッシュ
+        this.datesCache = null; // 60日分の日付配列
+        this.cacheDate = null; // キャッシュ作成日
+
         this.init();
         this.setupHistoryManagement(); // 履歴管理システム初期化
     }
@@ -2258,15 +2262,28 @@ class TaskManagement {
             });
         }
 
-        // 今日から60日後までの日付を生成
+        // 🚀 パフォーマンス最適化: 日付配列をキャッシュ
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const endDate = new Date(today);
-        endDate.setDate(today.getDate() + 60);
+        const todayStr = today.toDateString();
 
-        const dates = [];
-        for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
-            dates.push(new Date(d));
+        let dates;
+        // キャッシュが存在し、日付が同じ場合はキャッシュを使用
+        if (this.datesCache && this.cacheDate === todayStr) {
+            dates = this.datesCache;
+        } else {
+            // キャッシュがない、または日付が変わった場合は再生成
+            const endDate = new Date(today);
+            endDate.setDate(today.getDate() + 60);
+
+            dates = [];
+            for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
+                dates.push(new Date(d));
+            }
+
+            // キャッシュに保存
+            this.datesCache = dates;
+            this.cacheDate = todayStr;
         }
 
         // カスタムガントチャートHTML生成
