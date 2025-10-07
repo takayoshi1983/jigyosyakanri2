@@ -2749,7 +2749,7 @@ class TaskManagement {
                     const badge = isAnytime
                         ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #ffc107; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">随</div>`
                         : task.alphabetId === '随時'
-                        ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">未</div>`
+                        ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #28a745; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">随時</div>`
                         : task.alphabetId
                         ? `<div style="position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: #042b9e; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">${task.alphabetId}</div>`
                         : '';
