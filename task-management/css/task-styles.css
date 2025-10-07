@@ -1998,94 +1998,114 @@
     text-align: center;
     padding: 40px 20px;
     color: #6c757d;
-    font-style: italic;
 }
 
-.template-list-empty::before {
-    content: "📝";
+/* --- Task Card Tooltip --- */
+#task-tooltip {
+    position: fixed;
+    display: none;
+    padding: 15px;
+    background-color: rgba(40, 40, 40, 0.95);
+    color: #f0f0f0;
+    border: 1px solid #555;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    z-index: 10001; /* モーダルより手前に */
+    max-width: 350px;
+    font-size: 14px;
+    line-height: 1.6;
+    pointer-events: none; /* ツールチップ自体がマウスイベントを拾わないように */
+    transition: opacity 0.2s ease-in-out;
+    opacity: 0;
+    white-space: normal;
+}
+
+#task-tooltip.visible {
     display: block;
-    font-size: 3rem;
-    margin-bottom: 10px;
-    opacity: 0.5;
+    opacity: 1;
 }
 
-/* レスポンシブ対応 */
-@media (max-width: 1200px) {
-    .template-main-content {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .template-section {
-        flex: none;
-        height: 300px;
-    }
+.tooltip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #666;
 }
 
-@media (max-width: 768px) {
-    .template-modal-header {
-        padding: 15px 20px;
-    }
-
-    .template-modal-header h2 {
-        font-size: 1.2rem;
-    }
-
-    .template-main-content {
-        padding: 15px;
-        gap: 10px;
-    }
-
-    .template-section {
-        height: 250px;
-    }
-
-    .template-modal-footer {
-        padding: 10px 20px;
-        flex-direction: column;
-        gap: 10px;
-    }
+.tooltip-task-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-right: 10px;
 }
 
-/* ガントチャート用スタイル */
-.bar-cyan {
-    fill: url(#cyan-gradient) !important;
+.tooltip-status {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
-/* SVG用グラデーション定義は動的に追加 */
-#gantt-chart .bar {
-    cursor: pointer;
+.tooltip-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 12px;
+    align-items: center;
 }
 
-#gantt-chart .bar:hover {
-    opacity: 0.8;
+.tooltip-grid .label {
+    font-weight: 500;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-/* ガントチャートのバーに水色グラデーションを適用 */
-.gantt .bar-wrapper .bar {
-    fill: #17a2b8 !important;
-    stroke: #138496 !important;
-    stroke-width: 1.5 !important;
+.tooltip-grid .value {
+    color: #eee;
 }
 
-.gantt .bar-wrapper .bar-progress {
-    fill: #0c7c8c !important;
+.tooltip-grid .value.due-date-overdue {
+    color: #ff8a8a;
+    font-weight: bold;
 }
 
-.gantt .bar-wrapper:hover .bar {
-    fill: #20c9e0 !important;
-    opacity: 0.9;
+.tooltip-section {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #666;
 }
 
-/* 今日の線を強調 */
-.gantt .today-highlight {
-    stroke: #ff6b6b !important;
-    stroke-width: 2 !important;
+.tooltip-section .label {
+    font-weight: 500;
+    color: #aaa;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-/* ガントチャートのフォント調整 */
-.gantt .bar-label {
-    font-size: 12px !important;
-    font-weight: 500 !important;
-    fill: #fff !important;
+.tooltip-description,
+.tooltip-url {
+    font-size: 13px;
+    color: #ddd;
+    max-height: 60px; /* 3行分程度 */
+    overflow-y: auto;
+    padding-right: 5px; /* for scrollbar */
+    background: rgba(0,0,0,0.2);
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.tooltip-url a {
+    color: #87cefa;
+    text-decoration: none;
+    pointer-events: auto; /* リンクはクリックできるように */
+}
+
+.tooltip-url a:hover {
+    text-decoration: underline;
 }

@@ -1,102 +1,12 @@
-task-management.js:6534 🔧 リサイズ中: {deltaX: 0, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 0, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 3, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 6, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 8, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 10, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 11, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 12, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 12, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 14, deltaCells: 0, originalWidth: 59, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 17, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 20, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 22, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 23, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 24, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 25, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 26, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 27, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 28, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 29, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 31, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 34, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 36, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 37, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 38, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 39, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 40, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 43, deltaCells: 1, originalWidth: 59, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 45, deltaCells: 2, originalWidth: 59, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 46, deltaCells: 2, originalWidth: 59, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 47, deltaCells: 2, originalWidth: 59, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 53, deltaCells: 2, originalWidth: 59, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: 54, deltaCells: 2, originalWidth: 59, newWidth: 119, cellWidth: 30, …}
-task-management.js:6592 🔧 期間リサイズ: {workDate: '2025-10-20', currentEndDate: '2025-10-21', newEndDelta: 2, newEndDate: '2025-10-23', originalWidth: 59, …}
-task-management.js:6622 ✅ タスク80の期間を更新: {end_date: '2025-10-23'}
-task-management.js:339 Tasks loaded: 33
-task-management.js:2189 📅 updateCalendarView called, tasks: 8
-task-management.js:2190 📅 currentAssigneeFilter: 7
-task-management.js:2206 📅 pendingTasks: 8
-business-day-calculator.js:90 Loaded 0 vacation days for staff 7
-task-management.js:6534 🔧 リサイズ中: {deltaX: 0, deltaCells: 0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -2, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -4, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -5, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -8, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -9, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -10, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -10, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -11, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -12, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -13, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -14, deltaCells: -0, originalWidth: 119, newWidth: 119, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -16, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -17, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -18, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -19, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -22, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -25, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -28, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -30, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -31, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -33, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -35, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -36, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -37, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -38, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -39, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -41, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -44, deltaCells: -1, originalWidth: 119, newWidth: 89, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -46, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -47, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -49, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -54, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -59, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -61, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -62, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -63, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -64, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -65, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -67, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -68, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -70, deltaCells: -2, originalWidth: 119, newWidth: 59, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -77, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -78, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -79, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -83, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -85, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -89, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -90, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -90, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -91, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -92, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -93, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -95, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6534 🔧 リサイズ中: {deltaX: -96, deltaCells: -3, originalWidth: 119, newWidth: 29, cellWidth: 30, …}
-task-management.js:6592 🔧 期間リサイズ: {workDate: '2025-10-20', currentEndDate: '2025-10-23', newEndDelta: -2, newEndDate: '2025-10-21', originalWidth: 119, …}
-task-management.js:6622 ✅ タスク80の期間を更新: {end_date: '2025-10-21'}
-task-management.js:339 Tasks loaded: 33
-task-management.js:2189 📅 updateCalendarView called, tasks: 8
-task-management.js:2190 📅 currentAssigneeFilter: 7
-task-management.js:2206 📅 pendingTasks: 8
-business-day-calculator.js:90 Loaded 0 vacation days for staff 7
+依頼者：吉冨 
+ステータス：📝 依頼中 
+タスク名 ：決算処理 
+事業者 ：㈱○○工業 
+受任者 ：吉冨 
+重要度：⭐ 通常 
+想定時間（時間）：32　（1日＝６時間に換算） 
+期限日：2025/10/10　（随時） 
+作業予定日：2025/10/08 
+参照URL：URLを入力してください 
+作業内容：○○ 
+

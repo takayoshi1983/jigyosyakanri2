@@ -95,6 +95,11 @@ class TaskManagement {
         this.datesCache = null; // 60日分の日付配列
         this.cacheDate = null; // キャッシュ作成日
 
+        // ツールチップ関連
+        this.tooltipElement = null;
+        this.tooltipTimeout = null;
+        this.activeTooltipTaskId = null;
+
         this.init();
         this.setupHistoryManagement(); // 履歴管理システム初期化
     }
@@ -196,6 +201,9 @@ class TaskManagement {
             window.addEventListener('beforeunload', () => {
                 this.stopAutoRefresh();
             });
+
+            // ツールチップ初期化
+            this._initializeTooltip();
 
             console.log('Task Management System initialized successfully');
         } catch (error) {
@@ -2757,8 +2765,9 @@ class TaskManagement {
                             data-has-work-date="${hasWorkDate}"
                             ondragstart="taskManager.handleCardDragStart(event)"
                             ondragend="taskManager.handleCardDragEnd(event)"
-                            onmouseenter="taskManager.highlightGanttBar(${task.id}, true); this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,123,255,0.3), 0 4px 8px rgba(0,123,255,0.2)';"
-                            onmouseleave="taskManager.highlightGanttBar(${task.id}, false); this.style.transform='${cardTransform}'; this.style.boxShadow='${cardShadow}'; this.style.borderColor='${hasWorkDate ? '#007bff' : '#ffc107'}'; this.style.borderWidth='${hasWorkDate ? '2px' : '1px'}';"
+                            onmouseenter="taskManager.highlightGanttBar(${task.id}, true); this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 16px rgba(0,123,255,0.3), 0 4px 8px rgba(0,123,255,0.2)'; taskManager._showTooltip(event, ${task.id});"
+                            onmouseleave="taskManager.highlightGanttBar(${task.id}, false); this.style.transform='${cardTransform}'; this.style.boxShadow='${cardShadow}'; this.style.borderColor='${hasWorkDate ? '#007bff' : '#ffc107'}'; this.style.borderWidth='${hasWorkDate ? '2px' : '1px'}'; taskManager._hideTooltip();"
+                            onmousemove="taskManager._updateTooltipPosition(event);"
                             ondblclick="taskManager.openTaskInEditMode(${task.id})"
                             style="
                             position: relative;
@@ -6681,6 +6690,152 @@ class TaskManagement {
         );
 
         return new Date(workPeriod.endDate);
+    }
+
+    // =============================================
+    // ツールチップ関連メソッド
+    // =============================================
+    _initializeTooltip() {
+        this.tooltipElement = document.getElementById('task-tooltip');
+        if (!this.tooltipElement) {
+            console.error('Tooltip element #task-tooltip not found!');
+            return;
+        }
+
+        // ツールチップ自体にマウスが入った時に非表示タイマーをクリア
+        this.tooltipElement.addEventListener('mouseenter', () => {
+            clearTimeout(this.tooltipTimeout);
+        });
+
+        // ツールチップからマウスが離れたら非表示にする
+        this.tooltipElement.addEventListener('mouseleave', () => {
+            this._hideTooltip();
+        });
+    }
+
+    _showTooltip(event, taskId) {
+        if (!this.tooltipElement) return;
+
+        // ツールチップが表示されるまで少し待つ（意図しない表示を防ぐ）
+        this.tooltipTimeout = setTimeout(() => {
+            // ツールチップ内容を生成
+            const task = this.tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            this.tooltipElement.innerHTML = this._createTooltipHTML(task);
+            
+            // 位置を更新して表示
+            this.tooltipElement.classList.add('visible');
+            this._updateTooltipPosition(event);
+
+        }, 300); // 300msの遅延
+    }
+
+    _hideTooltip() {
+        if (!this.tooltipElement) return;
+        
+        // 表示待機中のタイマーがあればクリア
+        clearTimeout(this.tooltipTimeout);
+
+        this.tooltipElement.classList.remove('visible');
+        this.activeTooltipTaskId = null;
+    }
+
+    _updateTooltipPosition(event) {
+        if (!this.tooltipElement || !this.tooltipElement.classList.contains('visible')) return;
+
+        const offsetX = 20;
+        const offsetY = 20;
+        let x = event.clientX + offsetX;
+        let y = event.clientY + offsetY;
+
+        // ツールチップのサイズを取得
+        const tooltipRect = this.tooltipElement.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+
+        // 画面右端からはみ出ないように調整
+        if (x + tooltipRect.width > windowWidth - 10) {
+            x = event.clientX - tooltipRect.width - offsetX;
+        }
+
+        // 画面下端からはみ出ないように調整
+        if (y + tooltipRect.height > windowHeight - 10) {
+            y = event.clientY - tooltipRect.height - offsetY;
+        }
+        
+        // 画面左端・上端からはみ出ないように調整
+        if (x < 10) x = 10;
+        if (y < 10) y = 10;
+
+        this.tooltipElement.style.left = `${x}px`;
+        this.tooltipElement.style.top = `${y}px`;
+    }
+
+    _createTooltipHTML(task) {
+        // 依頼者、受任者、事業者名を取得
+        const requesterName = task.requester?.name || '不明';
+        const assigneeName = task.assignee?.name || '未割り当て';
+        const clientName = task.clients?.name || 'その他業務';
+
+        // ステータス表示
+        const statusConfig = {
+            '予定未定': { class: 'status-unscheduled', text: '📌 予定未定' },
+            '依頼中': { class: 'status-pending', text: '📝 依頼中' },
+            '作業完了': { class: 'status-working', text: '✅ 確認待ち' },
+            '確認完了': { class: 'status-completed', text: '☑️ 確認完了' }
+        };
+        const statusInfo = statusConfig[task.status] || statusConfig['依頼中'];
+
+        // 重要度
+        const priorityStars = '⭐'.repeat(task.priority || 1);
+
+        // 想定時間
+        const estimatedTime = task.estimated_time_hours ? `${task.estimated_time_hours} 時間 (1日=6時間換算)` : '未設定';
+
+        // 期限日
+        const dueDateClass = this.getDueDateClass(task.due_date);
+        let dueDateText = task.due_date ? formatDate(task.due_date) : '未設定';
+        if (task.is_anytime) {
+            dueDateText += ' (随時)';
+        }
+
+        // 作業予定日
+        const workDateText = task.work_date ? formatDate(task.work_date) : '未設定';
+
+        // 参照URL
+        const urlHTML = task.reference_url ? `
+            <div class="tooltip-section">
+                <div class="label">🔗 参照URL</div>
+                <div class="tooltip-url"><a href="${task.reference_url}" target="_blank" onclick="event.stopPropagation()">${task.reference_url}</a></div>
+            </div>
+        ` : '';
+
+        // 作業内容
+        const descriptionHTML = task.description ? `
+            <div class="tooltip-section">
+                <div class="label">📋 作業内容</div>
+                <div class="tooltip-description">${task.description.replace(/\n/g, '<br>')}</div>
+            </div>
+        ` : '';
+
+        return `
+            <div class="tooltip-header">
+                <div class="tooltip-task-name">${task.task_name}</div>
+                <div class="tooltip-status ${statusInfo.class}">${statusInfo.text}</div>
+            </div>
+            <div class="tooltip-grid">
+                <div class="label">🏢 事業者</div><div class="value">${clientName}</div>
+                <div class="label">👤 受任者</div><div class="value">${assigneeName}</div>
+                <div class="label">📅 期限日</div><div class="value ${dueDateClass}">${dueDateText}</div>
+                <div class="label">🗓️ 作業予定日</div><div class="value">${workDateText}</div>
+                <div class="label">⭐ 重要度</div><div class="value">${priorityStars}</div>
+                <div class="label">⏱️ 想定時間</div><div class="value">${estimatedTime}</div>
+                <div class="label">📤 依頼者</div><div class="value">${requesterName}</div>
+            </div>
+            ${urlHTML}
+            ${descriptionHTML}
+        `;
     }
 
 }
