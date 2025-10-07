@@ -6621,12 +6621,17 @@ class TaskManagement {
                 // トーストは表示しない（リサイズ中に大量に出るため）
                 // window.showToast('期間を調整しました', 'success');
 
-                // タスクを再読み込みして表示を更新（軽量化のため最小限の更新）
-                await this.loadTasks();
+                // 🚀 最適化：全体を再読み込みせず、ローカルデータのみ更新
+                const localTask = this.tasks.find(t => t.id === taskId);
+                if (localTask) {
+                    if (updateData.work_date) localTask.work_date = updateData.work_date;
+                    if (updateData.end_date !== undefined) localTask.end_date = updateData.end_date;
+                }
 
-                // 休日キャッシュをクリア
+                // 休日キャッシュをクリア（必要最小限）
                 this.holidayTypeCache = null;
 
+                // ガントチャートのみ更新（DBアクセスなし）
                 this.updateDisplay();
 
             } catch (error) {
