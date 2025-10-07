@@ -2546,6 +2546,7 @@ class TaskManagement {
                             onmouseenter="taskManager.highlightTaskCard(${task.id}, true); taskManager._showTooltip(event, ${task.id});"
                             onmouseleave="taskManager.highlightTaskCard(${task.id}, false); taskManager._hideTooltip();"
                             onmousemove="taskManager._updateTooltipPosition(event);"
+                            ondblclick="taskManager.openTaskInEditMode(${task.id})"
                             style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold; font-size: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease; user-select: none;"
                             title="${task.task_name}">
 
@@ -6827,12 +6828,12 @@ class TaskManagement {
             </div>
             <div class="tooltip-grid">
                 <div class="label">🏢 事業者</div><div class="value">${clientName}</div>
+                <div class="label">📤 依頼者</div><div class="value">${requesterName}</div>
                 <div class="label">👤 受任者</div><div class="value">${assigneeName}</div>
                 <div class="label">📅 期限日</div><div class="value ${dueDateClass}">${dueDateText}</div>
                 <div class="label">🗓️ 作業予定日</div><div class="value">${workDateText}</div>
                 <div class="label">⭐ 重要度</div><div class="value">${priorityStars}</div>
                 <div class="label">⏱️ 想定時間</div><div class="value">${estimatedTime}</div>
-                <div class="label">📤 依頼者</div><div class="value">${requesterName}</div>
             </div>
             ${urlHTML}
             ${descriptionHTML}
