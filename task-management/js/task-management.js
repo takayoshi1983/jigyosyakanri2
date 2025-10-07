@@ -2427,14 +2427,18 @@ class TaskManagement {
                 `);
             }
 
-            // 事業者名を取得（文字数超は省略）
-            const clientName = task.client_id
-                ? (this.clients?.find(c => c.id === task.client_id)?.name || `ID:${task.client_id}`)
-                : 'その他業務';
-
-            // 列幅に応じて省略文字数を調整（全担当者:15文字、個人:18文字）
-            const maxLength = isAllAssignees ? 15 : 18;
-            const displayClientName = clientName.length > maxLength ? clientName.substring(0, maxLength) + '...' : clientName;
+            // 事業者名を取得し、リンク化する
+            let clientNameHTML;
+            if (task.client_id) {
+                const client = this.clients?.find(c => c.id === task.client_id);
+                const clientName = client?.name || `ID:${task.client_id}`;
+                const maxLength = isAllAssignees ? 15 : 18;
+                const displayClientName = clientName.length > maxLength ? clientName.substring(0, maxLength) + '...' : clientName;
+                
+                clientNameHTML = `<a href="../../details.html?id=${task.client_id}" onclick="event.stopPropagation()" title="${clientName}" style="color: inherit; text-decoration: none;">${displayClientName}</a>`;
+            } else {
+                clientNameHTML = 'その他業務';
+            }
 
             // プレースホルダー行の場合は空行を表示
             if (task.is_placeholder) {
@@ -2519,7 +2523,7 @@ class TaskManagement {
             taskRows.push(`
                 <div style="display: flex; height: ${rowHeight}px; border-bottom: 1px solid #e9ecef; position: relative;">
                     <div style="flex: 0 0 ${isAllAssignees ? '60px' : '72px'}; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #007bff; background: #f8f9fa; border-right: 2px solid #dee2e6; font-size: ${isAllAssignees ? '9px' : '10px'}; padding: 2px; line-height: 1.1;">
-                        ${displayClientName}
+                        ${clientNameHTML}
                     </div>
                     <div style="flex: 1; position: relative;">
                         ${dates.map((date, i) => {
