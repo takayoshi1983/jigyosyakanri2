@@ -2207,7 +2207,7 @@ class TaskManagement {
         pendingTasks.forEach((task) => {
             if (task.status === '予定未定' && !task.work_date) {
                 // 予定日なしの予定未定タスクには「未」マーク
-                task.alphabetId = '未';
+                task.alphabetId = '随時';
             } else {
                 // 依頼中タスク、または予定日ありの予定未定タスクにはアルファベット
                 task.alphabetId = this.getAlphabetId(alphabetIndex);
