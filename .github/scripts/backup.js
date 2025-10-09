@@ -53,23 +53,42 @@ async function runBackup() {
 
     let totalRecords = 0;
 
-    // 各テーブルからデータを取得
+    // 各テーブルからデータを取得（ページネーション対応）
     for (const tableName of tables) {
       console.log(`📊 Backing up table: ${tableName}`);
 
-      const { data, error } = await supabase
-        .from(tableName)
-        .select('*');
+      let allData = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      if (error) {
-        console.error(`❌ Error fetching ${tableName}:`, error.message);
-        // エラーがあっても続行（テーブルが存在しない場合など）
-        backupData.tables[tableName] = [];
-        continue;
+      // 全データを取得（1000件ずつ）
+      while (hasMore) {
+        const { data, error, count } = await supabase
+          .from(tableName)
+          .select('*', { count: 'exact' })
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) {
+          console.error(`❌ Error fetching ${tableName}:`, error.message);
+          break;
+        }
+
+        if (data && data.length > 0) {
+          allData = allData.concat(data);
+          page++;
+
+          // データが1000件未満なら最後のページ
+          if (data.length < pageSize) {
+            hasMore = false;
+          }
+        } else {
+          hasMore = false;
+        }
       }
 
-      backupData.tables[tableName] = data || [];
-      const recordCount = data?.length || 0;
+      backupData.tables[tableName] = allData;
+      const recordCount = allData.length;
       totalRecords += recordCount;
       console.log(`✅ ${tableName}: ${recordCount} records`);
     }
