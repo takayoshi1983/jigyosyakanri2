@@ -2531,7 +2531,7 @@ class TaskManagement {
             const businessDayBlocks = businessDays.map(businessDay => {
                 const bdIndex = dates.findIndex(d => d.getTime() === businessDay.getTime());
                 if (bdIndex === -1) return '';
-                return `<div style="position: absolute; left: ${bdIndex * cellWidth + 1}px; width: ${cellWidth - 1}px; height: 20px; top: 5px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 3px;"></div>`;
+                return `<div style="position: absolute; left: ${bdIndex * cellWidth + 1}px; width: ${cellWidth - 1}px; height: 24px; top: 3px; background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%); border-radius: 3px;"></div>`;
             }).join('');
 
             taskRows.push(`
@@ -2552,7 +2552,7 @@ class TaskManagement {
                                 style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: ${isToday ? '3px solid #007bff' : '1px solid #e0e0e0'};"></div>`;
                         }).join('')}
                         <!-- 全期間バー（薄い青・下層） -->
-                        <div style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 20px; top: 5px; background: rgba(23, 162, 184, 0.25); border-radius: 4px; border: 1px solid rgba(23, 162, 184, 0.5);"></div>
+                        <div style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 24px; top: 3px; background: rgba(23, 162, 184, 0.25); border-radius: 4px; border: 1px solid rgba(23, 162, 184, 0.5);"></div>
                         <!-- 営業日ブロック（濃い青・上層） -->
                         ${businessDayBlocks}
                         <!-- タスクバー（リサイズ可能） -->
@@ -2566,7 +2566,7 @@ class TaskManagement {
                             onmouseleave="taskManager.highlightTaskCard(${task.id}, false); taskManager._hideTooltip();"
                             onmousemove="taskManager._updateTooltipPosition(event);"
                             ondblclick="taskManager.openTaskInEditMode(${task.id})"
-                            style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 20px; top: 5px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold; font-size: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease; user-select: none;"
+                            style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 24px; top: 3px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold; font-size: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease; user-select: none;"
                             title="${task.task_name}">
 
                             <!-- 左ハンドル（開始日調整） -->
@@ -2611,12 +2611,8 @@ class TaskManagement {
             `);
         });
 
-        // 表示幅を30日分に制限（横スクロール可能）
-        const displayDays = 30;
-        const displayWidth = (isAllAssignees ? 60 : 72) + (displayDays * cellWidth);
-
         return `
-            <div style="overflow-x: auto; background: white; border-radius: 8px; max-width: ${displayWidth}px;">
+            <div style="overflow-x: auto; background: white; border-radius: 8px;">
                 <div style="min-width: ${(isAllAssignees ? 60 : 72) + dates.length * cellWidth}px;">
                     <!-- 月ヘッダー -->
                     <div style="display: flex; border-bottom: 2px solid #dee2e6;">
