@@ -2445,7 +2445,7 @@ class TaskManagement {
             if (task.client_id) {
                 const client = this.clients?.find(c => c.id === task.client_id);
                 const clientName = client?.name || `ID:${task.client_id}`;
-                const maxLength = 15;  // 列幅86pxに合わせて統一
+                const maxLength = 11;  // 列幅86pxに合わせて統一
                 const displayClientName = clientName.length > maxLength ? clientName.substring(0, maxLength) + '...' : clientName;
                 
                 clientNameHTML = `<a href="../../details.html?id=${task.client_id}" onclick="event.stopPropagation()" title="${clientName}" style="color: inherit; text-decoration: none;">${displayClientName}</a>`;
