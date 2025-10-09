@@ -2566,8 +2566,7 @@ class TaskManagement {
                             onmouseleave="taskManager.highlightTaskCard(${task.id}, false); taskManager._hideTooltip();"
                             onmousemove="taskManager._updateTooltipPosition(event);"
                             ondblclick="taskManager.openTaskInEditMode(${task.id})"
-                            style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 24px; top: 3px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold; font-size: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease; user-select: none;"
-                            title="${task.task_name}">
+                            style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 24px; top: 3px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold; font-size: 20px; text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: auto; transition: all 0.3s ease; user-select: none;">
 
                             <!-- 左ハンドル（開始日調整） -->
                             <div
@@ -2804,10 +2803,10 @@ class TaskManagement {
                             transform: ${cardTransform};
                         ">
                             ${badge}
-                            <div style="font-weight: 600; font-size: 13px; color: #495057; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${task.task_name || 'Untitled'}">
+                            <div style="font-weight: 600; font-size: 13px; color: #495057; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                 ${task.task_name || 'Untitled'}
                             </div>
-                            <div style="font-size: 12px; color: #6c757d; opacity: 0.9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${clientName}">
+                            <div style="font-size: 12px; color: #6c757d; opacity: 0.9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                 ${clientName}
                             </div>
                             ${dueDate ? `<div style="font-size: 11px; color: #6c757d; opacity: 0.7; margin-top: 4px;">期限: ${dueDate}</div>` : ''}
@@ -6816,7 +6815,7 @@ class TaskManagement {
 
         // アルファベットバッジ（カレンダー表示時のみ）
         const alphabetBadge = task.alphabetId ? `
-            <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,123,255,0.4); border: 2px solid white; z-index: 10;">
+            <div style="position: absolute; top: -14px; left: -14px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,123,255,0.4); border: 2px solid white; z-index: 10;">
                 ${task.alphabetId}
             </div>
         ` : '';
