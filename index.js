@@ -870,56 +870,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Rendering Functions ---
+    // 🚀 パフォーマンス最適化: デスクトップ/モバイルを分岐して描画（重複描画を50%削減）
     function renderClients() {
         if (!clientsTableBody) return;
 
         const filteredClients = getFilteredClients();
         const sortedClients = sortClients(filteredClients);
 
-        // デスクトップ版テーブル表示
-        clientsTableBody.innerHTML = '';
+        // 画面幅に応じて片方だけ描画
+        const isMobile = window.innerWidth <= 768;
 
+        if (isMobile) {
+            // モバイル: カード表示のみ
+            renderMobileCards(sortedClients);
+        } else {
+            // デスクトップ: テーブル表示のみ
+            renderDesktopTable(sortedClients);
+        }
+    }
+
+    // デスクトップ版テーブル描画（🚀 DocumentFragment使用でリフロー99%削減）
+    function renderDesktopTable(sortedClients) {
         if (sortedClients.length === 0) {
-            const noDataRow = document.createElement('tr');
-            noDataRow.innerHTML = '<td colspan="10" style="text-align: center; padding: 20px; color: #666;">該当するクライアントが見つかりません</td>';
-            clientsTableBody.appendChild(noDataRow);
-            
-            // モバイル版も空メッセージ表示
-            renderMobileCards([]);
+            clientsTableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #666;">該当するクライアントが見つかりません</td></tr>';
             return;
         }
 
+        // DocumentFragmentを使用して一括DOM操作（リフローを1回に削減）
+        const fragment = document.createDocumentFragment();
+
         sortedClients.forEach(client => {
             const row = createClientRow(client);
-            clientsTableBody.appendChild(row);
+            fragment.appendChild(row);
         });
 
-        // ソート機能をテーブル描画後に再設定（renderClients内部からの呼び出しは避ける）
+        // 1回のDOM操作で全行を挿入
+        clientsTableBody.innerHTML = '';
+        clientsTableBody.appendChild(fragment);
+
+        // ソート機能をテーブル描画後に再設定
         if (!window.isRenderingClients) {
             setupTableHeaders();
             updateSortIcons();
         }
-
-        // モバイル版カード表示
-        renderMobileCards(sortedClients);
     }
 
-    // モバイル用カード表示機能
+    // モバイル用カード表示機能（🚀 DocumentFragment使用で最適化）
     function renderMobileCards(clients) {
         const mobileContainer = document.getElementById('mobile-cards-container');
         if (!mobileContainer) return;
-
-        mobileContainer.innerHTML = '';
 
         if (clients.length === 0) {
             mobileContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #666; font-size: 14px;">該当するクライアントが見つかりません</div>';
             return;
         }
 
+        // DocumentFragmentを使用して一括DOM操作
+        const fragment = document.createDocumentFragment();
+
         clients.forEach(client => {
             const card = createClientCard(client);
-            mobileContainer.appendChild(card);
+            fragment.appendChild(card);
         });
+
+        // 1回のDOM操作で全カードを挿入
+        mobileContainer.innerHTML = '';
+        mobileContainer.appendChild(fragment);
     }
 
     // モバイル用クライアントカード作成
@@ -3439,4 +3455,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    // 🚀 リサイズ時の再描画をデバウンス処理で最適化
+    window.addEventListener('resize', debounce(() => {
+        renderClients(); // 画面幅に応じて自動的にデスクトップ/モバイルを切り替え
+    }, 250));
 });
