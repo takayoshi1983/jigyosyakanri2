@@ -6815,7 +6815,7 @@ class TaskManagement {
 
         // アルファベットバッジ（カレンダー表示時のみ）
         const alphabetBadge = task.alphabetId ? `
-            <div style="position: absolute; top: -20px; left: -20px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,123,255,0.4); border: 2px solid white; z-index: 10;">
+            <div style="position: absolute; top: -25px; left: -20px; background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,123,255,0.4); border: 2px solid white; z-index: 10;">
                 ${task.alphabetId}
             </div>
         ` : '';
