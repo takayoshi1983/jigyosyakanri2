@@ -2281,11 +2281,15 @@ class TaskManagement {
             dates = this.datesCache;
         } else {
             // キャッシュがない、または日付が変わった場合は再生成
-            const endDate = new Date(today);
-            endDate.setDate(today.getDate() + 60);
+            // 起点日を「今日の3日前」に設定
+            const startDate = new Date(today);
+            startDate.setDate(today.getDate() - 3);
+
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 60);
 
             dates = [];
-            for (let d = new Date(today); d <= endDate; d.setDate(d.getDate() + 1)) {
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                 dates.push(new Date(d));
             }
 
@@ -2359,6 +2363,11 @@ class TaskManagement {
             return `<div style="flex: 0 0 ${width}px; text-align: center; font-weight: 600; color: #495057; background: ${group.month % 2 === 0 ? '#f8f9fa' : '#fff9e6'}; border: ridge 1px #ea950a61; padding: 4px 0;">${monthName}</div>`;
         }).join('');
 
+        // 今日の日付を取得（比較用）
+        const todayForComparison = new Date();
+        todayForComparison.setHours(0, 0, 0, 0);
+        const todayDateStr = this.businessDayCalc.formatDate(todayForComparison);
+
         const dateHeaders = dates.map((date, index) => {
             const day = date.getDate();
 
@@ -2371,6 +2380,9 @@ class TaskManagement {
             const isNationalHoliday = holidayType === 'national';
             const isHoliday = isWeekend || isNationalHoliday;
 
+            // 今日の列かどうか判定
+            const isToday = dateStr === todayDateStr;
+
             return `
                 <div
                     class="gantt-date-header"
@@ -2378,7 +2390,7 @@ class TaskManagement {
                     data-is-holiday="${isHoliday}"
                     data-bg-color="${bgColor}"
                     onclick="taskManager.togglePersonalVacation(event)"
-                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: 1px solid #e0e0e0; background: ${bgColor}; padding: 4px 0; cursor: ${isHoliday ? 'default' : 'pointer'}; transition: all 0.2s; z-index: 10; pointer-events: auto;">
+                    style="position: absolute; left: ${index * cellWidth}px; width: ${cellWidth}px; text-align: center; font-size: 11px; border-left: ${isToday ? '3px solid #007bff' : '1px solid #e0e0e0'}; background: ${bgColor}; padding: 4px 0; cursor: ${isHoliday ? 'default' : 'pointer'}; transition: all 0.2s; z-index: 10; pointer-events: auto;">
                     <div style="line-height: 1.2; pointer-events: none;">${day}</div>
                     ${icon ? `<div style="font-size: 8px; line-height: 0; margin-top: 2px; pointer-events: none;">${icon}</div>` : ''}
                 </div>
@@ -2420,7 +2432,8 @@ class TaskManagement {
                         <div style="flex: 1; position: relative; background: #4977af7d;">
                             ${dates.map((date, i) => {
                                 const dateStr = this.businessDayCalc.formatDate(date);
-                                return `<div data-date="${dateStr}" style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; border-left: 1px solid #e0e0e0;"></div>`;
+                                const isToday = dateStr === todayDateStr;
+                                return `<div data-date="${dateStr}" style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; border-left: ${isToday ? '3px solid #007bff' : '1px solid #e0e0e0'};"></div>`;
                             }).join('')}
                         </div>
                     </div>
@@ -2453,12 +2466,13 @@ class TaskManagement {
                                 const cached = this.holidayTypeCache[i];
                                 const bgColor = cached.bgColor === '#fff' ? 'transparent' : cached.bgColor;
                                 const dateStr = this.businessDayCalc.formatDate(date);
+                                const isToday = dateStr === todayDateStr;
                                 return `<div
                                     class="gantt-date-cell"
                                     data-date="${dateStr}"
                                     ondragover="taskManager.handleGanttDragOver(event)"
                                     ondrop="taskManager.handleGanttDrop(event)"
-                                    style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
+                                    style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: ${isToday ? '3px solid #007bff' : '1px solid #e0e0e0'};"></div>`;
                             }).join('')}
                             <div style="position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; color: #adb5bd; font-size: 11px; pointer-events: none;">
                                 ${task.task_name}
@@ -2531,10 +2545,11 @@ class TaskManagement {
                             const cached = this.holidayTypeCache[i];
                             const bgColor = cached.bgColor === '#fff' ? 'transparent' : cached.bgColor;
                             const dateStr = this.businessDayCalc.formatDate(date);
+                            const isToday = dateStr === todayDateStr;
                             return `<div
                                 class="gantt-date-cell"
                                 data-date="${dateStr}"
-                                style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: 1px solid #e0e0e0;"></div>`;
+                                style="position: absolute; left: ${i * cellWidth}px; width: ${cellWidth}px; height: 100%; background: ${bgColor}; border-left: ${isToday ? '3px solid #007bff' : '1px solid #e0e0e0'};"></div>`;
                         }).join('')}
                         <!-- 全期間バー（薄い青・下層） -->
                         <div style="position: absolute; left: ${fullBarStart + 1}px; width: ${fullBarWidth - 1}px; height: 20px; top: 5px; background: rgba(23, 162, 184, 0.25); border-radius: 4px; border: 1px solid rgba(23, 162, 184, 0.5);"></div>
@@ -2596,8 +2611,12 @@ class TaskManagement {
             `);
         });
 
+        // 表示幅を30日分に制限（横スクロール可能）
+        const displayDays = 30;
+        const displayWidth = (isAllAssignees ? 60 : 72) + (displayDays * cellWidth);
+
         return `
-            <div style="overflow-x: auto; background: white; border-radius: 8px;">
+            <div style="overflow-x: auto; background: white; border-radius: 8px; max-width: ${displayWidth}px;">
                 <div style="min-width: ${(isAllAssignees ? 60 : 72) + dates.length * cellWidth}px;">
                     <!-- 月ヘッダー -->
                     <div style="display: flex; border-bottom: 2px solid #dee2e6;">
