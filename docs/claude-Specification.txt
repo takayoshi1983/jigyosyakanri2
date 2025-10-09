@@ -422,13 +422,16 @@ recurring_tasks.assignee_id → staffs.id
 
   5. データ管理
 
-  - **自動バックアップシステム**: Supabase Edge Functions + Cron Job による24時間365日自動実行
-    ├── 毎日0:00（JST）自動実行: pg_cron スケジューラによる確実な実行
+  - **自動バックアップシステム**: GitHub Actions による24時間365日サーバーレス自動実行
+    ├── 毎日0:00（JST）自動実行: GitHub Actions cron スケジューラによる確実な実行
     ├── 週次ローテーション: Sunday-Saturday フォルダでストレージ最適化
     ├── クラウドストレージ: Supabase Storage による安全な保管
     ├── 実行履歴管理: backup_history テーブルでの監視・トラッキング
-    └── 緊急時手動実行: アプリUI からの即座バックアップ機能
-  - **手動バックアップシステム**: JSON形式・週次ローテーション・File System Access API対応
+    ├── 無料プラン対応: Supabase無料プランでも完全動作
+    ├── セキュア設計: GitHub Secrets による認証情報暗号化保存
+    ├── ページネーション対応: 1000件以上のデータも完全バックアップ
+    └── 削除後新規登録方式: RLSポリシー対応の安全なアップロード処理
+  - **手動バックアップシステム**: JSON形式・週次ローテーション・File System Access API対応・緊急時即座実行
   - **安全な復元機能**: 外部キー制約・データ整合性完全保証
   - CSVエクスポート: UTF-8 BOM付きExcel対応
   - CSVインポート: 複数エンコーディング対応
@@ -719,9 +722,56 @@ recurring_tasks.assignee_id → staffs.id
 
   (その他変更なし)
 
-  最新の進捗（2025年10月5日更新）
+  最新の進捗（2025年10月10日更新）
 
-#### 今回セッション（10/5）- 予定未定ステータス機能完全実装・休日管理CSVインポート修正
+#### 今回セッション（10/10）- GitHub Actions自動バックアップシステム完全実装
+
+1. **GitHub Actions自動バックアップシステム実装** - 完了
+   - **無料プラン対応**: Supabase無料プランでも動作するGitHub Actions方式採用
+   - **ワークフロー作成**: .github/workflows/daily-backup.yml による毎日0:00 JST実行設定
+   - **バックアップスクリプト**: .github/scripts/backup.js による全テーブルバックアップ処理
+   - **GitHub Secrets設定**: SUPABASE_URL・SUPABASE_ANON_KEY（実際はservice_role key）の暗号化保存
+   - **cron式設定**: 0 15 * * * (15:00 UTC = 翌日0:00 JST) による自動実行
+
+2. **ページネーション対応実装** - 完了
+   - **1000件制限突破**: Supabaseの1000件制限を超えるデータ取得機能実装
+   - **バッチ処理**: 1000件ずつページネーションで全データ取得
+   - **monthly_tasks対応**: 1000件以上のタスクデータも完全バックアップ可能
+   - **動的ループ処理**: データがなくなるまで自動的に取得継続
+
+3. **RLSポリシー対応修正** - 完了
+   - **service_role key使用**: anon keyからservice_role keyに変更でRLS制約回避
+   - **削除後新規登録方式**: upsert: true から削除→新規登録方式に変更
+   - **Storage権限問題解決**: RLS INSERT権限のみで動作する安全な実装
+   - **エラー修正**: new row violates row-level security policy エラー完全解決
+
+4. **セットアップドキュメント作成** - 完了
+   - **BACKUP-SETUP-GUIDE.md**: GitHub Actions完全セットアップガイド作成
+   - **手順書詳細化**: Step 1-6の詳細セットアップ手順記載
+   - **トラブルシューティング**: よくあるエラーと解決方法の記載
+   - **セキュリティ説明**: GitHub Secretsの安全性・使用方法の詳細説明
+
+5. **.gitignore更新** - 完了
+   - **機密情報保護**: supabase-env.js・*.key・secrets/・.env.local等を除外設定
+   - **node_modules除外**: npm依存関係ファイルの除外設定追加
+   - **パブリックリポジトリ対応**: 公開リポジトリでも安全な設定
+
+6. **Edge Function更新** - 完了
+   - **Supabase URL更新**: supabase/functions/daily-backup/index.ts の接続先を新環境に更新
+   - **テーブル構造対応**: 既存のテーブルリスト（clients, staffs, monthly_tasks等）を維持
+
+7. **実運用テスト** - 完了
+   - **手動実行成功**: GitHub Actions手動トリガーでバックアップ実行成功
+   - **Storage確認**: weekly/Friday/jigyosya-backup-Friday.json 生成確認
+   - **backup_history記録**: バックアップ履歴テーブルへの記録成功
+   - **全テーブルバックアップ**: clients(68)・staffs(5)・monthly_tasks(1258)等全データ取得確認
+
+8. **Git管理** - 完了
+   - **コミット**: Add GitHub Actions automatic backup system
+   - **プッシュ**: GitHubリポジトリへの反映完了
+   - **バグ修正コミット**: Fix RLS policy issues・Add pagination の追加コミット実施
+
+#### 前回セッション（10/5）- 予定未定ステータス機能完全実装・休日管理CSVインポート修正
 
 1. **CSVインポートバグ修正** - 完了
    - **変数名不一致修正**: task-management.js:6302の `holidays.length` → `holidaysToUpsert.length` に修正
@@ -1200,7 +1250,7 @@ recurring_tasks.assignee_id → staffs.id
 - **基本機能**: 100%完成（全体メモ機能追加）
 - **担当者管理機能**: 100%完成（CSV抽出機能・UI最適化完了）
 - **データ整合性チェック**: 100%完成（決算月対応・JSONパース修正完了）
-- **自動バックアップシステム**: 100%完成（Supabase Edge Functions + Cron Job）
+- **自動バックアップシステム**: 100%完成（GitHub Actions + Supabase Storage・無料プラン対応・ページネーション完全実装）
 - **手動バックアップ・復元**: 100%完成
 - **UI/UX**: 100%完成（PDFエクスポート最適化・進捗表示改善完了）
 - **モバイル対応**: 100%完成
