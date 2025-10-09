@@ -16,7 +16,7 @@ serve(async (req) => {
     console.log('🔄 Daily backup function started')
 
     // Initialize Supabase client using reserved environment variables
-    const supabaseUrl = `https://ocfljsoxxgmnzqlquchx.supabase.co`
+    const supabaseUrl = `https://jhjexgkzzbzxhhlezaoa.supabase.co`
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
     const supabase = createClient(supabaseUrl, supabaseKey)

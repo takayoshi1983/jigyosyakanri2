@@ -125,5 +125,16 @@ dmypy.json
 .pytype/
 
 # Cython debug symbols
-cython_debug/supabase-env.js 
+cython_debug/
+
+# Supabase secrets (important!)
 supabase-env.js
+*.key
+secrets/
+.env.local
+.env.*.local
+
+# Node modules (if using npm/yarn)
+node_modules/
+package-lock.json
+yarn.lock
