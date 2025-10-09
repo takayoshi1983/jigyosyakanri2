@@ -6162,6 +6162,12 @@ class TaskManagement {
             const task = this.tasks.find(t => t.id === taskId);
             const updateData = { work_date: newDate };
 
+            // 随時タスクで「予定未定」→予定日入力の場合、ステータスを「依頼中」に変更
+            if (task && task.is_anytime && task.status === '予定未定') {
+                updateData.status = '依頼中';
+                console.log('予定未定タスクに予定日を入力したため、ステータスを「依頼中」に変更しました');
+            }
+
             // end_dateがある場合の処理
             if (task && task.end_date) {
                 // 元のwork_dateが存在する場合のみ期間を維持
