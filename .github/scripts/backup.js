@@ -88,13 +88,16 @@ async function runBackup() {
 
     console.log(`☁️ Uploading backup to: ${filePath}`);
 
+    // 既存ファイルを削除（エラーは無視）
+    await supabase.storage.from('backups').remove([filePath]);
+
     // Supabase Storageにアップロード
     const { data: uploadData, error: uploadError } = await supabase
       .storage
       .from('backups')
       .upload(filePath, jsonContent, {
         contentType: 'application/json',
-        upsert: true  // 既存ファイルを上書き（週次ローテーション）
+        upsert: false  // 新規アップロード
       });
 
     if (uploadError) {
@@ -133,12 +136,15 @@ async function runBackup() {
     const reportFileName = `jigyosya-backup-report-${dayOfWeek}.json`;
     const reportPath = `weekly/${dayOfWeek}/${reportFileName}`;
 
+    // 既存レポートファイルを削除（エラーは無視）
+    await supabase.storage.from('backups').remove([reportPath]);
+
     await supabase
       .storage
       .from('backups')
       .upload(reportPath, JSON.stringify(reportData, null, 2), {
         contentType: 'application/json',
-        upsert: true
+        upsert: false
       });
 
     console.log('✅ Report uploaded successfully');
